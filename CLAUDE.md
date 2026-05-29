@@ -12,9 +12,9 @@
 
 **This CLAUDE.md lives on the development server.** All file edits, commands, and builds run here.
 
-- **Dev:** Proxmox LXC (Debian 12) — accessed via VS Code Remote-SSH or Claude Code Remote Control over Tailscale
-- **App path:** `/var/www/antri-iki-ae/` · **PM2:** `antri-iki-ae-api` · **Port:** 3001
-- **Serve:** Nginx → Fastify + static `frontend/dist/`
+- **Dev:** Proxmox 9.1 LXC (Debian 13 Trixie, minimum default template, no extra config) — accessed via VS Code Remote-SSH or Claude Code
+- **App path:** `/var/www/antri.iki.ae/` · **PM2:** `antri-iki-ae-api` · **Port:** 3001
+- **Serve:** Fastify serves static `frontend/dist/` directly — Nginx not installed on dev server
 - **DB:** SQLite at `backend/data/antri-iki-ae.db`
 
 ---

@@ -1,7 +1,9 @@
+import path from 'path'
 import Fastify from 'fastify'
 import fastifyCookie from '@fastify/cookie'
 import fastifyCors from '@fastify/cors'
 import fastifyMultipart from '@fastify/multipart'
+import fastifyStatic from '@fastify/static'
 
 import { authRoutes }       from './routes/auth.js'
 import { configRoutes }     from './routes/config.js'
@@ -39,6 +41,13 @@ await app.register(backupRoutes,   { prefix: '/api/backup' })
 
 // Health check
 app.get('/api/health', async () => ({ status: 'ok', app: 'antri-iki-ae' }))
+
+// Serve frontend — SPA fallback: all non-API routes return index.html
+const distPath = path.resolve('/var/www/antri.iki.ae/frontend/dist')
+await app.register(fastifyStatic, { root: distPath, prefix: '/' })
+app.setNotFoundHandler((_req, reply) => {
+  reply.sendFile('index.html')
+})
 
 try {
   await app.listen({ port: 3001, host: '0.0.0.0' })

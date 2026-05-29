@@ -27,21 +27,97 @@ ok()   { echo -e "${GREEN}[ok]${RESET} $*"; }
 warn() { echo -e "${YELLOW}[warn]${RESET} $*"; }
 die()  { echo -e "${RED}[error]${RESET} $*" >&2; exit 1; }
 
+# --- Banner ---
+echo ""
+echo -e "${BOLD}============================================${RESET}"
+echo -e "${BOLD}  Antri-Iki-Ae — Queue Management System  ${RESET}"
+echo -e "${BOLD}  by iki.ae                                ${RESET}"
+echo -e "${BOLD}============================================${RESET}"
+echo ""
+
+# --- Language selection ---
+echo "  Select language / Pilih bahasa:"
+echo "  1) English (default)"
+echo "  2) Indonesia"
+echo ""
+read -rp "  [1/2, Enter = English]: " LANG_CHOICE
+
+case "${LANG_CHOICE:-1}" in
+  2)
+    MSG_ROOT="Jalankan sebagai root: sudo ./install.sh"
+    MSG_NO_APT="Installer ini membutuhkan sistem berbasis Debian/Ubuntu (apt)."
+    MSG_NO_APP="File app tidak ditemukan di $APP_DIR. Ekstrak file app terlebih dahulu."
+    MSG_CHECK_NODE="Memeriksa Node.js..."
+    MSG_INSTALL_NODE="Menginstal Node.js LTS via NodeSource..."
+    MSG_CHECK_PM2="Memeriksa PM2..."
+    MSG_DEPS="Menginstal dependensi backend..."
+    MSG_BUILD="Membangun backend..."
+    MSG_MIGRATE="Menjalankan migrasi database..."
+    MSG_PM2_START="Memulai PM2 process..."
+    MSG_PM2_BOOT="Mengatur PM2 startup otomatis..."
+    MSG_NGINX_SKIP="Nginx dilewati (--skip-nginx). Pastikan reverse proxy Anda meneruskan ke 127.0.0.1:$PORT"
+    MSG_NGINX_SSE1="Tambahkan direktif SSE berikut ke vhost Nginx Anda:"
+    MSG_NGINX_SSE2="  proxy_read_timeout 3600s;"
+    MSG_NGINX_SSE3="  proxy_buffering off;"
+    MSG_NGINX_INSTALL="Menginstal dan mengonfigurasi Nginx..."
+    MSG_NGINX_NO_TPL="Template Nginx tidak ditemukan: $APP_DIR/nginx/antri-iki-ae.conf"
+    MSG_NGINX_OK="Nginx dikonfigurasi untuk:"
+    MSG_DONE="Instalasi selesai!"
+    MSG_ACCESS_SKIP="  http://[IP-SERVER]:$PORT"
+    MSG_ACCESS_NGINX="  http://[IP-SERVER]  (via Nginx, port 80)"
+    MSG_ACCESS_SSL="  Atau konfigurasikan domain + SSL (certbot) sesuai kebutuhan"
+    MSG_USER="  Username : admin"
+    MSG_PASS="  Password : admin123"
+    MSG_WARN_PASS="  PENTING: Ganti password admin segera setelah login!"
+    MSG_LOGIN="  Login admin default:"
+    MSG_ACCESS="  Akses aplikasi:"
+    ;;
+  *)
+    MSG_ROOT="Run as root: sudo ./install.sh"
+    MSG_NO_APT="This installer requires a Debian/Ubuntu system (apt)."
+    MSG_NO_APP="App files not found at $APP_DIR. Extract the app files first."
+    MSG_CHECK_NODE="Checking Node.js..."
+    MSG_INSTALL_NODE="Installing Node.js LTS via NodeSource..."
+    MSG_CHECK_PM2="Checking PM2..."
+    MSG_DEPS="Installing backend dependencies..."
+    MSG_BUILD="Building backend..."
+    MSG_MIGRATE="Running database migrations..."
+    MSG_PM2_START="Starting PM2 process..."
+    MSG_PM2_BOOT="Configuring PM2 startup on boot..."
+    MSG_NGINX_SKIP="Nginx skipped (--skip-nginx). Ensure your reverse proxy forwards to 127.0.0.1:$PORT"
+    MSG_NGINX_SSE1="Add these SSE directives to your Nginx vhost:"
+    MSG_NGINX_SSE2="  proxy_read_timeout 3600s;"
+    MSG_NGINX_SSE3="  proxy_buffering off;"
+    MSG_NGINX_INSTALL="Installing and configuring Nginx..."
+    MSG_NGINX_NO_TPL="Nginx template not found: $APP_DIR/nginx/antri-iki-ae.conf"
+    MSG_NGINX_OK="Nginx configured for:"
+    MSG_DONE="Installation complete!"
+    MSG_ACCESS_SKIP="  http://[SERVER-IP]:$PORT"
+    MSG_ACCESS_NGINX="  http://[SERVER-IP]  (via Nginx, port 80)"
+    MSG_ACCESS_SSL="  Or configure a domain + SSL (certbot) as needed"
+    MSG_USER="  Username : admin"
+    MSG_PASS="  Password : admin123"
+    MSG_WARN_PASS="  IMPORTANT: Change the admin password immediately after login!"
+    MSG_LOGIN="  Default admin login:"
+    MSG_ACCESS="  Access the app:"
+    ;;
+esac
+
+echo ""
+
 # --- Checks ---
-[[ $EUID -ne 0 ]] && die "Jalankan sebagai root: sudo ./install.sh"
-
-if ! command -v apt-get &>/dev/null; then
-  die "Installer ini membutuhkan sistem berbasis Debian/Ubuntu (apt)."
-fi
-
-if [[ ! -f "$APP_DIR/backend/ecosystem.config.cjs" ]]; then
-  die "File app tidak ditemukan di $APP_DIR. Pastikan Anda mengekstrak app terlebih dahulu."
-fi
+[[ $EUID -ne 0 ]] && die "$MSG_ROOT"
+command -v apt-get &>/dev/null || die "$MSG_NO_APT"
+[[ -f "$APP_DIR/backend/ecosystem.config.cjs" ]] || die "$MSG_NO_APP"
 
 # --- Node.js ---
-log "Memeriksa Node.js..."
-if ! command -v node &>/dev/null || [[ "$(node -e 'process.exit(Number(process.versions.node.split(\".\")[0]) < 20)')" ]]; then
-  log "Menginstal Node.js LTS via NodeSource..."
+log "$MSG_CHECK_NODE"
+NODE_MAJOR=0
+if command -v node &>/dev/null; then
+  NODE_MAJOR=$(node -e 'process.stdout.write(process.versions.node.split(".")[0])')
+fi
+if [[ $NODE_MAJOR -lt 20 ]]; then
+  log "$MSG_INSTALL_NODE"
   apt-get update -qq
   apt-get install -y curl ca-certificates gnupg
   curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
@@ -50,49 +126,51 @@ fi
 ok "Node.js $(node --version)"
 
 # --- PM2 ---
-log "Memeriksa PM2..."
+log "$MSG_CHECK_PM2"
 if ! command -v pm2 &>/dev/null; then
   npm install -g pm2
 fi
 ok "PM2 $(pm2 --version)"
 
-# --- App dependencies ---
-log "Menginstal dependensi backend..."
+# --- App dependencies + build ---
+log "$MSG_DEPS"
 cd "$APP_DIR/backend"
-npm ci --omit=dev
+npm ci
+
+log "$MSG_BUILD"
+npm run build
+npm prune --omit=dev
 
 # --- DB migrations ---
-log "Menjalankan migrasi database..."
+log "$MSG_MIGRATE"
 npm run db:migrate
 
 # --- PM2 process ---
-log "Memulai PM2 process..."
+log "$MSG_PM2_START"
 pm2 delete "$APP_NAME" 2>/dev/null || true
 pm2 start ecosystem.config.cjs
 pm2 save
 
 # --- PM2 startup ---
-log "Mengatur PM2 startup otomatis..."
+log "$MSG_PM2_BOOT"
 pm2 startup systemd -u root --hp /root | tail -1 | bash || true
 pm2 save
 
 # --- Nginx ---
 if [[ $SKIP_NGINX -eq 1 ]]; then
-  warn "Nginx dilewati (--skip-nginx). Pastikan reverse proxy Anda meneruskan ke 127.0.0.1:$PORT"
-  warn "Tambahkan direktif SSE ke vhost Nginx Anda:"
-  warn "  proxy_read_timeout 3600s;"
-  warn "  proxy_buffering off;"
+  warn "$MSG_NGINX_SKIP"
+  warn "$MSG_NGINX_SSE1"
+  warn "$MSG_NGINX_SSE2"
+  warn "$MSG_NGINX_SSE3"
 else
-  log "Menginstal dan mengonfigurasi Nginx..."
+  log "$MSG_NGINX_INSTALL"
   apt-get install -y nginx gettext-base
 
-  ANTRI_DOMAIN="${ANTRI_DOMAIN:-$(hostname -f 2>/dev/null || echo '_')}"
+  ANTRI_DOMAIN="${ANTRI_DOMAIN:-_}"
   export ANTRI_DOMAIN ANTRI_PORT="$PORT"
 
   TEMPLATE="$APP_DIR/nginx/antri-iki-ae.conf"
-  if [[ ! -f "$TEMPLATE" ]]; then
-    die "Template Nginx tidak ditemukan: $TEMPLATE"
-  fi
+  [[ -f "$TEMPLATE" ]] || die "$MSG_NGINX_NO_TPL"
 
   envsubst '${ANTRI_DOMAIN} ${ANTRI_PORT}' < "$TEMPLATE" \
     > /etc/nginx/sites-available/antri-iki-ae
@@ -101,25 +179,25 @@ else
   rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
 
   nginx -t && systemctl reload nginx
-  ok "Nginx dikonfigurasi untuk domain: $ANTRI_DOMAIN"
+  ok "$MSG_NGINX_OK $ANTRI_DOMAIN"
 fi
 
 # --- Done ---
 echo ""
 echo -e "${BOLD}============================================${RESET}"
-echo -e "${GREEN}  Instalasi selesai!${RESET}"
+echo -e "${GREEN}  $MSG_DONE${RESET}"
 echo ""
-echo "  Akses app:"
+echo "$MSG_ACCESS"
 if [[ $SKIP_NGINX -eq 1 ]]; then
-  echo "    http://[IP-SERVER]:$PORT"
+  echo "$MSG_ACCESS_SKIP"
 else
-  echo "    http://[IP-SERVER]  (via Nginx port 80)"
-  echo "    Atau konfigurasikan domain + SSL (certbot) sesuai kebutuhan"
+  echo "$MSG_ACCESS_NGINX"
+  echo "$MSG_ACCESS_SSL"
 fi
 echo ""
-echo "  Login admin default:"
-echo "    Username : admin"
-echo "    Password : admin123"
+echo "$MSG_LOGIN"
+echo "$MSG_USER"
+echo "$MSG_PASS"
 echo ""
-echo -e "  ${RED}PENTING: Ganti password admin segera setelah login!${RESET}"
+echo -e "${RED}$MSG_WARN_PASS${RESET}"
 echo -e "${BOLD}============================================${RESET}"
