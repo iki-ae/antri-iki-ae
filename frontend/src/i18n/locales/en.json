@@ -1,0 +1,132 @@
+{
+  "app": {
+    "name":    "Antri-Iki-Ae",
+    "tagline": "General Purpose Queue System"
+  },
+  "admin": {
+    "nav": {
+      "dashboard":  "Dashboard",
+      "categories": "Categories",
+      "counters":   "Counters",
+      "users":      "Users",
+      "session":    "Session",
+      "config":     "Settings",
+      "backup":     "Backup"
+    }
+  },
+  "auth": {
+    "login":              "Login",
+    "username":           "Username",
+    "password":           "Password",
+    "logout":             "Logout",
+    "invalidCredentials": "Invalid username or password"
+  },
+  "operator": {
+    "title":      "Operator",
+    "noSession":  "No session is currently open",
+    "nowServing": "Now Serving",
+    "idle":       "No active ticket",
+    "callNext":   "Call Next",
+    "recall":     "Recall",
+    "skip":       "Skip",
+    "done":       "Done Serving",
+    "waiting":    "Waiting"
+  },
+  "counter": {
+    "label":       "Counter",
+    "label_plural":"Counters",
+    "name":        "Counter Name",
+    "category":    "Category",
+    "active":      "Active",
+    "add":         "Add Counter",
+    "edit":        "Edit Counter",
+    "delete":      "Delete Counter"
+  },
+  "category": {
+    "label":  "Category",
+    "prefix": "Prefix",
+    "name":   "Category Name",
+    "color":  "Color",
+    "add":    "Add Category",
+    "edit":   "Edit Category"
+  },
+  "session": {
+    "open":    "Open Session",
+    "close":   "Close Session",
+    "reset":   "Reset Queue",
+    "kiosk":   "Self-Service Kiosk",
+    "bulk":    "Bulk Tickets",
+    "active":  "Active Session",
+    "confirmClose": "Close Session?",
+    "confirmReset": "Reset Queue?",
+    "resetWarning": "Waiting tickets will be deleted."
+  },
+  "user": {
+    "name":     "Full Name",
+    "username": "Username",
+    "password": "Password",
+    "role":     "Role",
+    "counter":  "Counter"
+  },
+  "config": {
+    "institutionName":  "Institution Name",
+    "locale":           "Language",
+    "watermarkUrl":     "Watermark URL",
+    "watermarkPreview": "Watermark Preview"
+  },
+  "ticket": {
+    "call_next": "Call Next",
+    "recall":    "Recall",
+    "skip":      "Skip",
+    "serve":     "Done Serving",
+    "waiting":   "Waiting",
+    "called":    "Called",
+    "done":      "Done",
+    "skipped":   "Skipped"
+  },
+  "display": {
+    "subtitle":  "Queue System",
+    "waiting":   "{count} waiting",
+    "noSession": "No active queue session"
+  },
+  "kiosk": {
+    "title":        "Take a Queue Number",
+    "pickCategory": "Select a service:",
+    "yourNumber":   "Your Queue Number",
+    "autoReset":    "Returning in {s} seconds...",
+    "unavailable":  "Kiosk is not available at this time",
+    "bulkHint":     "Please use the queue number you have been issued"
+  },
+  "backup": {
+    "export":     "Export Data",
+    "import":     "Import Data",
+    "exportDesc": "Download a backup of your config and queue data",
+    "importDesc": "Restore from a backup file (.zip)",
+    "download":   "Download Backup",
+    "restore":    "Restore",
+    "success":    "Successfully restored",
+    "version_mismatch": "Incompatible version"
+  },
+  "errors": {
+    "COUNTER_NOT_FOUND":   "Counter not found",
+    "NO_ACTIVE_SESSION":   "No active session",
+    "NO_TICKETS_WAITING":  "No tickets waiting in queue",
+    "TICKET_NOT_FOUND":    "Ticket not found",
+    "TICKET_CANNOT_RECALL":"Ticket cannot be recalled",
+    "PREFIX_LOCKED":       "Prefix cannot be changed while a session is active",
+    "UNKNOWN":             "An error occurred"
+  },
+  "common": {
+    "save":           "Save",
+    "cancel":         "Cancel",
+    "delete":         "Delete",
+    "edit":           "Edit",
+    "add":            "Add",
+    "search":         "Search...",
+    "loading":        "Loading...",
+    "empty":          "No data",
+    "confirm_delete": "Are you sure you want to delete this?",
+    "success":        "Success",
+    "error":          "An error occurred"
+  }
+}

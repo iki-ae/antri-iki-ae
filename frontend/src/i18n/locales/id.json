@@ -1,0 +1,132 @@
+{
+  "app": {
+    "name":    "Antri-Iki-Ae",
+    "tagline": "Sistem Antrian Serbaguna"
+  },
+  "admin": {
+    "nav": {
+      "dashboard":  "Dasbor",
+      "categories": "Kategori",
+      "counters":   "Loket",
+      "users":      "Pengguna",
+      "session":    "Sesi",
+      "config":     "Pengaturan",
+      "backup":     "Cadangan"
+    }
+  },
+  "auth": {
+    "login":              "Masuk",
+    "username":           "Nama Pengguna",
+    "password":           "Kata Sandi",
+    "logout":             "Keluar",
+    "invalidCredentials": "Nama pengguna atau kata sandi salah"
+  },
+  "operator": {
+    "title":      "Operator",
+    "noSession":  "Belum ada sesi yang dibuka",
+    "nowServing": "Sedang Dilayani",
+    "idle":       "Tidak ada tiket aktif",
+    "callNext":   "Panggil Berikutnya",
+    "recall":     "Panggil Ulang",
+    "skip":       "Lewati",
+    "done":       "Selesai Dilayani",
+    "waiting":    "Menunggu"
+  },
+  "counter": {
+    "label":       "Loket",
+    "label_plural":"Loket",
+    "name":        "Nama Loket",
+    "category":    "Kategori",
+    "active":      "Aktif",
+    "add":         "Tambah Loket",
+    "edit":        "Edit Loket",
+    "delete":      "Hapus Loket"
+  },
+  "category": {
+    "label":  "Kategori",
+    "prefix": "Awalan",
+    "name":   "Nama Kategori",
+    "color":  "Warna",
+    "add":    "Tambah Kategori",
+    "edit":   "Edit Kategori"
+  },
+  "session": {
+    "open":    "Buka Sesi",
+    "close":   "Tutup Sesi",
+    "reset":   "Reset Antrian",
+    "kiosk":   "Kios Mandiri",
+    "bulk":    "Tiket Massal",
+    "active":  "Sesi Aktif",
+    "confirmClose": "Tutup Sesi?",
+    "confirmReset": "Reset Antrian?",
+    "resetWarning": "Tiket yang menunggu akan dihapus."
+  },
+  "user": {
+    "name":     "Nama Lengkap",
+    "username": "Nama Pengguna",
+    "password": "Kata Sandi",
+    "role":     "Peran",
+    "counter":  "Loket"
+  },
+  "config": {
+    "institutionName":  "Nama Institusi",
+    "locale":           "Bahasa",
+    "watermarkUrl":     "URL Tanda Air",
+    "watermarkPreview": "Pratinjau Tanda Air"
+  },
+  "ticket": {
+    "call_next": "Panggil Berikutnya",
+    "recall":    "Panggil Ulang",
+    "skip":      "Lewati",
+    "serve":     "Selesai Dilayani",
+    "waiting":   "Menunggu",
+    "called":    "Dipanggil",
+    "done":      "Selesai",
+    "skipped":   "Dilewati"
+  },
+  "display": {
+    "subtitle":  "Sistem Antrian",
+    "waiting":   "{count} menunggu",
+    "noSession": "Belum ada sesi antrian aktif"
+  },
+  "kiosk": {
+    "title":        "Ambil Nomor Antrian",
+    "pickCategory": "Pilih layanan:",
+    "yourNumber":   "Nomor Antrian Anda",
+    "autoReset":    "Kembali dalam {s} detik...",
+    "unavailable":  "Kios tidak tersedia saat ini",
+    "bulkHint":     "Silakan gunakan nomor antrian yang telah diterbitkan"
+  },
+  "backup": {
+    "export":     "Ekspor Data",
+    "import":     "Impor Data",
+    "exportDesc": "Unduh file cadangan konfigurasi dan data antrian",
+    "importDesc": "Pulihkan dari file cadangan (.zip)",
+    "download":   "Unduh Cadangan",
+    "restore":    "Pulihkan",
+    "success":    "Berhasil dipulihkan",
+    "version_mismatch": "Versi tidak kompatibel"
+  },
+  "errors": {
+    "COUNTER_NOT_FOUND":   "Loket tidak ditemukan",
+    "NO_ACTIVE_SESSION":   "Tidak ada sesi yang aktif",
+    "NO_TICKETS_WAITING":  "Tidak ada nomor antrian yang menunggu",
+    "TICKET_NOT_FOUND":    "Tiket tidak ditemukan",
+    "TICKET_CANNOT_RECALL":"Tiket tidak dapat dipanggil ulang",
+    "PREFIX_LOCKED":       "Awalan tidak dapat diubah saat sesi aktif",
+    "UNKNOWN":             "Terjadi kesalahan"
+  },
+  "common": {
+    "save":           "Simpan",
+    "cancel":         "Batal",
+    "delete":         "Hapus",
+    "edit":           "Edit",
+    "add":            "Tambah",
+    "search":         "Cari...",
+    "loading":        "Memuat...",
+    "empty":          "Tidak ada data",
+    "confirm_delete": "Yakin ingin menghapus?",
+    "success":        "Berhasil",
+    "error":          "Terjadi kesalahan"
+  }
+}

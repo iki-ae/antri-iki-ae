@@ -1,0 +1,23 @@
+Business Source License 1.1
+
+Licensor:             iki.ae
+Licensed Work:        Antri-Iki-Ae — Sistem Antrian Serbaguna
+                      Copyright (c) 2026 iki.ae
+Additional Use Grant: You may use the Licensed Work for non-commercial purposes,
+                      including self-hosted deployments for personal or institutional
+                      use, provided the watermark "Powered by iki.ae" remains visible
+                      in all user-facing interfaces.
+Change Date:          Four years from the release date of each version
+Change License:       MIT License
+
+For commercial use (selling installations, setup services, or derivatives to
+third parties), please contact: hello@iki.ae
+
+-----------------------------------------------------------------------------
+
+The Business Source License (this document, or the "License") is not an Open
+Source license. However, the Licensed Work will eventually be made available
+under an Open Source License, as stated in this License.
+
+License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.

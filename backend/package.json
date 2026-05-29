@@ -1,0 +1,35 @@
+{
+  "name": "antri-iki-ae-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:generate": "drizzle-kit generate:sqlite",
+    "db:migrate": "node --input-type=module -e \"import{migrate}from'drizzle-orm/better-sqlite3/migrator';import Database from'better-sqlite3';import{drizzle}from'drizzle-orm/better-sqlite3';const s=new Database(process.env.DB_PATH??'/var/www/antri.iki.ae/backend/data/antri-iki-ae.db');const d=drizzle(s);migrate(d,{migrationsFolder:'./drizzle/migrations'});s.close();console.log('done')\"",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^9.0.0",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/multipart": "^8.0.0",
+    "archiver": "^6.0.0",
+    "better-sqlite3": "^9.0.0",
+    "drizzle-orm": "^0.30.0",
+    "fastify": "^4.0.0",
+    "i18next": "^23.0.0",
+    "jsonwebtoken": "^9.0.0",
+    "unzipper": "^0.11.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^7.0.0",
+    "@types/better-sqlite3": "^7.0.0",
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "@types/unzipper": "^0.10.11",
+    "drizzle-kit": "^0.20.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
