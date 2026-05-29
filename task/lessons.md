@@ -7,6 +7,12 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-29] — CSS grid `auto-fill` / `minmax` counter boxes had uneven heights when cells contained variable content (number vs dash) — grid row sizing is only reliable when all cells have identical DOM structure and fixed-height content. For operator-facing counter cards where content varies, use independent `flex-wrap` cards instead; each card sizes itself, no cross-cell alignment dependency.
+
+[2026-05-29] — `v-if="count"` hides a badge when `count === 0` (falsy) — in the counter preview header the waiting badge disappeared when there were 0 waiting tickets. Use `v-if="count !== null"` or remove the `v-if` entirely and always render the badge, showing `0` explicitly when empty.
+
+[2026-05-29] — Ticket route handlers in `tickets.ts` were calling async service functions (`callNext`, `recallTicket`, etc.) without `await` — responses were sent before `rebuildQueueState()` completed, causing stale SSE broadcasts. Always `await` async service calls in route handlers.
+
 [2026-05-29] — In-memory queue state (`_state` in `queueService.ts`) initialises as `{ session: null }` and is only updated by mutations. Any PM2 restart (e.g. after a frontend build) resets it, leaving an open DB session invisible to SSE clients until the next mutation. Fix: call `rebuildQueueState()` once in `server.ts` after all routes are registered, before `app.listen()`. This must always be present.
 
 [2026-05-29] — `ion-select-option` does not forward `style` or dynamic CSS variables — dynamic background colors on select options (e.g. per-category color) cannot be set via the component. Use `cssClass` on the option + inject a `<style>` element into `document.head` via `watchEffect`; clean up with `onUnmounted`. Scope the rules to the alert's `cssClass` (set via `:interface-options="{ cssClass: '...' }"`) to avoid polluting other selects.

@@ -77,7 +77,8 @@ audit_logs     // user_id, action, payload(JSON), created_at
 | `CRUD /api/counters` | admin |
 | `CRUD /api/users` | admin |
 | `POST /api/sessions/open\|close\|reset` | admin |
-| `POST /api/tickets/issue\|call\|recall\|skip\|serve` | operator |
+| `POST /api/tickets/issue\|call\|recall\|skip\|serve\|call-skipped` | operator |
+| `PUT /api/users/me` | any authenticated user (self-update name/password) |
 | `POST /api/kiosk/take` | none (public) |
 | `GET /api/display/state` | none (public) |
 | `GET /api/events` | none (public, SSE) |
@@ -103,7 +104,8 @@ Emits: { type: 'queue_update', data: QueueState }
 QueueState = {
   session: { id, mode, status },
   counters: [{ id, name, category, currentTicket, calledAt }],
-  waiting: [{ categoryId, count }]
+  waiting:  [{ category_id, prefix, count }],
+  skipped:  [{ id, display_number, category_id }]   // tickets with status='skipped', ordered by number
 }
 ```
 

@@ -3,7 +3,7 @@ import { tickets, counters, categories, sessions } from '../../drizzle/schema.js
 import { eq, and, asc, inArray } from 'drizzle-orm'
 
 // ─── In-memory queue state (rebuilt from DB on startup + after each mutation) ─
-let _state: QueueState = { session: null, counters: [], waiting: [] }
+let _state: QueueState = { session: null, counters: [], waiting: [], skipped: [] }
 
 export interface QueueState {
   session: { id: number; mode: string; status: string } | null
@@ -13,6 +13,7 @@ export interface QueueState {
     currentTicket: { id: number; display_number: string; called_at: string } | null
   }[]
   waiting: { category_id: number; prefix: string; count: number }[]
+  skipped: { id: number; display_number: string; category_id: number }[]
 }
 
 export function getQueueState(): QueueState {
@@ -27,7 +28,7 @@ export async function rebuildQueueState() {
     .get()
 
   if (!openSession) {
-    _state = { session: null, counters: [], waiting: [] }
+    _state = { session: null, counters: [], waiting: [], skipped: [] }
     return
   }
 
@@ -83,10 +84,21 @@ export async function rebuildQueueState() {
     count,
   }))
 
+  const skippedRows = db
+    .select({ id: tickets.id, display_number: tickets.display_number, category_id: tickets.category_id })
+    .from(tickets)
+    .where(and(
+      eq(tickets.session_id, openSession.id),
+      eq(tickets.status, 'skipped')
+    ))
+    .orderBy(asc(tickets.number))
+    .all()
+
   _state = {
     session: { id: openSession.id, mode: openSession.mode, status: openSession.status },
     counters: counterStates,
     waiting,
+    skipped: skippedRows,
   }
 }
 
@@ -162,6 +174,24 @@ export async function serveTicket(ticket_id: number): Promise<{ ok: true } | { e
     .run()
   await rebuildQueueState()
   return { ok: true }
+}
+
+export async function callSkippedTicket(ticket_id: number, counter_id: number): Promise<{ ticket: any } | { error: string }> {
+  const ticket = db.select().from(tickets).where(eq(tickets.id, ticket_id)).get()
+  if (!ticket) return { error: 'TICKET_NOT_FOUND' }
+  if (ticket.status !== 'skipped') return { error: 'TICKET_NOT_SKIPPED' }
+
+  const counter = db.select().from(counters).where(eq(counters.id, counter_id)).get()
+  if (!counter) return { error: 'COUNTER_NOT_FOUND' }
+
+  const now = new Date().toISOString()
+  db.update(tickets)
+    .set({ status: 'called', counter_id, called_at: now })
+    .where(eq(tickets.id, ticket_id))
+    .run()
+
+  await rebuildQueueState()
+  return { ticket: { ...ticket, status: 'called', counter_id, called_at: now } }
 }
 
 export function formatDisplayNumber(prefix: string, number: number): string {

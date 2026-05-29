@@ -1,13 +1,25 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { db } from '../config/database.js'
 import { users } from '../../drizzle/schema.js'
-import { requireAdmin } from '../middleware/auth.js'
+import { requireAdmin, requireAuth } from '../middleware/auth.js'
 import { eq } from 'drizzle-orm'
 import crypto from 'crypto'
 
 function hashPassword(p: string) { return crypto.createHash('sha256').update(p).digest('hex') }
 
 export const userRoutes: FastifyPluginAsync = async (fastify) => {
+  // Self-update: any authenticated user can update their own name/password
+  fastify.put('/me', { preHandler: requireAuth }, async (request, reply) => {
+    const userId = request.user!.userId
+    const body = request.body as { name?: string; password?: string }
+    if (!body.name && !body.password) return reply.code(400).send({ error: 'Nothing to update' })
+    const update: Record<string, unknown> = {}
+    if (body.name) update.name = body.name
+    if (body.password) update.password_hash = hashPassword(body.password)
+    db.update(users).set(update).where(eq(users.id, userId)).run()
+    return db.select({ id: users.id, name: users.name, username: users.username }).from(users).where(eq(users.id, userId)).get()
+  })
+
   fastify.get('/', { preHandler: requireAdmin }, async () => {
     return db.select({ id: users.id, name: users.name, username: users.username, role: users.role, counter_id: users.counter_id, is_active: users.is_active }).from(users).all()
   })

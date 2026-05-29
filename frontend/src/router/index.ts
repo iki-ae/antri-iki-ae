@@ -30,8 +30,13 @@ const router = createRouter({
     // ── Operator (role: operator) ───────────────────────────────────────────
     {
       path: '/operator',
-      component: () => import('@/views/operator/OperatorPage.vue'),
+      component: () => import('@/views/operator/OperatorShell.vue'),
       meta: { requiresAuth: true, role: 'operator' },
+      children: [
+        { path: '',           redirect: '/operator/dashboard' },
+        { path: 'dashboard',  component: () => import('@/views/operator/OperatorDashboard.vue') },
+        { path: 'settings',   component: () => import('@/views/operator/OperatorSettings.vue') },
+      ],
     },
 
     // ── Public routes (no auth) ─────────────────────────────────────────────

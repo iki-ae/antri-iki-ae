@@ -21,6 +21,10 @@
     "logout":             "Logout",
     "invalidCredentials": "Invalid username or password"
   },
+  "nav": {
+    "kiosk":   "Kiosk Mode",
+    "display": "Big Display Mode"
+  },
   "operator": {
     "title":      "Operator",
     "noSession":  "No session is currently open",
@@ -30,7 +34,23 @@
     "recall":     "Recall",
     "skip":       "Skip",
     "done":       "Done Serving",
-    "waiting":    "Waiting"
+    "waiting":    "Waiting",
+    "nav": {
+      "dashboard": "Dashboard",
+      "settings":  "Settings"
+    },
+    "skipped": {
+      "title":  "Skipped Numbers",
+      "recall": "Recall"
+    },
+    "settings": {
+      "title":           "Settings",
+      "name":            "Operator Name",
+      "newPassword":     "New Password",
+      "confirmPassword": "Confirm Password",
+      "passwordMismatch":"Passwords do not match",
+      "saved":           "Settings saved"
+    }
   },
   "counter": {
     "label":       "Counter",

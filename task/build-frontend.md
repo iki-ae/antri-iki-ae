@@ -37,8 +37,10 @@ frontend/
     │   │   ├── SessionPage.vue  # Open/close + mode select + bulk-issue
     │   │   ├── ConfigPage.vue   # Institution name, locale, watermark preview
     │   │   └── BackupPage.vue   # Export / import
-    │   ├── operator/            # /operator — role: operator
-    │   │   └── OperatorPage.vue # Call next, recall, skip — mobile optimized
+    │   ├── operator/            # /operator/* — role: operator
+    │   │   ├── OperatorShell.vue     # CSS flex shell (same pattern as AdminShell)
+    │   │   ├── OperatorDashboard.vue # Queue actions — call, recall, skip, serve, skipped recall
+    │   │   └── OperatorSettings.vue  # Self-update: name + password
     │   ├── display/             # /display — public
     │   │   └── DisplayPage.vue  # Fullscreen, SSE, watermark, no Ionic chrome
     │   ├── kiosk/               # /kiosk — public
@@ -65,7 +67,8 @@ frontend/
 |---|---|---|
 | `/login` | Login | none |
 | `/admin/*` | Admin shell | JWT role=admin |
-| `/operator` | Operator | JWT role=operator |
+| `/operator/dashboard` | Operator dashboard | JWT role=operator |
+| `/operator/settings` | Operator settings | JWT role=operator |
 | `/display` | Display board | none (public) |
 | `/kiosk` | Kiosk | none (public) |
 
@@ -308,6 +311,28 @@ The component renders: hamburger (toggles sidebar) → `configStore.institutionN
 ```
 
 **Icon rule:** Always use `addIcons({ iconName })` from `ionicons` + `:icon="iconName"` bound ref. Never use `name="icon-name"` string — it only works with a global registry that this project does not configure.
+
+## OPERATOR SHELL — LAYOUT PATTERN
+
+`OperatorShell.vue` uses the **same CSS flex sidebar pattern** as `AdminShell.vue`:
+- Brand header (watermark), nav (Dashboard + Settings), user name footer, logout row
+- `WatermarkFooter variant="subtle"` rendered once inside `.main` — not per child page
+- Reuses `useSidebarStore` (only one shell active at a time — no conflict)
+- Child pages use `AdminPageHeader.vue` for the hamburger toolbar
+
+**Operator dashboard state machine:**
+- Has current ticket → Recall / Done Serving / Skip enabled; Call Next + skipped recall **disabled**
+- No current ticket → Call Next + skipped recall enabled; Recall / Done Serving / Skip **disabled**
+- `busy` ref guards all actions — prevents concurrent requests and double-taps
+- Disabled: `opacity: 0.15`, `pointer-events: none`, no hover color change
+
+**Skipped number recall:**
+- `QueueState.skipped[]` — SSE-driven array of `{ id, display_number, category_id }` tickets with status `skipped`
+- Operator sees only their own category's skipped tickets
+- Calling a skipped ticket removes it from all connected operators' lists instantly via SSE
+- `POST /api/tickets/call-skipped` — uses `request.user.counterId` from JWT; no counter param needed in body
+
+---
 
 ## WATERMARK — NON-NEGOTIABLE
 

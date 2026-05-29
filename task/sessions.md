@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-29 (Session 13)
+**Last updated:** 2026-05-29 (Session 17)
 
 ---
 
@@ -26,6 +26,81 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-29 — Session 17
+**Did:** Dashboard counter box fixes + skipped badge:
+- Fixed `TicketNumber` overflow in 160px counter boxes: added `size="sm"` prop (`1.75rem / 800 weight`) — operator page keeps default large hero size, dashboard passes `size="sm"`
+- Updated counter box style to match operator `.ticket-card`: white surface card, `border-radius: var(--radius-lg)`, `border: 1px solid var(--color-border)`, 4px colored top border in category color (always, not conditional); cards sit on `var(--color-surface-alt)` tray with `12px` gap
+- Removed `counter-box--active` conditional class — top border is always category-colored (matches operator card's always-primary top border)
+- Added skipped count badge to category header: `skippedMap` computed aggregates `state.skipped[]` by `category_id`; badge uses `ticket.skipped` i18n key; shown only when count > 0; sits alongside waiting badge in a `header-badges` flex row
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-29 — Session 16
+**Did:** Operator dashboard overhaul — full UX redesign + skipped number recall feature:
+
+**Operator Shell + Routing:**
+- Converted `/operator` from a flat route to a shell+children pattern matching admin: `OperatorShell.vue` + `/operator/dashboard` + `/operator/settings`
+- `OperatorShell.vue`: same CSS flex sidebar as `AdminShell` — brand header (watermark), nav (Dashboard + Settings), user name footer, logout row; `WatermarkFooter variant="subtle"` rendered once in the main column
+- `OperatorDashboard.vue`: queue/action content, uses `AdminPageHeader` for hamburger; removed inline logout
+- `OperatorSettings.vue`: floating-label inputs for Operator Name + password change; uses `.page-body` + `.settings-card` layout
+- `PUT /api/users/me` backend endpoint (behind `requireAuth`) for self-update of name/password
+
+**Dashboard layout decisions:**
+- Now Serving box always rendered (no v-if); idle state shows `——` at 80px (same height as ticket number)
+- Counter label prepended to Now Serving label: "Counter A-1 — Now Serving"
+- Waiting count removed from standalone row — shown only in counter preview header
+- Action button layout: Recall (full width, top) / Done Serving | Skip | Call Next (3-col, bottom)
+- Recall uses filled `refreshCircle` icon (visually bolder than outline variant)
+- Bottom row buttons: `72px` height, smaller icon/text; Recall: `120px`, 48px icon, 24px bold text
+- State machine: has ticket → Recall/Done/Skip enabled, Call Next + skipped recall disabled; no ticket → Call Next + skipped recall enabled, Recall/Done/Skip disabled
+- `busy` ref guards all actions — prevents double-tap and race conditions; replaces the old `calling` ref
+- Disabled buttons: `opacity: 0.15`, `pointer-events: none`, no hover color change
+
+**Counter preview section:**
+- Replaced CSS grid approach (caused uneven heights) with independent flex cards (`flex-wrap`)
+- Each `.counter-card` is self-contained — height equality from identical content, not grid constraints
+- Colored category header bar with waiting badge (always visible, `0 Belum Dipanggil` when empty)
+- `counter-card--mine` highlighted with `--color-surface-alt` background
+- `max-width: 480px` matches other card elements
+
+**Skipped number recall:**
+- Backend: `skipped[]` array added to `QueueState` + `rebuildQueueState()` — ordered by ticket number, filtered per SSE broadcast
+- Backend: `callSkippedTicket(ticket_id, counter_id)` in `queueService.ts` — validates `status === 'skipped'`, sets `called` + assigns counter, broadcasts
+- Backend: `POST /api/tickets/call-skipped` route — uses `request.user.counterId` from JWT
+- Backend: fixed missing `await` on all 4 existing ticket route handlers (pre-existing bug)
+- Frontend: `skipped[]` added to `QueueState` type; `ticketsApi.callSkipped(id)` added
+- Frontend: `categorySkipped` computed — filters to operator's own category; SSE-driven (list updates on all operator clients instantly)
+- Skipped list renders below counter preview — only when `categorySkipped.length > 0`; each row: ticket number + accent "Panggil Ulang" button; disabled when operator has a current ticket
+
+**i18n:** Added `operator.nav.*`, `operator.settings.*`, `operator.skipped.*` keys to both locales. `operator.waiting` → "Belum Dipanggil" (ID). Operator Name label → "Nama Operator" (ID).
+
+**Decided:**
+- CSS grid `auto-fill` for counter boxes causes uneven row heights when cells have variable content — use independent flex cards instead
+- Operator shell reuses `useSidebarStore` (one shell active at a time, no conflict)
+- Skipped recall is SSE-driven: clicking recall on one operator's screen removes the ticket from all other operators' skipped lists instantly
+- `busy` single ref replaces per-action flags — simpler, prevents all concurrent action firing
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-29 — Session 15
+**Did:** Login page quick-access buttons (Display / Kiosk):
+- Added two buttons below the login card, wrapped in a second card (`quick-links`)
+- Container switched to `flex-direction: column` so the second card stacks below the login card
+- Display first, Kiosk second; labels "Big Display Mode" / "Kiosk Mode" (i18n: `nav.display` / `nav.kiosk`)
+- Icons: `easelOutline` (Display) and `ticketOutline` (Kiosk) — imported via `addIcons` + `:icon=` pattern
+- Added `nav.display` / `nav.kiosk` keys to both `en.json` and `id.json`
+- Frontend rebuilt and PM2 restarted
+
+**Decided:** Icons must always use `addIcons` + `:icon=` — `name=` string attribute was tried first and rendered nothing (no CDN loaded). This is already a documented lesson.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

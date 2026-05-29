@@ -21,6 +21,10 @@
     "logout":             "Keluar",
     "invalidCredentials": "Nama pengguna atau kata sandi salah"
   },
+  "nav": {
+    "kiosk":   "Mode Kios",
+    "display": "Mode Layar Besar"
+  },
   "operator": {
     "title":      "Operator",
     "noSession":  "Belum ada sesi yang dibuka",
@@ -30,7 +34,23 @@
     "recall":     "Panggil Ulang",
     "skip":       "Lewati",
     "done":       "Selesai Dilayani",
-    "waiting":    "Menunggu"
+    "waiting":    "Belum Dipanggil",
+    "nav": {
+      "dashboard": "Dasbor",
+      "settings":  "Pengaturan"
+    },
+    "skipped": {
+      "title":  "Nomor Dilewati",
+      "recall": "Panggil Ulang"
+    },
+    "settings": {
+      "title":           "Pengaturan",
+      "name":            "Nama Operator",
+      "newPassword":     "Kata Sandi Baru",
+      "confirmPassword": "Konfirmasi Kata Sandi",
+      "passwordMismatch":"Kata sandi tidak cocok",
+      "saved":           "Pengaturan tersimpan"
+    }
   },
   "counter": {
     "label":       "Loket",

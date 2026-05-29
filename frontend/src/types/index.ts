@@ -67,4 +67,5 @@ export interface QueueState {
     currentTicket: { id: number; display_number: string; called_at: string } | null
   }[]
   waiting: { category_id: number; prefix: string; count: number }[]
+  skipped: { id: number; display_number: string; category_id: number }[]
 }

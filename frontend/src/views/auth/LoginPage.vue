@@ -70,17 +70,36 @@
           </a>
 
         </div>
+
+        <div class="quick-links">
+          <div class="quick-links-row">
+            <a class="quick-btn" @click="router.push('/display')">
+              <ion-icon :icon="icons.easelOutline" class="quick-btn-icon" />
+              <span class="quick-btn-label">{{ $t('nav.display') }}</span>
+            </a>
+            <a class="quick-btn" @click="router.push('/kiosk')">
+              <ion-icon :icon="icons.ticketOutline" class="quick-btn-icon" />
+              <span class="quick-btn-label">{{ $t('nav.kiosk') }}</span>
+            </a>
+          </div>
+        </div>
+
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { IonPage, IonContent, IonSpinner } from '@ionic/vue'
+import { IonPage, IonContent, IonSpinner, IonIcon } from '@ionic/vue'
+import { addIcons } from 'ionicons'
+import { easelOutline, ticketOutline } from 'ionicons/icons'
 import { useAuthStore } from '@/stores/auth'
 import { useConfigStore } from '@/stores/config'
+
+addIcons({ easelOutline, ticketOutline })
+const icons = reactive({ easelOutline, ticketOutline })
 
 const router       = useRouter()
 const auth         = useAuthStore()
@@ -118,9 +137,11 @@ ion-content {
 .login-container {
   min-height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  gap: 12px;
   background-image:
     radial-gradient(ellipse 60% 50% at 20% 20%, rgba(224,140,47,0.08) 0%, transparent 70%),
     radial-gradient(ellipse 50% 60% at 80% 80%, rgba(54,124,111,0.07) 0%, transparent 70%);
@@ -347,5 +368,61 @@ ion-content {
   width: 34px;
   height: 34px;
   display: block;
+}
+
+/* ── Quick links ── */
+.quick-links {
+  width: 100%;
+  max-width: 380px;
+  background: var(--color-surface);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(4,3,22,0.07), 0 1px 6px rgba(4,3,22,0.05);
+  padding: 20px;
+  animation: rise 0.5s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.quick-links-row {
+  display: flex;
+  gap: 10px;
+}
+
+.quick-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 8px;
+  background: var(--color-background);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, background 0.18s, box-shadow 0.18s, transform 0.12s;
+}
+.quick-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(224,140,47,0.05);
+  box-shadow: 0 4px 14px rgba(224,140,47,0.15);
+  transform: translateY(-1px);
+}
+.quick-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+.quick-btn-icon {
+  font-size: 26px;
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+.quick-btn-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 </style>

@@ -48,10 +48,11 @@ export const countersApi = {
 }
 
 export const usersApi = {
-  list:   ()             => api.get<User[]>('/users'),
-  create: (data: Partial<User> & { password: string }) => api.post<User>('/users', data),
-  update: (id: number, data: Partial<User> & { password?: string }) => api.put<User>(`/users/${id}`, data),
-  remove: (id: number)   => api.delete(`/users/${id}`),
+  list:       ()             => api.get<User[]>('/users'),
+  create:     (data: Partial<User> & { password: string }) => api.post<User>('/users', data),
+  update:     (id: number, data: Partial<User> & { password?: string }) => api.put<User>(`/users/${id}`, data),
+  remove:     (id: number)   => api.delete(`/users/${id}`),
+  updateSelf: (data: { name?: string; password?: string }) => api.put('/users/me', data),
 }
 
 export const sessionsApi = {
@@ -62,10 +63,11 @@ export const sessionsApi = {
 }
 
 export const ticketsApi = {
-  call:   (counter_id: number)  => api.post('/tickets/call', { counter_id }),
-  recall: (ticket_id: number)   => api.post('/tickets/recall', { ticket_id }),
-  skip:   (ticket_id: number)   => api.post('/tickets/skip', { ticket_id }),
-  serve:  (ticket_id: number)   => api.post('/tickets/serve', { ticket_id }),
+  call:        (counter_id: number) => api.post('/tickets/call', { counter_id }),
+  recall:      (ticket_id: number)  => api.post('/tickets/recall', { ticket_id }),
+  skip:        (ticket_id: number)  => api.post('/tickets/skip', { ticket_id }),
+  serve:       (ticket_id: number)  => api.post('/tickets/serve', { ticket_id }),
+  callSkipped: (ticket_id: number)  => api.post('/tickets/call-skipped', { ticket_id }),
 }
 
 export const kioskApi = {
