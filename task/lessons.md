@@ -7,6 +7,10 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-29] — `path.resolve(__dirname, '../../frontend/dist')` in compiled ESM resolves relative to the `.js` output file, not the source file — directory depth depends on `outDir`/`rootDir` config and changes silently when tsconfig changes. Use an absolute path constant (`/var/www/antri.iki.ae/frontend/dist`) for static asset roots that won't move.
+
+[2026-05-29] — `npm ci --omit=dev` skips devDependencies including `typescript`/`tsc` — running `npm run build` after it fails with `tsc: not found`. Always `npm ci` (full), then `npm run build`, then `npm prune --omit=dev` to strip dev deps after the build.
+
 [2026-05-29] — drizzle-kit v0.20 has no `migrate` CLI command (only `generate:sqlite`, `push:sqlite`, `studio`) — calling `drizzle-kit migrate` exits with "unknown command". Use `drizzle-orm/better-sqlite3/migrator` programmatically in a Node.js inline script instead. Pin the `db:migrate` npm script to that pattern for this version.
 
 [2026-05-29] — `tsconfig.json` with `rootDir: ./src` rejects files imported from outside `src/` (e.g. `drizzle/schema.ts`) even if they're listed in `include` — TypeScript errors with TS6059. Set `rootDir: .` when the project imports across sibling directories; update compiled output paths accordingly (`dist/src/server.js` instead of `dist/server.js`).

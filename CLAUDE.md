@@ -14,7 +14,7 @@
 
 - **Dev:** Proxmox 9.1 LXC (Debian 13 Trixie, minimum default template, no extra config) — accessed via VS Code Remote-SSH or Claude Code
 - **App path:** `/var/www/antri.iki.ae/` · **PM2:** `antri-iki-ae-api` · **Port:** 3001
-- **Serve:** Fastify serves static `frontend/dist/` directly — Nginx not installed on dev server
+- **Serve:** Nginx (1.26.3) → Fastify on port 3001 → serves static `frontend/dist/` via `@fastify/static`
 - **DB:** SQLite at `backend/data/antri-iki-ae.db`
 
 ---

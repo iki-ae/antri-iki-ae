@@ -7,8 +7,8 @@
 
 ## Current Status
 
-**Phase:** Active Development — Phase 1 blockers resolved (again), server running
-**Last updated:** 2026-05-29 (Session 6)
+**Phase:** Active Development — installer complete, Nginx running, frontend served
+**Last updated:** 2026-05-29 (Session 7)
 
 ---
 
@@ -31,7 +31,8 @@ _Nothing yet._
 
 ## Up Next
 
-- [ ] Nginx config (standalone, not CloudPanel) — done inline in install.sh; may need separate `/etc/nginx/sites-available/antri-iki-ae` template for manual installs
+- [x] Nginx config — `nginx/antri-iki-ae.conf` template + wired into `install.sh`
+- [x] Frontend static serving — `@fastify/static` registered in `server.ts`
 - [ ] Pack WSL2 distribution tar (`wsl --export`) for distribution
 - [ ] README / deployment guide
 
@@ -48,6 +49,21 @@ _Nothing yet._
 ## Session Log
 
 _Entries go here, newest at top._
+
+### 2026-05-29 — Session 7
+**Did:** Installer polish + frontend static serving:
+- Added `@fastify/static` to `backend/package.json` dependencies; registered in `server.ts` with SPA fallback (`setNotFoundHandler` → `sendFile('index.html')`)
+- Fixed static path: `path.resolve(__dirname, '../../frontend/dist')` resolved to wrong path at runtime (`backend/frontend/dist`) — replaced with hardcoded absolute `/var/www/antri.iki.ae/frontend/dist`
+- Fixed `install.sh` Node.js version check — broken `process.exit()` eval with shell-escaped quotes; replaced with `process.stdout.write()` + integer comparison
+- Fixed `install.sh` build step: `npm ci --omit=dev` skips `tsc` (dev dep) — changed to `npm ci` + `npm run build` + `npm prune --omit=dev`; same fix applied to `update.sh`
+- Added `nginx/antri-iki-ae.conf` vhost template with `envsubst` placeholders; `install.sh` now renders it via `envsubst` instead of inline heredoc
+- Translated all installer scripts from Indonesian to English (code language rule)
+- Added bilingual language selection (English default / Indonesian) to `install.sh`, `update.sh`, `install.bat`, `update.bat` — prompt shown after banner
+- Updated CLAUDE.md: corrected Serve line (Nginx 1.26.3 now installed and active)
+
+**Decided:** Frontend dist path in `server.ts` is hardcoded absolute — `__dirname` relative traversal is unreliable across compiled output directory depths.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ### 2026-05-29 — Session 6
 **Did:** Fresh-session audit + Phase 1 re-run (dev environment had no node_modules, no dist, PM2 not running):
