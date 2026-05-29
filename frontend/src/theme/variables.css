@@ -129,3 +129,70 @@
   --ion-tab-bar-color:         var(--color-text-muted);
   --ion-tab-bar-color-selected:var(--color-primary);
 }
+
+/* ============================================================
+   Admin page card header — shared across all admin pages
+   ============================================================ */
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 10px;
+  margin-bottom: 8px;
+  border-bottom: 2px solid var(--color-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-surface-alt);
+}
+
+.card-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.card-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background 0.15s;
+}
+
+.card-add-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+@media (max-width: 899px) { .desktop-only { display: none !important; } }
+@media (min-width: 900px) { .mobile-fab  { display: none !important; } }
+
+/* Counter select alert — scrollable list with visible scrollbar */
+.counter-select-alert .alert-radio-group {
+  max-height: 60vh;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ion-color-medium) transparent;
+}
+
+.counter-select-alert .alert-radio-group::-webkit-scrollbar {
+  width: 6px;
+}
+
+.counter-select-alert .alert-radio-group::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.counter-select-alert .alert-radio-group::-webkit-scrollbar-thumb {
+  background-color: var(--ion-color-medium);
+  border-radius: 3px;
+}

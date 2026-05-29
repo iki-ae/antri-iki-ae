@@ -26,4 +26,15 @@ export const userRoutes: FastifyPluginAsync = async (fastify) => {
     db.update(users).set(update).where(eq(users.id, Number(id))).run()
     return db.select({ id: users.id, name: users.name, username: users.username, role: users.role, counter_id: users.counter_id }).from(users).where(eq(users.id, Number(id))).get()
   })
+
+  fastify.delete('/:id', { preHandler: requireAdmin }, async (request, reply) => {
+    const { id } = request.params as { id: string }
+    const numId = Number(id)
+    if (request.user!.userId === numId) return reply.code(400).send({ error: 'Cannot delete your own account' })
+    const adminCount = db.select({ id: users.id }).from(users).where(eq(users.role, 'admin')).all().length
+    const target = db.select({ role: users.role }).from(users).where(eq(users.id, numId)).get()
+    if (target?.role === 'admin' && adminCount <= 1) return reply.code(400).send({ error: 'Cannot delete the last administrator' })
+    db.delete(users).where(eq(users.id, numId)).run()
+    return reply.code(204).send()
+  })
 }

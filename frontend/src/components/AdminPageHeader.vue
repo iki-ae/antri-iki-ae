@@ -7,14 +7,7 @@
         </ion-button>
       </ion-buttons>
 
-      <ion-title>{{ title }}</ion-title>
-
-      <ion-buttons slot="end">
-        <slot name="end" />
-        <ion-button @click="doLogout" aria-label="Logout">
-          <ion-icon :icon="logOutOutline" slot="icon-only" />
-        </ion-button>
-      </ion-buttons>
+      <ion-title>{{ configStore.institutionName }}</ion-title>
     </ion-toolbar>
   </ion-header>
 </template>
@@ -22,21 +15,12 @@
 <script setup lang="ts">
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon } from '@ionic/vue'
 import { addIcons } from 'ionicons'
-import { menuOutline, logOutOutline } from 'ionicons/icons'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { menuOutline } from 'ionicons/icons'
 import { useSidebarStore } from '@/stores/sidebar'
+import { useConfigStore } from '@/stores/config'
 
-addIcons({ menuOutline, logOutOutline })
+addIcons({ menuOutline })
 
-defineProps<{ title: string }>()
-
-const router  = useRouter()
-const auth    = useAuthStore()
-const sidebar = useSidebarStore()
-
-async function doLogout() {
-  await auth.logout()
-  router.replace('/login')
-}
+const sidebar     = useSidebarStore()
+const configStore = useConfigStore()
 </script>

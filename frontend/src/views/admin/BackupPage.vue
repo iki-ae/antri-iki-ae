@@ -1,7 +1,11 @@
 <template>
   <ion-page>
-    <AdminPageHeader :title="$t('admin.nav.backup')" />
-    <ion-content class="ion-padding">
+    <AdminPageHeader />
+    <ion-content>
+      <div class="page-body">
+        <div class="card-header">
+          <h2 class="card-title">{{ $t('admin.nav.backup') }}</h2>
+        </div>
       <ion-card>
         <ion-card-header><ion-card-title>{{ $t('backup.export') }}</ion-card-title></ion-card-header>
         <ion-card-content>
@@ -25,6 +29,7 @@
           <p v-if="importError" style="color: var(--ion-color-danger);">{{ importError }}</p>
         </ion-card-content>
       </ion-card>
+      </div>
     </ion-content>
   </ion-page>
 </template>
@@ -49,3 +54,7 @@ async function doImport() {
   } finally { importing.value = false }
 }
 </script>
+<style scoped>
+.page-body { padding: 24px 16px 48px; min-height: 100%; background: var(--color-surface-alt); }
+.page-body > * { max-width: 480px; }
+</style>

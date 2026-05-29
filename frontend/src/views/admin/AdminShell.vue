@@ -34,6 +34,12 @@
         <span class="user-name">{{ auth.name }}</span>
       </div>
 
+      <!-- Logout row -->
+      <button class="sidebar-logout" @click="doLogout">
+        <ion-icon :icon="icons.logOutOutline" class="logout-icon" />
+        <span>{{ $t('auth.logout') }}</span>
+      </button>
+
     </aside>
 
     <!-- Mobile backdrop -->
@@ -55,7 +61,7 @@ import { addIcons } from 'ionicons'
 import {
   gridOutline, playCircleOutline, layersOutline, peopleOutline,
   personOutline, settingsOutline, cloudDownloadOutline,
-  personCircleOutline,
+  personCircleOutline, logOutOutline,
 } from 'ionicons/icons'
 import { useAuthStore } from '@/stores/auth'
 import { useConfigStore } from '@/stores/config'
@@ -64,13 +70,13 @@ import { useSidebarStore } from '@/stores/sidebar'
 addIcons({
   gridOutline, playCircleOutline, layersOutline, peopleOutline,
   personOutline, settingsOutline, cloudDownloadOutline,
-  personCircleOutline,
+  personCircleOutline, logOutOutline,
 })
 
 const icons = {
   gridOutline, playCircleOutline, layersOutline, peopleOutline,
   personOutline, settingsOutline, cloudDownloadOutline,
-  personCircleOutline,
+  personCircleOutline, logOutOutline,
 }
 
 const MOBILE_BP = 900
@@ -100,6 +106,11 @@ function isActive(path: string) { return route.path === path }
 function navigateTo(path: string) {
   if (sidebar.isMobile) sidebar.toggle()
   router.push(path)
+}
+
+async function doLogout() {
+  await auth.logout()
+  router.replace('/login')
 }
 </script>
 
@@ -231,6 +242,35 @@ function navigateTo(path: string) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Logout row */
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  color: var(--color-danger);
+  text-align: left;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.sidebar-logout:hover {
+  background: var(--color-danger-light);
+}
+
+.logout-icon {
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
 /* ── Sidebar collapsed (desktop) ─────────────────────────────────────────── */

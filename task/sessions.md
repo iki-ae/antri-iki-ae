@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-29 (Session 9)
+**Last updated:** 2026-05-29 (Session 13)
 
 ---
 
@@ -26,6 +26,69 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-29 — Session 14
+**Did:** Dashboard QueueBoard redesign + bug fix:
+- Fixed in-memory queue state not surviving PM2 restarts: added `await rebuildQueueState()` in `server.ts` before `app.listen()` — state now hydrated from DB on every startup
+- Rewrote `QueueBoard.vue`: counters now grouped by category; each category is a bordered card section with a colored header bar (category prefix + name + waiting count badge); counters inside use CSS grid (`repeat(auto-fill, minmax(160px, 1fr))`) for uniform box sizing; box title follows CountersPage standard: `$t('counter.label') + ' ' + prefix + '-' + counter.name` (e.g. "Loket A-1")
+- Counter boxes: `border-right` on all boxes (card `overflow:hidden` clips rightmost cleanly — no open edge); `border-bottom` on all boxes for mobile row separators; active counter gets 3px top border in category color via CSS custom property `--cat-color`
+
+**Decided:** CSS grid `auto-fill` + `minmax(160px, 1fr)` gives consistent box width — all cells same size including last row. `border-right` kept on last child (not removed) so card edge acts as natural terminator.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-29 — Session 13
+**Did:** Admin shell + all admin pages UI overhaul:
+- `AdminPageHeader.vue`: removed logout button and `title` prop; toolbar now shows `configStore.institutionName` (Display Title) only; hamburger remains
+- `AdminShell.vue`: added `doLogout()` + `.sidebar-logout` — full-width danger-color row at the bottom of the sidebar; `logOutOutline` icon imported
+- All 7 admin pages: removed `:title` prop from `<AdminPageHeader />`; added `.card-header` inside `.page-body` with page title (primary color) + `border-bottom: 2px solid var(--color-primary)` separator; sticky (`position: sticky; top: 0; background: var(--color-surface-alt)`)
+- Categories, Counters, Users: desktop add button in `.card-header` right slot (primary blue); FAB hidden on desktop (`@media ≥ 900px`); mobile unchanged (FAB shown, header button hidden)
+- ConfigPage: Watermark URL + Preview sections removed; Institution Name defaults to `iki.ae` if blank; per-field Save buttons; Language selector auto-saves + `window.location.reload()`
+- i18n: `config.institutionName` label → "Display Title" (EN) / "Judul Tampilan" (ID)
+- All `.card-header` / `.card-add-btn` / `.card-title` / responsive FAB rules consolidated in `variables.css` — scoped styles stripped from all pages
+
+**Decided:** Card header is inside `.page-body` (constrained to `max-width: 480px`), not full-width — keeps the mobile-card approach consistent. Global card-header styles live in `variables.css`.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-29 — Session 12
+**Did:** ConfigPage overhaul + layout rule established:
+- Replaced `ion-list`/`ion-item`/`ion-input`/`ion-select` with native `<input>`/`<select>` + CSS floating-label pattern per build-frontend.md spec
+- Removed Watermark URL and Watermark Preview sections (no longer exposed in UI)
+- Removed section heading labels (redundant with floating labels)
+- Card aligned left (not centered) — `max-width: 480px`, block flow, `padding: 24px 16px 48px`
+- Institution Name defaults to `iki.ae` if empty on load
+- Institution Name and Watermark URL each have an inline Save button (per-field save, no bottom submit)
+- Language selector auto-saves and calls `window.location.reload()` on change
+- Renamed i18n key `config.institutionName` value → "Display Title" (EN) / "Judul Tampilan" (ID) — key unchanged
+
+**Decided:** Left-aligned mobile-card-width body (`max-width: 480px`, left-aligned, padded page background) is the standard layout for all admin settings/form pages — not full-width, not centered. Documented in `task/build-frontend.md`.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-29 — Session 11
+**Did:** UsersPage overhaul:
+- Added `DELETE /:id` route to `backend/src/routes/users.ts` — rejects self-deletion and last-admin deletion at API level
+- Added `id` field to `stores/auth.ts` (loaded from `/auth/me`) — required for self-delete guard in frontend
+- Added `usersApi.remove(id)` to `frontend/src/api/index.ts`
+- Rewrote `UsersPage.vue`:
+  - Replaced header add button with `ion-fab` (bottom-right)
+  - Admin group: `--ion-color-primary` header
+  - Operator group: split by category — one colored header per category (`cat.color`), label `prefix — name` matching CountersPage pattern; unassigned operators fall through to a plain "Operator" group
+  - Edit + delete icons per row; delete hidden when `u.id === auth.id` (self) or when only one admin remains; confirmation alert before delete
+  - Counter label in operator subtitle: `Counter: A-Counter 1` format (i18n `counter.label` + `prefix-name`)
+  - Role selector hidden in edit modal (new user only)
+  - Counter select: grouped by category with colored disabled headers + `prefix-name` options; scrollable alert with visible scrollbar (`scrollbar-width: thin` + webkit rules in `variables.css`); dynamic per-category header colors injected via `watchEffect` into `document.head`
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

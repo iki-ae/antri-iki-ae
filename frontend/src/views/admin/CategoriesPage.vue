@@ -1,19 +1,27 @@
 <template>
   <ion-page>
-    <AdminPageHeader :title="$t('admin.nav.categories')" />
-    <ion-content class="ion-padding">
-      <ion-list>
-        <ion-item v-for="cat in categories" :key="cat.id">
-          <div slot="start" class="color-dot" :style="{ background: cat.color }" />
-          <ion-label>
-            <h2>{{ cat.prefix }} — {{ cat.name }}</h2>
-          </ion-label>
-          <ion-button fill="clear" slot="end" @click="openForm(cat)"><ion-icon :icon="pencilOutline" /></ion-button>
-          <ion-button fill="clear" slot="end" color="danger" @click="confirmDelete(cat)"><ion-icon :icon="trashOutline" /></ion-button>
-        </ion-item>
-      </ion-list>
+    <AdminPageHeader />
+    <ion-content>
+      <div class="page-body">
+        <div class="card-header">
+          <h2 class="card-title">{{ $t('admin.nav.categories') }}</h2>
+          <button class="card-add-btn desktop-only" @click="openForm()">
+            <ion-icon :icon="addOutline" />
+          </button>
+        </div>
+        <ion-list>
+          <ion-item v-for="cat in categories" :key="cat.id">
+            <div slot="start" class="color-dot" :style="{ background: cat.color }" />
+            <ion-label>
+              <h2>{{ cat.prefix }} — {{ cat.name }}</h2>
+            </ion-label>
+            <ion-button fill="clear" slot="end" @click="openForm(cat)"><ion-icon :icon="pencilOutline" /></ion-button>
+            <ion-button fill="clear" slot="end" color="danger" @click="confirmDelete(cat)"><ion-icon :icon="trashOutline" /></ion-button>
+          </ion-item>
+        </ion-list>
+      </div>
 
-      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab class="mobile-fab" slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button @click="openForm()">
           <ion-icon :icon="addOutline" />
         </ion-fab-button>
@@ -79,6 +87,8 @@ async function save() {
 }
 </script>
 <style scoped>
+.page-body { padding: 24px 16px 48px; min-height: 100%; background: var(--color-surface-alt); }
+.page-body > * { max-width: 480px; }
 .color-dot { width: 20px; height: 20px; border-radius: 50%; margin-right: 8px; }
 .color-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
 .color-picker { width: 40px; height: 32px; border: none; padding: 0; cursor: pointer; border-radius: 4px; }

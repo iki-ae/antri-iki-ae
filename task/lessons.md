@@ -7,6 +7,12 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-29] — In-memory queue state (`_state` in `queueService.ts`) initialises as `{ session: null }` and is only updated by mutations. Any PM2 restart (e.g. after a frontend build) resets it, leaving an open DB session invisible to SSE clients until the next mutation. Fix: call `rebuildQueueState()` once in `server.ts` after all routes are registered, before `app.listen()`. This must always be present.
+
+[2026-05-29] — `ion-select-option` does not forward `style` or dynamic CSS variables — dynamic background colors on select options (e.g. per-category color) cannot be set via the component. Use `cssClass` on the option + inject a `<style>` element into `document.head` via `watchEffect`; clean up with `onUnmounted`. Scope the rules to the alert's `cssClass` (set via `:interface-options="{ cssClass: '...' }"`) to avoid polluting other selects.
+
+[2026-05-29] — Ionic alert/popover overlays render outside the component's shadow DOM — `scoped` styles never reach them. Any styling of `ion-select` alert internals (`.alert-radio-group`, `.alert-radio-button`, etc.) must be in a global stylesheet (e.g. `variables.css`) or injected dynamically into `document.head`.
+
 [2026-05-29] — `<ion-icon name="icon-name">` renders invisibly when no global icon registry is configured. This project uses the tree-shakeable pattern: `import { addIcons } from 'ionicons'`, `import { iconName } from 'ionicons/icons'`, call `addIcons({ iconName })` in script setup, bind with `:icon="iconName"`. Never use the string `name=` attribute.
 
 [2026-05-29] — Always rebuild (`npm run build`) and restart PM2 after any frontend change — Nginx serves `frontend/dist/` as static files, so changes to `.vue` files are not live until a build runs.

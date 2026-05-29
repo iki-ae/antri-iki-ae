@@ -17,7 +17,7 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
     if (user.password_hash !== hashPassword(password)) return reply.code(401).send({ error: 'INVALID_CREDENTIALS' })
 
     const token = signToken({ userId: user.id, role: user.role, counterId: user.counter_id ?? undefined })
-    reply.setCookie('token', token, { httpOnly: true, sameSite: 'lax', path: '/' })
+    reply.setCookie('token', token, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 9 * 60 * 60 })
     return { role: user.role, name: user.name, counterId: user.counter_id }
   })
 

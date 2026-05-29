@@ -10,10 +10,12 @@ api.interceptors.response.use(
       // Lazy import to avoid circular dep at module load time
       import('@/stores/auth').then(({ useAuthStore }) => {
         const store = useAuthStore()
+        // During bootstrap restore() handles the 401 itself — don't race with it.
+        if (store.isRestoring()) return
         store.logout()
-      })
-      import('@/router').then(({ default: router }) => {
-        router.replace('/login')
+        import('@/router').then(({ default: router }) => {
+          router.replace('/login')
+        })
       })
     }
     return Promise.reject(err)
@@ -49,6 +51,7 @@ export const usersApi = {
   list:   ()             => api.get<User[]>('/users'),
   create: (data: Partial<User> & { password: string }) => api.post<User>('/users', data),
   update: (id: number, data: Partial<User> & { password?: string }) => api.put<User>(`/users/${id}`, data),
+  remove: (id: number)   => api.delete(`/users/${id}`),
 }
 
 export const sessionsApi = {

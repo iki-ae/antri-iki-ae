@@ -1,24 +1,32 @@
 <template>
   <ion-page>
-    <AdminPageHeader :title="$t('admin.nav.counters')" />
-    <ion-content class="ion-padding">
-      <template v-for="cat in categories" :key="cat.id">
-        <ion-list-header :style="{ background: cat.color }">
-          <ion-label :style="{ color: '#fff' }">{{ cat.prefix }} — {{ cat.name }}</ion-label>
-        </ion-list-header>
-        <ion-list>
-          <ion-item v-for="c in countersByCategory(cat.id)" :key="c.id">
-            <ion-label><h2>{{ cat.prefix }}-{{ c.name }}</h2></ion-label>
-            <ion-button fill="clear" slot="end" @click="openForm(c)"><ion-icon :icon="pencilOutline" /></ion-button>
-            <ion-button fill="clear" slot="end" color="danger" @click="remove(c)"><ion-icon :icon="trashOutline" /></ion-button>
-          </ion-item>
-          <ion-item v-if="countersByCategory(cat.id).length === 0">
-            <ion-label color="medium"><p>{{ $t('counter.none') }}</p></ion-label>
-          </ion-item>
-        </ion-list>
-      </template>
+    <AdminPageHeader />
+    <ion-content>
+      <div class="page-body">
+        <div class="card-header">
+          <h2 class="card-title">{{ $t('admin.nav.counters') }}</h2>
+          <button class="card-add-btn desktop-only" @click="openForm()">
+            <ion-icon :icon="addOutline" />
+          </button>
+        </div>
+        <template v-for="cat in categories" :key="cat.id">
+          <ion-list-header :style="{ background: cat.color }">
+            <ion-label :style="{ color: '#fff' }">{{ cat.prefix }} — {{ cat.name }}</ion-label>
+          </ion-list-header>
+          <ion-list>
+            <ion-item v-for="c in countersByCategory(cat.id)" :key="c.id">
+              <ion-label><h2>{{ cat.prefix }}-{{ c.name }}</h2></ion-label>
+              <ion-button fill="clear" slot="end" @click="openForm(c)"><ion-icon :icon="pencilOutline" /></ion-button>
+              <ion-button fill="clear" slot="end" color="danger" @click="remove(c)"><ion-icon :icon="trashOutline" /></ion-button>
+            </ion-item>
+            <ion-item v-if="countersByCategory(cat.id).length === 0">
+              <ion-label color="medium"><p>{{ $t('counter.none') }}</p></ion-label>
+            </ion-item>
+          </ion-list>
+        </template>
+      </div>
 
-      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab class="mobile-fab" slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button @click="openForm()">
           <ion-icon :icon="addOutline" />
         </ion-fab-button>
@@ -87,3 +95,7 @@ async function save() {
   showForm.value = false; await load()
 }
 </script>
+<style scoped>
+.page-body { padding: 24px 16px 48px; min-height: 100%; background: var(--color-surface-alt); }
+.page-body > * { max-width: 480px; }
+</style>

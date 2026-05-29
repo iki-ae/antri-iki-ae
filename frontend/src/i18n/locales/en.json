@@ -70,7 +70,7 @@
     "counter":  "Counter"
   },
   "config": {
-    "institutionName":  "Institution Name",
+    "institutionName":  "Display Title",
     "locale":           "Language",
     "watermarkUrl":     "Watermark URL",
     "watermarkPreview": "Watermark Preview"

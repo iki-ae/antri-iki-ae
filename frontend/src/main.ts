@@ -27,13 +27,16 @@ const app = createApp(App)
 const pinia = createPinia()
 app.use(IonicVue)
 app.use(pinia)
-app.use(router)
 app.use(i18n)
 
-// Bootstrap: restore session + load config before router guard fires
 const authStore   = useAuthStore()
 const configStore = useConfigStore()
 
+// Restore session + config before installing the router so the guard
+// never fires against an empty store.
 Promise.allSettled([authStore.restore(), configStore.load()])
-  .then(() => router.isReady())
+  .then(() => {
+    app.use(router)
+    return router.isReady()
+  })
   .then(() => app.mount('#app'))

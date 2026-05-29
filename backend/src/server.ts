@@ -5,6 +5,7 @@ import fastifyCors from '@fastify/cors'
 import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static'
 
+import { rebuildQueueState } from './services/queueService.js'
 import { authRoutes }       from './routes/auth.js'
 import { configRoutes }     from './routes/config.js'
 import { categoryRoutes }   from './routes/categories.js'
@@ -48,6 +49,8 @@ await app.register(fastifyStatic, { root: distPath, prefix: '/' })
 app.setNotFoundHandler((_req, reply) => {
   reply.sendFile('index.html')
 })
+
+await rebuildQueueState()
 
 try {
   await app.listen({ port: 3001, host: '0.0.0.0' })

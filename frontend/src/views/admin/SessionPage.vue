@@ -1,7 +1,11 @@
 <template>
   <ion-page>
-    <AdminPageHeader :title="$t('admin.nav.session')" />
-    <ion-content class="ion-padding">
+    <AdminPageHeader />
+    <ion-content>
+      <div class="page-body">
+        <div class="card-header">
+          <h2 class="card-title">{{ $t('admin.nav.session') }}</h2>
+        </div>
       <!-- No active session -->
       <div v-if="!session">
         <ion-segment v-model="mode">
@@ -43,6 +47,7 @@
         <ion-button expand="block" color="danger" fill="outline" class="ion-margin-top" @click="confirmReset">
           {{ $t('session.reset') }}
         </ion-button>
+      </div>
       </div>
     </ion-content>
   </ion-page>
@@ -99,3 +104,7 @@ async function confirmReset() {
   await alert.present()
 }
 </script>
+<style scoped>
+.page-body { padding: 24px 16px 48px; min-height: 100%; background: var(--color-surface-alt); }
+.page-body > * { max-width: 480px; }
+</style>

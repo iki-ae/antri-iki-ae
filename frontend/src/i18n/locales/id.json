@@ -70,7 +70,7 @@
     "counter":  "Loket"
   },
   "config": {
-    "institutionName":  "Nama Institusi",
+    "institutionName":  "Judul Tampilan",
     "locale":           "Bahasa",
     "watermarkUrl":     "URL Tanda Air",
     "watermarkPreview": "Pratinjau Tanda Air"

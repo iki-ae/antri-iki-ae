@@ -147,6 +147,53 @@ Covers mid-session token expiry — operator redirected cleanly instead of silen
 
 ---
 
+## PAGE BODY LAYOUT — ALL ADMIN PAGES
+
+All admin pages wrap their `<ion-content>` body in a `.page-body` div. **No** `class="ion-padding"` on `<ion-content>`.
+
+```html
+<ion-content>
+  <div class="page-body">
+    <!-- page content -->
+  </div>
+</ion-content>
+```
+
+```css
+.page-body {
+  padding: 24px 16px 48px;
+  min-height: 100%;
+  background: var(--color-surface-alt);
+}
+
+.page-body > * {
+  max-width: 480px;   /* constrains all direct children — left-aligned, not centered */
+}
+```
+
+Rules:
+- **Left-aligned** — no `justify-content: center`, no `margin: auto`
+- `max-width: 480px` on direct children — keeps content at a comfortable reading width on wide screens; eliminates large unused space on desktop
+- `background: var(--color-surface-alt)` on the page body
+- Settings/form pages add a `.settings-card` wrapper inside `.page-body` for the bordered card look:
+  ```css
+  .settings-card {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+  ```
+- `ion-fab` sits outside `.page-body` (uses `slot="fixed"`) — not affected by `max-width`
+- `ion-modal` sits outside `.page-body` — not affected by `max-width`
+- DashboardPage is the only exception — `QueueBoard` is a full-width display component
+
+---
+
 ## INPUT FIELD PATTERN
 
 Do **not** use `ion-input` for form fields. Use native `<input>` with CSS floating labels.
@@ -220,25 +267,45 @@ ion-page.shell  (display: flex; flex-direction: row)
 All admin child pages use `AdminPageHeader.vue` — never write inline `ion-header` in admin pages.
 
 ```html
-<!-- Simple page (no extra buttons) -->
-<AdminPageHeader :title="$t('admin.nav.dashboard')" />
+<AdminPageHeader />
+```
 
-<!-- Page with an action button in the header -->
-<AdminPageHeader :title="$t('admin.nav.categories')">
-  <template #end>
-    <ion-button @click="openForm()"><ion-icon :icon="addOutline" /></ion-button>
-  </template>
-</AdminPageHeader>
+The component renders: hamburger (toggles sidebar) → `configStore.institutionName` (Display Title). No `title` prop — all pages show the same institution name in the toolbar. No logout icon — logout lives in the sidebar.
 
-<!-- Preferred: FAB for primary create actions on list pages -->
-<ion-fab slot="fixed" vertical="bottom" horizontal="end">
+**Logout** is a full-width `.sidebar-logout` button at the bottom of `AdminShell.vue`'s sidebar — danger text color, hover fill. Do not add logout to the page header.
+
+**Page title** goes in `.card-header` inside `.page-body`, not in the toolbar:
+```html
+<div class="page-body">
+  <div class="card-header">
+    <h2 class="card-title">{{ $t('admin.nav.categories') }}</h2>
+    <!-- optional: add button for desktop -->
+    <button class="card-add-btn desktop-only" @click="openForm()">
+      <ion-icon :icon="addOutline" />
+    </button>
+  </div>
+  <!-- page content -->
+</div>
+```
+
+`.card-header` styles are global in `variables.css` — do not repeat in scoped styles:
+- `position: sticky; top: 0; z-index: 10` — sticks within the scroll container
+- `background: var(--color-surface-alt)` — matches page body, covers scrolling content
+- `border-bottom: 2px solid var(--color-primary)` — separator line
+- `.card-title` color: `var(--color-primary)`
+- `.card-add-btn`: primary blue, 36×36px, shown on desktop only
+- `.desktop-only` hidden at `< 900px`; `.mobile-fab` hidden at `≥ 900px` — both rules in `variables.css`
+
+**FAB pattern for list pages (Categories, Counters, Users):**
+```html
+<!-- Desktop: card-header button (class="card-add-btn desktop-only") -->
+<!-- Mobile: FAB -->
+<ion-fab class="mobile-fab" slot="fixed" vertical="bottom" horizontal="end">
   <ion-fab-button @click="openForm()">
     <ion-icon :icon="addOutline" />
   </ion-fab-button>
 </ion-fab>
 ```
-
-The component renders: hamburger (toggles sidebar) → title → `#end` slot → logout icon.
 
 **Icon rule:** Always use `addIcons({ iconName })` from `ionicons` + `:icon="iconName"` bound ref. Never use `name="icon-name"` string — it only works with a global registry that this project does not configure.
 
