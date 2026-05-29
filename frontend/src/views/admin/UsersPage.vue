@@ -1,11 +1,10 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>{{ $t('admin.nav.users') }}</ion-title>
-        <ion-buttons slot="end"><ion-button @click="openForm()"><ion-icon name="add-outline" /></ion-button></ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <AdminPageHeader :title="$t('admin.nav.users')">
+      <template #end>
+        <ion-button @click="openForm()"><ion-icon name="add-outline" /></ion-button>
+      </template>
+    </AdminPageHeader>
     <ion-content class="ion-padding">
       <ion-list>
         <ion-item v-for="u in users" :key="u.id">
@@ -33,15 +32,14 @@
         </ion-content>
       </ion-modal>
     </ion-content>
-    <WatermarkFooter variant="subtle" />
   </ion-page>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonInput, IonSelect, IonSelectOption, onIonViewWillEnter } from '@ionic/vue'
+import { IonPage, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle, IonInput, IonSelect, IonSelectOption, onIonViewWillEnter } from '@ionic/vue'
+import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { usersApi, countersApi } from '@/api'
 import type { User, Counter } from '@/types'
-import WatermarkFooter from '@/components/WatermarkFooter.vue'
 const users    = ref<User[]>([])
 const counters = ref<Counter[]>([])
 const showForm = ref(false)

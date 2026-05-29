@@ -1,13 +1,6 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>{{ $t('admin.nav.categories') }}</ion-title>
-        <ion-buttons slot="end">
-          <ion-button @click="openForm()"><ion-icon name="add-outline" /></ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <AdminPageHeader :title="$t('admin.nav.categories')" />
     <ion-content class="ion-padding">
       <ion-list>
         <ion-item v-for="cat in categories" :key="cat.id">
@@ -15,9 +8,16 @@
           <ion-label>
             <h2>{{ cat.prefix }} — {{ cat.name }}</h2>
           </ion-label>
-          <ion-button fill="clear" slot="end" @click="openForm(cat)"><ion-icon name="pencil-outline" /></ion-button>
+          <ion-button fill="clear" slot="end" @click="openForm(cat)"><ion-icon :icon="pencilOutline" /></ion-button>
+          <ion-button fill="clear" slot="end" color="danger" @click="confirmDelete(cat)"><ion-icon :icon="trashOutline" /></ion-button>
         </ion-item>
       </ion-list>
+
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+        <ion-fab-button @click="openForm()">
+          <ion-icon :icon="addOutline" />
+        </ion-fab-button>
+      </ion-fab>
 
       <ion-modal :is-open="showForm" @did-dismiss="showForm = false">
         <ion-header><ion-toolbar>
@@ -35,15 +35,20 @@
         </ion-content>
       </ion-modal>
     </ion-content>
-    <WatermarkFooter variant="subtle" />
   </ion-page>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonInput, onIonViewWillEnter } from '@ionic/vue'
+import { IonPage, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle, IonInput, IonFab, IonFabButton, alertController, onIonViewWillEnter } from '@ionic/vue'
+import { addIcons } from 'ionicons'
+import { addOutline, pencilOutline, trashOutline } from 'ionicons/icons'
+import { useI18n } from 'vue-i18n'
+import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { categoriesApi } from '@/api'
 import type { Category } from '@/types'
-import WatermarkFooter from '@/components/WatermarkFooter.vue'
+
+addIcons({ addOutline, pencilOutline, trashOutline })
+const { t } = useI18n()
 const categories = ref<Category[]>([])
 const showForm   = ref(false)
 const editing    = ref<Category | null>(null)
@@ -54,6 +59,17 @@ function openForm(cat?: Category) {
   editing.value = cat ?? null
   form.value = cat ? { prefix: cat.prefix, name: cat.name, color: cat.color } : { prefix: '', name: '', color: '#378ADD' }
   showForm.value = true
+}
+async function confirmDelete(cat: Category) {
+  const alert = await alertController.create({
+    header: t('common.confirm_delete'),
+    message: `${cat.prefix} — ${cat.name}`,
+    buttons: [
+      { text: t('common.cancel'), role: 'cancel' },
+      { text: t('common.delete'), role: 'destructive', handler: async () => { await categoriesApi.remove(cat.id); await load() } },
+    ],
+  })
+  await alert.present()
 }
 async function save() {
   if (editing.value) await categoriesApi.update(editing.value.id, form.value)

@@ -75,17 +75,20 @@ At the end of every session:
 
 ## WATERMARK — NON-NEGOTIABLE
 
-`WatermarkFooter.vue` imported in **every view including Display and Kiosk.**
+The "by iki.ae" mark must be visible on every surface. Placement differs by surface:
 
-```
-"by iki.ae"  ·  [small QR/barcode]
-```
+| Surface | Placement | Component |
+|---|---|---|
+| Display (`/display`) | Bottom-center, white, visible from 3 meters | `WatermarkFooter.vue` variant="display" |
+| Kiosk (`/kiosk`) | Bottom of screen | `WatermarkFooter.vue` |
+| Operator (`/operator`) | Bottom footer | `WatermarkFooter.vue` variant="subtle" |
+| Admin (`/admin/*`) | Sidebar brand header — persistent, always visible | `AdminShell.vue` sidebar — no per-page footer needed |
+| Login | Card footer strip — "powered by iki.ae" + QR | Inline `<a>` strip in `LoginPage.vue` |
 
-- Display: bottom-center, white, visible from 3 meters, always on top
-- Admin/Operator: subtle footer, 12px, muted
-- Config page shows preview only — cannot remove "by iki.ae"
-- `watermark_url` in config = customizable WA/website link (affects the barcode target)
-- The barcode is part of the watermark component — not optional, not configurable
+- `watermark_url` in config = customizable WA/website link (affects the QR/barcode target)
+- The QR is part of the watermark — not optional, not configurable
+- Config page shows a watermark preview only — cannot remove "by iki.ae"
+- **Admin pages do NOT use `WatermarkFooter.vue`** — the sidebar brand header covers it
 
 ---
 

@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-29 (Session 7)
+**Last updated:** 2026-05-29 (Session 9)
 
 ---
 
@@ -26,6 +26,17 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-29 — Session 10
+**Did:** CategoriesPage FAB + icon fix:
+- Added `ion-fab` + `ion-fab-button` (bottom-right) to `CategoriesPage.vue` as the primary create action
+- Removed the header add button (was in `AdminPageHeader` `#end` slot) — FAB is the sole create entry point
+- Fixed all three icons on the page (header add, row pencil, FAB add) — were using `name="..."` string binding which requires a global registry this project doesn't use; replaced with `addIcons()` + `:icon="..."` bound refs (`addOutline`, `pencilOutline` from `ionicons/icons`)
+- Rebuilt frontend + restarted PM2
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 
@@ -49,6 +60,33 @@ _Nothing yet._
 ## Session Log
 
 _Entries go here, newest at top._
+
+### 2026-05-29 — Session 9
+**Did:** Fixed page-refresh redirect-to-login bug:
+- Root cause: `app.use(router)` triggers the initial navigation before `authStore.restore()` (the `/me` API call) resolves — guard saw `isLoggedIn = false` and sent users to `/login` every time
+- Added `restoreReady: Promise<void>` to `stores/auth.ts` — resolved in the `finally` block of `restore()` so it always settles (success or 401)
+- Updated `router/index.ts` guard to `async` and `await auth.restoreReady` before any auth check
+- Rebuilt frontend (clean Vite build)
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+### 2026-05-29 — Session 8
+**Did:** Admin sidebar redesign — replaced `ion-split-pane`/`ion-menu` with a pure CSS flexbox layout:
+- Dropped `ion-split-pane`, `ion-menu`, `menuController` from `AdminShell.vue` entirely
+- Sidebar is now a plain `<aside>` in a flex-row `ion-page`: brand header (top) + nav (middle, scrollable) + user name (bottom)
+- Desktop: sidebar always visible, collapses via `margin-left: -260px` on toggle; state persisted in `localStorage` under `antri_sidebar_open`
+- Mobile (< 900px): fixed overlay drawer + semi-transparent backdrop, closes on backdrop click or navigation
+- Added `stores/sidebar.ts` — Pinia store for `isOpen`, `isMobile`, `toggle()`, `setMobile()` — shared between shell and child headers
+- Added `components/AdminPageHeader.vue` — shared `ion-header` with hamburger (start) + title + optional `#end` slot + logout icon (end); used by all 7 admin child pages
+- Updated all 7 admin pages (`DashboardPage`, `SessionPage`, `ConfigPage`, `BackupPage`, `CategoriesPage`, `CountersPage`, `UsersPage`) to use `AdminPageHeader` — removed their inline `ion-header`/`ion-toolbar`/`ion-title`
+- Pages with an action button (`CategoriesPage`, `CountersPage`, `UsersPage`) pass it via `<template #end>`
+- Sidebar brand header: accent background, right-aligned "powered by / **iki.ae**" text + white-boxed QR, links to `configStore.watermarkUrl`
+- All admin toolbars accent-colored via scoped `:deep(ion-toolbar)` in the shell; modal toolbars keep primary blue
+- Removed `WatermarkFooter` from all 7 admin pages — sidebar brand header is the sole watermark for the admin surface
+
+**Decided:** Admin watermark exposure moves from per-page subtle footer to persistent sidebar brand header. Footer repetition dropped — sidebar is always visible throughout the admin session, providing sufficient exposure.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ### 2026-05-29 — Session 7
 **Did:** Installer polish + frontend static serving:

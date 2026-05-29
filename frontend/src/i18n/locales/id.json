@@ -40,7 +40,8 @@
     "active":      "Aktif",
     "add":         "Tambah Loket",
     "edit":        "Edit Loket",
-    "delete":      "Hapus Loket"
+    "delete":      "Hapus Loket",
+    "none":        "Belum ada loket"
   },
   "category": {
     "label":  "Kategori",

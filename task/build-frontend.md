@@ -29,7 +29,7 @@ frontend/
     │   └── index.ts             # Axios instance + typed API calls
     ├── views/
     │   ├── admin/               # /admin/* — role: admin
-    │   │   ├── AdminShell.vue   # ion-menu + ion-router-outlet
+    │   │   ├── AdminShell.vue   # CSS flex shell: <aside> sidebar + .main router-outlet
     │   │   ├── DashboardPage.vue
     │   │   ├── CategoriesPage.vue
     │   │   ├── CountersPage.vue
@@ -45,8 +45,14 @@ frontend/
     │   │   └── KioskPage.vue    # Category picker → ticket number → auto-reset
     │   └── auth/
     │       └── LoginPage.vue
+    ├── stores/
+    │   ├── auth.ts              # Pinia — JWT payload, role, counter assignment
+    │   ├── queue.ts             # Pinia — live queue state from SSE
+    │   ├── config.ts            # Pinia — institution config, locale
+    │   └── sidebar.ts           # Pinia — admin sidebar open/collapsed state + mobile flag
     └── components/
-        ├── WatermarkFooter.vue  # "by iki.ae" — used in ALL views
+        ├── WatermarkFooter.vue  # "by iki.ae" — Display, Kiosk, Operator only (NOT admin pages)
+        ├── AdminPageHeader.vue  # Shared admin toolbar: hamburger + title + #end slot + logout
         ├── QueueBoard.vue       # Reusable display board (display + admin dashboard)
         └── TicketNumber.vue     # Large formatted number (A-001 style)
 ```
@@ -191,10 +197,55 @@ Rules:
 
 ---
 
+## ADMIN SHELL — LAYOUT PATTERN
+
+`AdminShell.vue` uses a pure CSS flexbox layout — **no `ion-split-pane`, no `ion-menu`, no `menuController`.**
+
+```
+ion-page.shell  (display: flex; flex-direction: row)
+  aside.sidebar          ← always-visible on desktop, overlay drawer on mobile
+    a.sidebar-brand      ← accent header: "powered by iki.ae" + QR (watermark)
+    nav.sidebar-nav      ← nav buttons, active item highlighted in primary blue
+    div.sidebar-user     ← logged-in user name, pinned bottom
+  div.main               ← flex: 1; contains ion-router-outlet
+```
+
+- Sidebar toggle state in `stores/sidebar.ts` (`isOpen`, `isMobile`, `toggle()`)
+- Desktop collapse: `margin-left: -260px` transition; state persisted in `localStorage`
+- Mobile (< 900px): `position: fixed; transform: translateX(-100%)` overlay + backdrop
+- Child pages use `AdminPageHeader.vue` instead of inline `ion-header`
+
+## ADMIN PAGE HEADER — PATTERN
+
+All admin child pages use `AdminPageHeader.vue` — never write inline `ion-header` in admin pages.
+
+```html
+<!-- Simple page (no extra buttons) -->
+<AdminPageHeader :title="$t('admin.nav.dashboard')" />
+
+<!-- Page with an action button in the header -->
+<AdminPageHeader :title="$t('admin.nav.categories')">
+  <template #end>
+    <ion-button @click="openForm()"><ion-icon :icon="addOutline" /></ion-button>
+  </template>
+</AdminPageHeader>
+
+<!-- Preferred: FAB for primary create actions on list pages -->
+<ion-fab slot="fixed" vertical="bottom" horizontal="end">
+  <ion-fab-button @click="openForm()">
+    <ion-icon :icon="addOutline" />
+  </ion-fab-button>
+</ion-fab>
+```
+
+The component renders: hamburger (toggles sidebar) → title → `#end` slot → logout icon.
+
+**Icon rule:** Always use `addIcons({ iconName })` from `ionicons` + `:icon="iconName"` bound ref. Never use `name="icon-name"` string — it only works with a global registry that this project does not configure.
+
 ## WATERMARK — NON-NEGOTIABLE
 
-`WatermarkFooter.vue` must be imported and rendered in **every view.**
+Placement differs by surface — see CLAUDE.md for the full table.
 
-- Display: bottom-center, white text, always on top, visible from 3 meters
-- Admin/Operator: subtle footer, 12px, muted color
-- `ConfigPage.vue` shows a preview — does NOT allow removing "by iki.ae"
+- **Admin pages:** watermark is in the `AdminShell.vue` sidebar brand header. Do NOT add `WatermarkFooter` to admin pages.
+- **Display/Kiosk/Operator:** `WatermarkFooter.vue` still required.
+- `ConfigPage.vue` shows a watermark text preview — does NOT allow removing "by iki.ae"

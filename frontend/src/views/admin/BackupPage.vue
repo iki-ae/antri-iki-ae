@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <ion-header><ion-toolbar><ion-title>{{ $t('admin.nav.backup') }}</ion-title></ion-toolbar></ion-header>
+    <AdminPageHeader :title="$t('admin.nav.backup')" />
     <ion-content class="ion-padding">
       <ion-card>
         <ion-card-header><ion-card-title>{{ $t('backup.export') }}</ion-card-title></ion-card-header>
@@ -26,14 +26,13 @@
         </ion-card-content>
       </ion-card>
     </ion-content>
-    <WatermarkFooter variant="subtle" />
   </ion-page>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonIcon, IonSpinner, toastController } from '@ionic/vue'
+import { IonPage, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonIcon, IonSpinner, toastController } from '@ionic/vue'
+import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { backupApi } from '@/api'
-import WatermarkFooter from '@/components/WatermarkFooter.vue'
 const selectedFile = ref<File | null>(null)
 const importing    = ref(false)
 const importError  = ref('')

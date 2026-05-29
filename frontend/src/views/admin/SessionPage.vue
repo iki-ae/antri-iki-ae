@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <ion-header><ion-toolbar><ion-title>{{ $t('admin.nav.session') }}</ion-title></ion-toolbar></ion-header>
+    <AdminPageHeader :title="$t('admin.nav.session')" />
     <ion-content class="ion-padding">
       <!-- No active session -->
       <div v-if="!session">
@@ -45,16 +45,15 @@
         </ion-button>
       </div>
     </ion-content>
-    <WatermarkFooter variant="subtle" />
   </ion-page>
 </template>
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, IonLabel, IonItem, IonInput, IonButton, IonCard, IonCardContent, alertController, onIonViewWillEnter } from '@ionic/vue'
+import { IonPage, IonContent, IonSegment, IonSegmentButton, IonLabel, IonItem, IonInput, IonButton, IonCard, IonCardContent, alertController, onIonViewWillEnter } from '@ionic/vue'
+import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import { sessionsApi, categoriesApi } from '@/api'
 import type { Session, Category } from '@/types'
-import WatermarkFooter from '@/components/WatermarkFooter.vue'
 
 const { t } = useI18n()
 

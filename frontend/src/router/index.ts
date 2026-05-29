@@ -46,8 +46,10 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const auth = useAuthStore()
+
+  await auth.restoreReady
 
   if (!to.meta.requiresAuth) return next()
 

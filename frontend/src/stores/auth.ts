@@ -9,6 +9,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isLoggedIn = computed(() => role.value !== null)
 
+  // Resolved once the initial /me check completes — guards must await this.
+  let _restoreResolve!: () => void
+  const restoreReady = new Promise<void>(res => { _restoreResolve = res })
+
   async function login(username: string, password: string) {
     const { data } = await authApi.login(username, password)
     role.value      = data.role
@@ -32,8 +36,10 @@ export const useAuthStore = defineStore('auth', () => {
       counterId.value = data.counterId ?? null
     } catch {
       role.value = null
+    } finally {
+      _restoreResolve()
     }
   }
 
-  return { role, name, counterId, isLoggedIn, login, logout, restore }
+  return { role, name, counterId, isLoggedIn, restoreReady, login, logout, restore }
 })

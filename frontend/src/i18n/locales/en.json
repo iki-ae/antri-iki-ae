@@ -40,7 +40,8 @@
     "active":      "Active",
     "add":         "Add Counter",
     "edit":        "Edit Counter",
-    "delete":      "Delete Counter"
+    "delete":      "Delete Counter",
+    "none":        "No counters yet"
   },
   "category": {
     "label":  "Category",

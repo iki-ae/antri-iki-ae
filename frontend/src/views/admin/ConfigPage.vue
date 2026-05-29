@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <ion-header><ion-toolbar><ion-title>{{ $t('admin.nav.config') }}</ion-title></ion-toolbar></ion-header>
+    <AdminPageHeader :title="$t('admin.nav.config')" />
     <ion-content class="ion-padding">
       <ion-list v-if="form">
         <ion-item>
@@ -22,17 +22,16 @@
       </ion-list>
       <ion-button expand="block" class="ion-margin-top" @click="save">{{ $t('common.save') }}</ion-button>
     </ion-content>
-    <WatermarkFooter variant="subtle" />
   </ion-page>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonInput, IonSelect, IonSelectOption, IonLabel, IonButton, onIonViewWillEnter, toastController } from '@ionic/vue'
+import { IonPage, IonContent, IonList, IonItem, IonInput, IonSelect, IonSelectOption, IonLabel, IonButton, onIonViewWillEnter, toastController } from '@ionic/vue'
+import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import { configApi } from '@/api'
 import { useConfigStore } from '@/stores/config'
 import type { Config } from '@/types'
-import WatermarkFooter from '@/components/WatermarkFooter.vue'
 
 const { t } = useI18n()
 const configStore = useConfigStore()

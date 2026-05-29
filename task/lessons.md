@@ -7,6 +7,10 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-29] — `<ion-icon name="icon-name">` renders invisibly when no global icon registry is configured. This project uses the tree-shakeable pattern: `import { addIcons } from 'ionicons'`, `import { iconName } from 'ionicons/icons'`, call `addIcons({ iconName })` in script setup, bind with `:icon="iconName"`. Never use the string `name=` attribute.
+
+[2026-05-29] — Always rebuild (`npm run build`) and restart PM2 after any frontend change — Nginx serves `frontend/dist/` as static files, so changes to `.vue` files are not live until a build runs.
+
 [2026-05-29] — `path.resolve(__dirname, '../../frontend/dist')` in compiled ESM resolves relative to the `.js` output file, not the source file — directory depth depends on `outDir`/`rootDir` config and changes silently when tsconfig changes. Use an absolute path constant (`/var/www/antri.iki.ae/frontend/dist`) for static asset roots that won't move.
 
 [2026-05-29] — `npm ci --omit=dev` skips devDependencies including `typescript`/`tsc` — running `npm run build` after it fails with `tsc: not found`. Always `npm ci` (full), then `npm run build`, then `npm prune --omit=dev` to strip dev deps after the build.
@@ -22,6 +26,8 @@
 [2026-05-29] — `ion-input` shadow DOM padding collapses CSS floating labels at constrained heights — the `:not(:placeholder-shown)` trigger never fires cleanly because Ionic injects its own internal label element. Use native `<input>` + CSS for any form that needs floating labels. `ion-input` is fine for forms where label-placement="floating" is handled entirely by Ionic (no custom CSS float needed).
 
 [2026-05-29] — Pinia stores are empty on page load when `restore()` and `load()` are not called before mounting — router guards that check store state always see unauthenticated. Always bootstrap stores before `app.mount()`. Use `Promise.allSettled` so a failed config load doesn't block the app.
+
+[2026-05-29] — `app.use(router)` triggers the initial navigation synchronously — the router guard fires before any async `restore()` call resolves, even when `app.mount()` is deferred with `Promise.allSettled`. Fix: add a `restoreReady: Promise<void>` to the auth store (resolved in `finally` of `restore()`), and `await auth.restoreReady` at the top of the `beforeEach` guard. The guard becomes `async`. This guarantees the guard always sees the post-restore auth state.
 
 [2026-05-29] — i18n key paths used in templates must exactly match the locale JSON structure. Flat key like `session.kiosk` fails silently if the locale file has `session.mode_kiosk`. Audit template `$t()` calls against both locale files before building.
 
