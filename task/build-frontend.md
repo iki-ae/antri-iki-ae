@@ -141,6 +141,56 @@ Covers mid-session token expiry — operator redirected cleanly instead of silen
 
 ---
 
+## INPUT FIELD PATTERN
+
+Do **not** use `ion-input` for form fields. Use native `<input>` with CSS floating labels.
+
+```html
+<div class="field">
+  <input id="x" type="text" placeholder=" " />
+  <label for="x">Label Text</label>
+  <span class="icon"><!-- SVG icon, right-aligned --></span>
+</div>
+```
+
+Rules:
+- `placeholder=" "` (single space) is required — the CSS float trigger depends on `:not(:placeholder-shown)`
+- Label floats up on focus or when filled via: `input:focus ~ label, input:not(:placeholder-shown) ~ label`
+- Floated state: `font-size: 10.5px`, `font-weight: 600`, `color: var(--color-accent)`, `text-transform: uppercase`
+- Input height: `56px`, padding: `18px 44px 6px 16px` (top clears the floated label, right clears the icon)
+- Focus ring: `border-color: var(--color-accent)` + `box-shadow: 0 0 0 3px rgba(224,140,47,0.12)`
+- Icon slot: `position: absolute; right: 14px; top: 50%; transform: translateY(-50%)`
+- Password toggle icon uses `pointer-events: all` and swaps SVG via `v-if/v-else` on `showPassword` — no JS DOM manipulation
+
+---
+
+## CARD FOOTER — WATERMARK STRIP
+
+The card footer (used on `LoginPage` and any branded card) is a fully clickable `<a>` strip, not `WatermarkFooter.vue`.
+
+```html
+<a class="footer" :href="configStore.watermarkUrl" target="_blank" rel="noopener">
+  <div class="footer-text">
+    powered by
+    <strong>iki.ae</strong>
+  </div>
+  <div class="qr">
+    <img src="@/assets/qr-iki-ae.svg" alt="iki.ae" />
+  </div>
+</a>
+```
+
+Rules:
+- Background: `var(--color-secondary)` — distinct from the page background
+- Hover: `var(--color-secondary-dark)`
+- Layout: `display: flex; align-items: center; justify-content: flex-end; gap: 12px`
+- Text: right-aligned, `"powered by"` at 11px `rgba(255,255,255,0.65)`, `<strong>iki.ae</strong>` at 13px `rgba(255,255,255,0.95)`
+- QR container: `38×38px` white rounded box (`border-radius: var(--radius-sm)`), image inside at `34×34px`
+- QR asset: `src/assets/qr-iki-ae.svg` — encodes `https://iki.ae`, links to `configStore.watermarkUrl`
+- The entire strip is the clickable target — no nested buttons
+
+---
+
 ## WATERMARK — NON-NEGOTIABLE
 
 `WatermarkFooter.vue` must be imported and rendered in **every view.**
