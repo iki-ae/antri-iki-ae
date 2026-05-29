@@ -1,0 +1,131 @@
+/* ============================================================
+   Brand palette — Antri Iki Ae
+   Source of truth. All other CSS references these tokens.
+   ============================================================ */
+
+:root {
+  /* --- Raw brand colors --- */
+  --color-text:        #040316;
+  --color-background:  #F8F8FF;
+  --color-primary:     #436998;
+  --color-secondary:   #367c6f;
+  --color-accent:      #e08c2f;
+  --color-danger:      #ac2f2f;
+
+  /* --- Derived shades (lightened/darkened for hover, borders, fills) --- */
+  --color-primary-light:   #d0dff0;
+  --color-primary-dark:    #2e4f73;
+  --color-secondary-light: #c2e0db;
+  --color-secondary-dark:  #235950;
+  --color-accent-light:    #f7ddb5;
+  --color-accent-dark:     #b06a15;
+  --color-danger-light:    #f5c6c6;
+  --color-danger-dark:     #7a1e1e;
+
+  /* --- Neutral scale (slate-like) --- */
+  --color-surface:     #ffffff;
+  --color-surface-alt: #f0f2f5;
+  --color-border:      #d4d8e0;
+  --color-border-dark: #b0b8c4;
+  --color-text-muted:  #6b7280;
+  --color-text-light:  #9ca3af;
+
+  /* --- Semantic tokens --- */
+  --color-bg:          var(--color-background);
+  --color-cta:         var(--color-accent);       /* primary call-to-action (kiosk button) */
+  --color-cta-hover:   var(--color-accent-dark);
+  --color-success:     var(--color-secondary);
+  --color-warning:     var(--color-accent);
+  --color-error:       var(--color-danger);
+
+  /* --- Typography --- */
+  --font-family:       'Inter', system-ui, -apple-system, sans-serif;
+  --font-family-mono:  'JetBrains Mono', 'Fira Code', monospace;
+
+  --font-size-xs:   0.75rem;   /* 12px */
+  --font-size-sm:   0.875rem;  /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg:   1.125rem;  /* 18px */
+  --font-size-xl:   1.25rem;   /* 20px */
+  --font-size-2xl:  1.5rem;    /* 24px */
+  --font-size-3xl:  2rem;      /* 32px */
+  --font-size-4xl:  2.5rem;    /* 40px */
+  --font-size-5xl:  3.5rem;    /* 56px — Display/Kiosk ticket numbers */
+  --font-size-6xl:  5rem;      /* 80px — Display main number */
+
+  /* --- Spacing scale --- */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* --- Radius --- */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full: 9999px;
+
+  /* --- Shadow --- */
+  --shadow-sm: 0 1px 3px rgba(4, 3, 22, 0.08);
+  --shadow-md: 0 4px 16px rgba(4, 3, 22, 0.10);
+  --shadow-lg: 0 8px 32px rgba(4, 3, 22, 0.14);
+}
+
+/* ============================================================
+   Ionic variable bridge
+   Maps brand tokens → Ionic's expected CSS variables
+   ============================================================ */
+
+:root {
+  --ion-font-family:           var(--font-family);
+  --ion-background-color:      var(--color-background);
+  --ion-text-color:            var(--color-text);
+
+  --ion-color-primary:         var(--color-primary);
+  --ion-color-primary-rgb:     67, 105, 152;
+  --ion-color-primary-shade:   var(--color-primary-dark);
+  --ion-color-primary-tint:    var(--color-primary-light);
+  --ion-color-primary-contrast:        #ffffff;
+  --ion-color-primary-contrast-rgb:    255, 255, 255;
+
+  --ion-color-secondary:       var(--color-secondary);
+  --ion-color-secondary-rgb:   54, 124, 111;
+  --ion-color-secondary-shade: var(--color-secondary-dark);
+  --ion-color-secondary-tint:  var(--color-secondary-light);
+  --ion-color-secondary-contrast:      #ffffff;
+  --ion-color-secondary-contrast-rgb:  255, 255, 255;
+
+  --ion-color-tertiary:        var(--color-accent);
+  --ion-color-tertiary-rgb:    224, 140, 47;
+  --ion-color-tertiary-shade:  var(--color-accent-dark);
+  --ion-color-tertiary-tint:   var(--color-accent-light);
+  --ion-color-tertiary-contrast:       #ffffff;
+  --ion-color-tertiary-contrast-rgb:   255, 255, 255;
+
+  --ion-color-danger:          var(--color-danger);
+  --ion-color-danger-rgb:      172, 47, 47;
+  --ion-color-danger-shade:    var(--color-danger-dark);
+  --ion-color-danger-tint:     var(--color-danger-light);
+  --ion-color-danger-contrast:         #ffffff;
+  --ion-color-danger-contrast-rgb:     255, 255, 255;
+
+  --ion-color-success:         var(--color-secondary);
+  --ion-color-warning:         var(--color-accent);
+
+  --ion-color-medium:          var(--color-text-muted);
+  --ion-color-light:           var(--color-surface-alt);
+
+  --ion-border-color:          var(--color-border);
+  --ion-item-background:       var(--color-surface);
+  --ion-card-background:       var(--color-surface);
+  --ion-toolbar-background:    var(--color-primary);
+  --ion-toolbar-color:         #ffffff;
+  --ion-tab-bar-background:    var(--color-surface);
+  --ion-tab-bar-color:         var(--color-text-muted);
+  --ion-tab-bar-color-selected:var(--color-primary);
+}

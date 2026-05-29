@@ -5,6 +5,9 @@ import App from './App.vue'
 import router from './router'
 import { i18n } from './i18n'
 
+/* Brand theme */
+import './theme/variables.css'
+
 /* Ionic core CSS */
 import '@ionic/vue/css/core.css'
 import '@ionic/vue/css/normalize.css'
