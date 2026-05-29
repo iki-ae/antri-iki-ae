@@ -17,9 +17,9 @@
       <template v-else>
         <div class="operator-body">
           <!-- Current ticket -->
-          <div class="ticket-card" v-if="currentTicket">
+          <div class="ticket-card" v-if="currentTicket" :style="{ '--cat-color': myCounter?.category.color ?? 'var(--color-primary)' }">
             <div class="ticket-label">{{ $t('operator.nowServing') }}</div>
-            <TicketNumber :display-number="currentTicket.display_number" color="var(--color-primary)" />
+            <TicketNumber :display-number="currentTicket.display_number" :color="myCounter?.category.color ?? 'var(--color-primary)'" />
           </div>
           <div v-else class="idle-msg">{{ $t('operator.idle') }}</div>
 
@@ -111,7 +111,7 @@ async function doLogout() { await auth.logout(); router.replace('/login') }
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  border-top: 4px solid var(--color-primary);
+  border-top: 4px solid var(--cat-color, var(--color-primary));
   padding: 20px 16px;
   display: flex;
   flex-direction: column;

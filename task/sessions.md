@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-29 (Session 17)
+**Last updated:** 2026-05-29 (Session 18)
 
 ---
 
@@ -26,6 +26,29 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-29 — Session 18
+**Did:** Display page full redesign:
+- `LoginPage.vue`: "Big Display Mode" quick-link now uses `href="/display"` (full navigation) instead of `router.push` — more reliable cross-browser, ensures clean SSE state on display load
+- `TicketNumber.vue`: added `md` size variant (`clamp(1.4rem, 4vh, 3.2rem)`)
+- `DisplayPage.vue` complete rewrite — new layout:
+  - Fixed `1024×768` frame (`display-frame`) centered in full-viewport shell (`display-root`); background outside frame matches `--color-surface-alt` (light)
+  - Full-width accent header (56px): institution name left, "powered by iki.ae" + QR pill right
+  - Body splits into left panel (390px / ~40%) and right panel (flex: 1 / ~60%)
+  - **Left panel:** two slots — top 70% (current call card) + bottom 30% (previous call card, `#fefdff` bg). Current: counter label 40px/800, number 100px/900. Previous: same layout at 28px/68px, 0.65 opacity
+  - **Right panel:** queue board grouped by category (mirrors admin dashboard) — category colored header + counter boxes grid; `flex-grow` per section proportional to grid row count so all counter boxes are equal size regardless of category counter count. Right panel fills top-to-bottom with no scroll
+  - **Animations:** number blinks 5× at 1s/step-end on new call; matching counter box flashes once with 5s ease-out color fade in category color tint; both reset cleanly on rapid successive calls via `requestAnimationFrame` + timer clear
+  - **Previous ticket tracking:** `watch` on `lastCalled` captures outgoing value into `prevCalled` ref on each change
+  - `lastCalled` extended with `counterId` to identify which counter box to flash
+
+**Decided:**
+- Fixed px sizes (not `vw` clamp) inside `display-frame` — `vw` references viewport not frame, giving wrong sizes on larger screens
+- `flex-grow` proportional to `ceil(counterCount / COLS)` (COLS=5) distributes right panel height correctly across categories with different counter counts — equal row height across all categories
+- Previous ticket stored in component state (not backend) — `QueueState` has no history; a `watch` on the computed `lastCalled` captures the outgoing value before it's replaced
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

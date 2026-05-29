@@ -49,23 +49,30 @@
   </ion-page>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { IonPage, IonContent, IonList, IonListHeader, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle, IonInput, IonSelect, IonSelectOption, IonFab, IonFabButton, onIonViewWillEnter } from '@ionic/vue'
 import { addIcons } from 'ionicons'
 import { addOutline, pencilOutline, trashOutline } from 'ionicons/icons'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { countersApi, categoriesApi } from '@/api'
+import { useQueueStore } from '@/stores/queue'
 import type { Counter, Category } from '@/types'
 
 addIcons({ addOutline, pencilOutline, trashOutline })
 
+const queueStore = useQueueStore()
 const counters   = ref<Counter[]>([])
 const categories = ref<Category[]>([])
 const showForm   = ref(false)
 const editing    = ref<Counter | null>(null)
 const form       = ref({ name: '', category_id: 0 })
 
-onIonViewWillEnter(load)
+onIonViewWillEnter(() => { queueStore.connect(); load() })
+
+watch(() => queueStore.state, async () => {
+  const cats = await categoriesApi.list()
+  categories.value = cats.data
+})
 
 async function load() {
   const [c, cats] = await Promise.all([countersApi.list(), categoriesApi.list()])

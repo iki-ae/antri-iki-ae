@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify'
 import { db } from '../config/database.js'
 import { categories, sessions, tickets } from '../../drizzle/schema.js'
 import { requireAdmin } from '../middleware/auth.js'
+import { broadcastQueueState } from '../plugins/sse.js'
 import { eq, asc, and } from 'drizzle-orm'
 
 export const categoryRoutes: FastifyPluginAsync = async (fastify) => {
@@ -36,6 +37,7 @@ export const categoryRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     db.update(categories).set(body).where(eq(categories.id, numId)).run()
+    broadcastQueueState()
     return db.select().from(categories).where(eq(categories.id, numId)).get()
   })
 

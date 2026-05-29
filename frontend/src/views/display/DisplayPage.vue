@@ -1,147 +1,531 @@
 <template>
   <div class="display-root">
-    <div class="display-header">
-      <h1>{{ configStore.institutionName }}</h1>
-      <p class="display-subtitle">{{ $t('display.subtitle') }}</p>
-    </div>
+    <div class="display-frame">
 
-    <div v-if="queue.state?.session" class="counter-grid">
-      <div
-        v-for="counter in queue.state.counters"
-        :key="counter.id"
-        class="counter-card"
-        :style="{ '--cat-color': counter.category.color }"
-      >
-        <div class="counter-name">{{ counter.name }}</div>
-        <div class="counter-category">{{ counter.category.name }}</div>
-        <div class="counter-number" :class="{ pulse: counter.currentTicket }">
-          <TicketNumber :display-number="counter.currentTicket?.display_number ?? '—'" />
+      <!-- ── Full-width header ── -->
+      <div class="display-header">
+        <h1 class="institution-name">{{ configStore.institutionName }}</h1>
+        <a class="watermark-block" :href="configStore.watermarkUrl" target="_blank" rel="noopener">
+          <div class="watermark-text">
+            powered by
+            <strong>iki.ae</strong>
+          </div>
+          <div class="watermark-qr">
+            <img src="@/assets/qr-iki-ae.svg" alt="iki.ae" width="28" height="28" />
+          </div>
+        </a>
+      </div>
+
+      <!-- ── Body: 40% left / 60% right ── -->
+      <div class="display-body">
+
+        <!-- Last called -->
+        <div class="panel-left">
+          <div class="slot-current">
+            <div class="last-card">
+              <template v-if="lastCalled">
+                <div class="last-label">{{ $t('counter.label') }} {{ lastCalled.prefix }}-{{ lastCalled.counterName }}</div>
+                <div class="last-number" :class="{ blinking: isBlinking }" :style="{ color: lastCalled.color }">
+                  {{ lastCalled.displayNumber }}
+                </div>
+              </template>
+              <div v-else class="last-idle">—</div>
+            </div>
+          </div>
+          <div class="slot-previous">
+            <div class="prev-card">
+              <template v-if="prevCalled">
+                <div class="prev-label">{{ $t('counter.label') }} {{ prevCalled.prefix }}-{{ prevCalled.counterName }}</div>
+                <div class="prev-number" :style="{ color: prevCalled.color }">
+                  {{ prevCalled.displayNumber }}
+                </div>
+              </template>
+              <div v-else class="prev-idle">—</div>
+            </div>
+          </div>
         </div>
+
+        <!-- Queue board -->
+        <div class="panel-right">
+          <div v-if="queue.state?.session" class="board-scroll">
+            <div
+              v-for="group in grouped"
+              :key="group.category.id"
+              class="category-section"
+              :style="{ flexGrow: gridRows(group.counters.length) }"
+            >
+              <div class="category-header" :style="{ background: group.category.color }">
+                <span class="category-name">{{ group.category.prefix }} — {{ group.category.name }}</span>
+                <div class="header-badges">
+                  <span v-if="waitingMap[group.category.id]" class="waiting-badge">
+                    {{ $t('display.waiting', { count: waitingMap[group.category.id] }) }}
+                  </span>
+                </div>
+              </div>
+              <div class="counters-row">
+                <div
+                  v-for="counter in group.counters"
+                  :key="counter.id"
+                  class="counter-box"
+                  :class="{ flashing: counter.id === flashingCounterId }"
+                  :style="{ '--cat-color': group.category.color }"
+                >
+                  <div class="counter-title">
+                    {{ $t('counter.label') }} {{ group.category.prefix }}-{{ counter.name }}
+                  </div>
+                  <TicketNumber
+                    v-if="counter.currentTicket"
+                    :display-number="counter.currentTicket.display_number"
+                    :color="group.category.color"
+                    size="sm"
+                  />
+                  <div v-else class="counter-idle">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="board-idle">
+            <p>{{ $t('display.noSession') }}</p>
+          </div>
+        </div>
+
       </div>
     </div>
-
-    <div v-else class="display-idle">
-      <p>{{ $t('display.noSession') }}</p>
-    </div>
-
-    <!-- Waiting summary per category -->
-    <div v-if="queue.state?.waiting?.length" class="waiting-bar">
-      <span
-        v-for="w in queue.state.waiting"
-        :key="w.category_id"
-        class="waiting-badge"
-      >
-        {{ w.prefix }}: {{ $t('display.waiting', { count: w.count }) }}
-      </span>
-    </div>
-
-    <WatermarkFooter variant="display" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { computed, watch, ref, onMounted, onUnmounted } from 'vue'
 import { useQueueStore }  from '@/stores/queue'
 import { useConfigStore } from '@/stores/config'
-import WatermarkFooter    from '@/components/WatermarkFooter.vue'
 import TicketNumber       from '@/components/TicketNumber.vue'
 
-const queue  = useQueueStore()
+const queue       = useQueueStore()
 const configStore = useConfigStore()
 
 onMounted(()  => queue.connect())
 onUnmounted(() => queue.disconnect())
+
+type CalledEntry = { displayNumber: string; color: string; prefix: string; counterName: string }
+
+const lastCalled = computed<(CalledEntry & { counterId: number }) | null>(() => {
+  const counters = queue.state?.counters ?? []
+  let best: typeof counters[0] | null = null
+  for (const c of counters) {
+    if (!c.currentTicket) continue
+    if (!best || c.currentTicket.called_at > best.currentTicket!.called_at) best = c
+  }
+  if (!best) return null
+  return {
+    counterId:     best.id,
+    displayNumber: best.currentTicket!.display_number,
+    color:         best.category.color,
+    prefix:        best.category.prefix,
+    counterName:   best.name,
+  }
+})
+
+const prevCalled    = ref<CalledEntry | null>(null)
+const isBlinking    = ref(false)
+const flashingCounterId = ref<number | null>(null)
+let blinkTimer: ReturnType<typeof setTimeout> | null = null
+
+// 10 blinks × 500ms per blink = 5000ms total
+const BLINK_DURATION = 5000
+
+watch(lastCalled, (next, prev) => {
+  if (!next) return
+  const changed = !prev || next.displayNumber !== prev.displayNumber
+  if (!changed) return
+
+  if (prev) prevCalled.value = prev
+
+  if (blinkTimer) clearTimeout(blinkTimer)
+  isBlinking.value = false
+  flashingCounterId.value = null
+
+  requestAnimationFrame(() => {
+    isBlinking.value = true
+    flashingCounterId.value = next.counterId
+    blinkTimer = setTimeout(() => {
+      isBlinking.value = false
+      flashingCounterId.value = null
+    }, BLINK_DURATION)
+  })
+})
+
+const grouped = computed(() => {
+  const counters = queue.state?.counters ?? []
+  const map = new Map<number, { category: typeof counters[0]['category']; counters: typeof counters }>()
+  for (const c of counters) {
+    if (!map.has(c.category.id)) map.set(c.category.id, { category: c.category, counters: [] })
+    map.get(c.category.id)!.counters.push(c)
+  }
+  return [...map.values()]
+})
+
+const waitingMap = computed(() => {
+  const out: Record<number, number> = {}
+  for (const w of queue.state?.waiting ?? []) out[w.category_id] = w.count
+  return out
+})
+
+// Right panel width: 1024 - 390(left) - 16(gap) - 32(body padding) = 586px
+// Counter min width: 110px, gap: 8px → floor((586+8)/(110+8)) = 5 columns
+const COLS = 5
+function gridRows(counterCount: number): number {
+  return Math.ceil(counterCount / COLS)
+}
 </script>
 
 <style scoped>
+/* ── Centering shell — fills the whole viewport ── */
 .display-root {
+  width: 100vw;
   height: 100dvh;
   display: flex;
-  flex-direction: column;
-  background: #0f1923;
-  color: #ffffff;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-alt);
   overflow: hidden;
-  padding: 24px;
-  box-sizing: border-box;
 }
 
-.display-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-.display-header h1 {
-  font-size: clamp(24px, 4vw, 48px);
-  font-weight: 700;
-  margin: 0 0 4px;
-  letter-spacing: 0.02em;
-}
-.display-subtitle {
-  font-size: clamp(14px, 2vw, 22px);
-  opacity: 0.6;
-  margin: 0;
-}
-
-.counter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  flex: 1;
-  align-content: center;
-}
-
-.counter-card {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-top: 4px solid var(--cat-color, #378ADD);
-  border-radius: 12px;
-  padding: 20px 16px;
-  text-align: center;
+/* ── Fixed 1024×768 frame ── */
+.display-frame {
+  width: 1024px;
+  height: 768px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  background: var(--color-surface-alt);
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(4,3,22,0.12);
 }
-.counter-name {
-  font-size: clamp(14px, 2vw, 20px);
-  font-weight: 600;
-  opacity: 0.9;
+
+/* ── Header (56px) ── */
+.display-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: var(--color-accent) !important;
+  padding: 0 20px 0 24px;
+  height: 56px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
-.counter-category {
-  font-size: clamp(11px, 1.4vw, 15px);
-  opacity: 0.5;
+
+.institution-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
-.counter-number {
-  margin-top: 8px;
+
+.watermark-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 8px;
+  padding: 6px 10px 6px 12px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.15s;
 }
-.counter-number.pulse {
+.watermark-block:hover { background: rgba(0,0,0,0.28); }
+
+.watermark-text {
+  font-size: 10px;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.80);
+  text-align: right;
+}
+.watermark-text strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.watermark-qr {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  background: #fff;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.watermark-qr img { width: 28px; height: 28px; display: block; }
+
+/* ── Body (768 - 56 = 712px tall) ── */
+.display-body {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  min-height: 0;
+  background: var(--color-surface-alt);
+}
+
+/* ── Left panel ── */
+.panel-left {
+  width: 390px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 16px;
+}
+
+.slot-current {
+  flex: 7;
+  display: flex;
+  min-height: 0;
+}
+
+.slot-previous {
+  flex: 3;
+  display: flex;
+  min-height: 0;
+}
+
+/* Current card */
+.last-card {
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 16px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.last-label {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.last-number {
+  font-size: 100px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   animation: pop 0.4s ease;
 }
+
 @keyframes pop {
   0%   { transform: scale(1); }
-  50%  { transform: scale(1.08); }
+  50%  { transform: scale(1.06); }
   100% { transform: scale(1); }
 }
 
-.display-idle {
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes flash {
+  0%   { background: color-mix(in srgb, var(--cat-color) 30%, white); }
+  100% { background: var(--color-surface); }
+}
+
+.last-number.blinking {
+  animation: blink 1s step-end 5;
+}
+
+.counter-box.flashing {
+  animation: flash 5s ease-out 1 forwards;
+}
+
+.last-idle {
+  font-size: 60px;
+  color: var(--color-border-dark);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Previous card */
+.prev-card {
+  width: 100%;
+  background: #fefdff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px;
+  gap: 10px;
+  text-align: center;
+  overflow: hidden;
+  opacity: 0.65;
+}
+
+.prev-label {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.prev-number {
+  font-size: 68px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.prev-idle {
+  font-size: 40px;
+  color: var(--color-border-dark);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── Right panel: remaining ── */
+.panel-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  overflow: hidden;
+}
+
+.board-scroll {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.board-idle {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  opacity: 0.4;
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
 }
 
-.waiting-bar {
+/* ── Category section ── */
+.category-section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+  flex-basis: 0;
   display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-  padding: 12px 0 8px;
+  flex-direction: column;
+  min-height: 0;
 }
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px;
+  gap: 12px;
+}
+
+.category-name {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.header-badges { display: flex; gap: 6px; align-items: center; }
+
 .waiting-badge {
-  background: rgba(255,255,255,0.1);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
   border-radius: 100px;
-  padding: 4px 14px;
-  font-size: clamp(12px, 1.5vw, 16px);
-  opacity: 0.75;
+  color: #fff;
+  background: rgba(0,0,0,0.25);
+  white-space: nowrap;
+}
+
+.counters-row {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 8px;
+  padding: 8px;
+  background: var(--color-surface-alt);
+  align-content: stretch;
+  min-height: 0;
+}
+
+.counter-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  border-top: 3px solid var(--cat-color);
+  gap: 4px;
+  min-width: 0;
+}
+
+.counter-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.counter-idle {
+  font-size: 1.5rem;
+  color: var(--color-border-dark);
+  line-height: 1;
+  padding: 4px 0;
 }
 </style>

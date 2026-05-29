@@ -73,7 +73,7 @@
 
         <div class="quick-links">
           <div class="quick-links-row">
-            <a class="quick-btn" @click="router.push('/display')">
+            <a class="quick-btn" href="/display">
               <ion-icon :icon="icons.easelOutline" class="quick-btn-icon" />
               <span class="quick-btn-label">{{ $t('nav.display') }}</span>
             </a>
