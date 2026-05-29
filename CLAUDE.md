@@ -64,12 +64,12 @@ Always make a plan and ask for confirmation before executing anything.
 ## SELF-IMPROVEMENT LOOP
 
 At the start of every session:
-- Read `tasks/sessions.md` for current project status
-- Read `tasks/lessons.md` for past mistakes before writing any code
+- Read `task/sessions.md` for current project status
+- Read `task/lessons.md` for past mistakes before writing any code
 
 At the end of every session:
-- Update `tasks/sessions.md`: what was done, decisions made, what's next
-- Append any mistakes to `tasks/lessons.md`: `[date] — what went wrong → rule to prevent it`
+- Update `task/sessions.md`: what was done, decisions made, what's next
+- Append any mistakes to `task/lessons.md`: `[date] — what went wrong → rule to prevent it`
 
 ---
 
@@ -94,6 +94,7 @@ At the end of every session:
 - GitHub is source of truth. Claude commits on request only — never auto-commits.
 - Claude writes commit messages. English only.
 - Logical completion points only — not mid-task.
+- No `Co-Authored-By` trailers in commit messages.
 
 ---
 
@@ -120,11 +121,11 @@ Read the relevant brief before starting any task in that area:
 
 | Task | Brief |
 |---|---|
-| Project progress + session log | `tasks/sessions.md` ← read first |
-| Backend (routes, services, DB, SSE) | `tasks/build-backend.md` |
-| Frontend (views, components, stores) | `tasks/build-frontend.md` |
-| Installer / deployment scripts | `tasks/build-installer.md` |
-| Mistakes log | `tasks/lessons.md` |
+| Project progress + session log | `task/sessions.md` ← read first |
+| Backend (routes, services, DB, SSE) | `task/build-backend.md` |
+| Frontend (views, components, stores) | `task/build-frontend.md` |
+| Installer / deployment scripts | `task/build-installer.md` |
+| Mistakes log | `task/lessons.md` |
 
 ---
 

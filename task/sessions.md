@@ -7,8 +7,8 @@
 
 ## Current Status
 
-**Phase:** Active Development — installer scripts complete
-**Last updated:** 2026-05-29 (Session 4)
+**Phase:** Active Development — Phase 1 blockers resolved (again), server running
+**Last updated:** 2026-05-29 (Session 6)
 
 ---
 
@@ -48,6 +48,41 @@ _Nothing yet._
 ## Session Log
 
 _Entries go here, newest at top._
+
+### 2026-05-29 — Session 6
+**Did:** Fresh-session audit + Phase 1 re-run (dev environment had no node_modules, no dist, PM2 not running):
+- Installed backend + frontend npm deps (`npm install`)
+- DB_PATH mismatch already fixed in code from prior sessions — confirmed correct
+- Ran `db:generate:sqlite` + applied migrations programmatically (drizzle-kit v0.20 quirk — `migrate` command doesn't exist; used `drizzle-orm/better-sqlite3/migrator` directly)
+- Fixed `package.json` `db:generate`/`db:migrate` scripts to use correct drizzle-kit v0.20 commands
+- Fixed `tsconfig.json` `rootDir` (`./src` → `.`) — schema.ts outside src/ broke `tsc`
+- Updated `ecosystem.config.cjs` script path to `./dist/src/server.js` (consequence of rootDir change)
+- Installed missing `@types/archiver` + `@types/unzipper`
+- Fixed frontend TS errors: `configStore` computed refs (`watermarkUrl`, `watermarkText`, `institutionName`), `onIonViewWillEnter` moved from `vue` → `@ionic/vue` imports in `DashboardPage.vue` + `OperatorPage.vue`, `DisplayPage.vue` `:value` → `:display-number`, `AdminShell.vue` `auto-hide` → `:auto-hide`, `CategoriesPage.vue` `maxlength="2"` → `:maxlength="2"` + native `<input type="color">` replacing `ion-input type="color"`, `SessionPage.vue` `HTMLInputElement` → `HTMLIonInputElement` cast
+- Built backend (`tsc` clean) + frontend (Vite clean)
+- Installed PM2 globally, started process, saved list
+- Verified: health ✓, config ✓, login ✓
+- Committed all unstaged pre-existing changes (Sessions 2–5 work): installer scripts bilingual polish, `@fastify/static` SPA serving, CLAUDE.md env update
+
+**Decided:** `db:migrate` npm script now uses inline Node.js ESM to call `drizzle-orm` migrator directly — drizzle-kit v0.20 does not have a `migrate` CLI command.
+
+**Next:** Phase 2 correctness bugs (already done in Session 2 per log — verify they're still in the built code), then Nginx config template, WSL2 tar packaging, README.
+
+### 2026-05-29 — Session 5
+**Did:** Login page redesign (UI polish only — no backend changes, no schema changes):
+- Rewrote `LoginPage.vue` from scratch using native `<input>` + CSS floating-label pattern (dropped `ion-input` — Ionic component padding collapses floating labels at small heights)
+- Accent header band (`--color-accent`) with decorative circles; brand `antri.iki.ae` with dimmed `antri.` prefix; tagline via `$t('app.tagline')`
+- Floating labels: CSS-only float via `:not(:placeholder-shown)` + `:focus ~ label`; accent focus ring; right-side SVG icon slot
+- Password field: `lock-closed-outline` start icon + eye/eye-off SVG toggle via `v-if/v-else` on `showPassword`
+- Login button: accent color, uppercase, letter-spacing, hover darkens + lifts 1px
+- Footer: fully clickable `<a>`, secondary-color background, right-aligned "powered by / **iki.ae**" text, 38×38px white QR box (34px image inside)
+- Added `frontend/src/assets/qr-iki-ae.svg` — real QR encoding `https://iki.ae`, generated via `qrcode` npm dev dep
+- Added `frontend/public/favicon.ico` — 32+16px, accent background, white QR modules
+- Documented input field pattern and card footer pattern in `task/build-frontend.md`
+
+**Decided:** Use native `<input>` + CSS for all auth/card form fields — not `ion-input`. Ionic's shadow DOM padding is incompatible with CSS floating-label technique at constrained heights.
+
+**Next:** Nginx config template, WSL2 tar packaging, README/deployment guide.
 
 ### 2026-05-29 — Session 4
 **Did:** Phase 4 — installer & deployment scripts, all 5 files written:
