@@ -144,7 +144,7 @@ export async function callNext(counter_id: number): Promise<{ ticket: any } | { 
 export async function recallTicket(ticket_id: number): Promise<{ ticket: any } | { error: string }> {
   const ticket = db.select().from(tickets).where(eq(tickets.id, ticket_id)).get()
   if (!ticket) return { error: 'TICKET_NOT_FOUND' }
-  if (!['called', 'serving'].includes(ticket.status)) return { error: 'TICKET_CANNOT_RECALL' }
+  if (!['called', 'recalled', 'serving'].includes(ticket.status)) return { error: 'TICKET_CANNOT_RECALL' }
 
   const now = new Date().toISOString()
   db.update(tickets).set({ status: 'recalled', called_at: now }).where(eq(tickets.id, ticket_id)).run()

@@ -29,6 +29,21 @@ _Nothing yet._
 
 ---
 
+### 2026-05-30 — Session 21
+**Did:** Queue call/recall audio announcement on display page:
+- Added `display.announce` i18n key to both locales: `"Antrian {number}, ke Loket {prefix}-{counter}"` (ID) / `"Queue {number}, Counter {prefix}-{counter}"` (EN)
+- `DisplayPage.vue`: Web Speech API (`speechSynthesis`) announces every new call and recall; gated on `_audioUnlocked` flag set by first user click (browser autoplay policy); pending speech queued and flushed on first click
+- `CalledEntry` type extended with `calledAt`; watch checks both `displayNumber` change (new call) and `calledAt` change with same number (recall); blink/flash animations only replay on new call, not recall
+- Hint overlay: removed 10s auto-close timer; replaced countdown button with active accent dismiss button (`display.hint.confirm` i18n key — "Ok, petunjuk telah dipahami" / "Got it, instructions understood"); button click serves as the audio unlock gesture
+- **Root cause fix:** `recallTicket()` in `queueService.ts` rejected tickets with status `'recalled'` (`TICKET_CANNOT_RECALL`) — second and subsequent recalls silently returned 400, no SSE was broadcast. Fixed by adding `'recalled'` to the allowed status list.
+- Dead-end work reverted: briefly installed espeak-ng + ffmpeg and a backend `/api/display/tts` route while chasing a phantom frontend bug — all reverted once the real backend bug was identified; system packages removed.
+
+**Decided:** When a display-page feature appears broken, verify the backend API response first — a silent 4xx on a public page is invisible in the UI.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
 ### 2026-05-30 — Session 19
 **Did:** Fixed display/kiosk navigation loop + setup hint overlay:
 - Root cause of bounce-to-login: 401 interceptor was firing on `/auth/me` (expected to 401 unauthenticated) with `isRestoring: false` due to async timing race, then calling `store.logout()` which itself 401'd → infinite cascade

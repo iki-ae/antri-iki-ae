@@ -7,6 +7,8 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-30] — Recall sound "not playing after first recall" was diagnosed as a Web Speech API / frontend problem and led to replacing it with espeak-ng TTS — but the real bug was `recallTicket()` rejecting status `'recalled'` with `TICKET_CANNOT_RECALL`, so no SSE was ever broadcast and the frontend never had anything to speak. Before assuming a frontend/browser problem, verify the backend actually succeeded (check the API response, not just the UI symptom). A silent 400 from the API is invisible in the display page.
+
 [2026-05-30] — 401 interceptor called `store.logout()` on `/auth/me` 401 (expected unauthenticated) → `logout()` called `/api/auth/logout` → also 401 → interceptor fired again → infinite cascade redirecting to `/login`. Fix: never intercept 401s from `/auth/me` or `/auth/logout` — they are bootstrap/teardown endpoints designed to 401 unauthenticated. Use a `clear()` method (state reset only, no API call) instead of `logout()` inside the interceptor.
 
 [2026-05-30] — `isRestoring()` flag did not reliably suppress the 401 interceptor — Axios response callbacks are microtasks, so by the time the interceptor runs `_restoring` was already `false` (set in the `finally` block of `restore()`). Do not rely on timing flags to suppress interceptors; skip by URL pattern instead.
