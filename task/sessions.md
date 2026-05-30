@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-29 (Session 18)
+**Last updated:** 2026-05-30 (Session 19)
 
 ---
 
@@ -26,6 +26,21 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-30 — Session 19
+**Did:** Fixed display/kiosk navigation loop + setup hint overlay:
+- Root cause of bounce-to-login: 401 interceptor was firing on `/auth/me` (expected to 401 unauthenticated) with `isRestoring: false` due to async timing race, then calling `store.logout()` which itself 401'd → infinite cascade
+- Fixed interceptor: skip redirect entirely for `/auth/me` and `/auth/logout`; use `store.clear()` (state reset, no API call) instead of `store.logout()`; skip redirect when current route is already public
+- Added `clear()` to auth store — state reset without API call; `logout()` now calls it internally
+- LoginPage quick-links: `href="/display"` and `href="/kiosk"` with `target="_self"` — plain browser navigation, no SPA router involvement
+- DisplayPage: 10s countdown hint overlay on every load — instructs user to set 1024×768 and press F11; fades out with CSS transition; timer cleaned up on unmount
+- i18n: `display.hint.title/body/countdown` keys added to both locales; body uses named interpolation slots so `1024 × 768` and `F11` stay bold in both languages
+
+**Decided:** 401 interceptor must never trigger on auth bootstrap endpoints (`/auth/me`, `/auth/logout`) — they are designed to 401 unauthenticated and the interceptor's job is only for mid-session expiry on protected endpoints.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

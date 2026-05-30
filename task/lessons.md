@@ -7,6 +7,10 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-30] — 401 interceptor called `store.logout()` on `/auth/me` 401 (expected unauthenticated) → `logout()` called `/api/auth/logout` → also 401 → interceptor fired again → infinite cascade redirecting to `/login`. Fix: never intercept 401s from `/auth/me` or `/auth/logout` — they are bootstrap/teardown endpoints designed to 401 unauthenticated. Use a `clear()` method (state reset only, no API call) instead of `logout()` inside the interceptor.
+
+[2026-05-30] — `isRestoring()` flag did not reliably suppress the 401 interceptor — Axios response callbacks are microtasks, so by the time the interceptor runs `_restoring` was already `false` (set in the `finally` block of `restore()`). Do not rely on timing flags to suppress interceptors; skip by URL pattern instead.
+
 [2026-05-29] — CSS grid `auto-fill` / `minmax` counter boxes had uneven heights when cells contained variable content (number vs dash) — grid row sizing is only reliable when all cells have identical DOM structure and fixed-height content. For operator-facing counter cards where content varies, use independent `flex-wrap` cards instead; each card sizes itself, no cross-cell alignment dependency.
 
 [2026-05-29] — `v-if="count"` hides a badge when `count === 0` (falsy) — in the counter preview header the waiting badge disappeared when there were 0 waiting tickets. Use `v-if="count !== null"` or remove the `v-if` entirely and always render the badge, showing `0` explicitly when empty.
