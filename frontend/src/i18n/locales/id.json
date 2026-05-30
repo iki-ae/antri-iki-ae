@@ -108,7 +108,12 @@
   "display": {
     "subtitle":  "Sistem Antrian",
     "waiting":   "{count} menunggu",
-    "noSession": "Belum ada sesi antrian aktif"
+    "noSession": "Belum ada sesi antrian aktif",
+    "hint": {
+      "title":    "Pengaturan Tampilan Optimal",
+      "body":     "Atur resolusi layar ke {resolution} dan tekan {key} untuk masuk ke layar penuh agar tampilan terbaik.",
+      "countdown": "Menutup otomatis dalam {n} detik"
+    }
   },
   "kiosk": {
     "title":        "Ambil Nomor Antrian",

@@ -108,7 +108,12 @@
   "display": {
     "subtitle":  "Queue System",
     "waiting":   "{count} waiting",
-    "noSession": "No active queue session"
+    "noSession": "No active queue session",
+    "hint": {
+      "title":    "Optimal Display Setup",
+      "body":     "Set your screen resolution to {resolution} and press {key} to enter fullscreen for the best visibility.",
+      "countdown": "Auto closed in {n}s"
+    }
   },
   "kiosk": {
     "title":        "Take a Queue Number",

@@ -3,19 +3,22 @@ import type { Config, Category, Counter, User, Session, QueueState } from '@/typ
 
 const api = axios.create({ baseURL: '/api', withCredentials: true })
 
+const PUBLIC_ROUTES = ['/display', '/kiosk', '/login']
+// Never redirect on 401s from these endpoints — they are expected to 401 unauthenticated
+const SKIP_REDIRECT_URLS = ['/auth/me', '/auth/logout']
+
 api.interceptors.response.use(
   res => res,
   err => {
-    if (err.response?.status === 401) {
-      // Lazy import to avoid circular dep at module load time
-      import('@/stores/auth').then(({ useAuthStore }) => {
-        const store = useAuthStore()
-        // During bootstrap restore() handles the 401 itself — don't race with it.
-        if (store.isRestoring()) return
-        store.logout()
-        import('@/router').then(({ default: router }) => {
-          router.replace('/login')
+    const url: string = err.config?.url ?? ''
+    if (err.response?.status === 401 && !SKIP_REDIRECT_URLS.some(u => url.includes(u))) {
+      import('@/router').then(({ default: router }) => {
+        const current = router.currentRoute.value.path
+        if (PUBLIC_ROUTES.some(p => current.startsWith(p))) return
+        import('@/stores/auth').then(({ useAuthStore }) => {
+          useAuthStore().clear()
         })
+        router.replace('/login')
       })
     }
     return Promise.reject(err)

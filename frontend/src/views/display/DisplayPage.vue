@@ -1,5 +1,23 @@
 <template>
   <div class="display-root">
+
+    <!-- ── Setup hint overlay ── -->
+    <Transition name="overlay">
+      <div v-if="showHint" class="hint-overlay">
+        <div class="hint-box">
+          <div class="hint-icon">🖥️</div>
+          <p class="hint-title">{{ $t('display.hint.title') }}</p>
+          <p class="hint-body">
+            <i18n-t keypath="display.hint.body" tag="span">
+              <template #resolution><strong>1024 × 768</strong></template>
+              <template #key><strong>F11</strong></template>
+            </i18n-t>
+          </p>
+          <button class="hint-btn" disabled>{{ $t('display.hint.countdown', { n: hintCountdown }) }}</button>
+        </div>
+      </div>
+    </Transition>
+
     <div class="display-frame">
 
       <!-- ── Full-width header ── -->
@@ -103,8 +121,25 @@ import TicketNumber       from '@/components/TicketNumber.vue'
 const queue       = useQueueStore()
 const configStore = useConfigStore()
 
-onMounted(()  => queue.connect())
-onUnmounted(() => queue.disconnect())
+const showHint     = ref(true)
+const hintCountdown = ref(10)
+let hintTimer: ReturnType<typeof setInterval> | null = null
+
+onMounted(() => {
+  queue.connect()
+  hintTimer = setInterval(() => {
+    hintCountdown.value--
+    if (hintCountdown.value <= 0) {
+      showHint.value = false
+      if (hintTimer) clearInterval(hintTimer)
+    }
+  }, 1000)
+})
+
+onUnmounted(() => {
+  queue.disconnect()
+  if (hintTimer) clearInterval(hintTimer)
+})
 
 type CalledEntry = { displayNumber: string; color: string; prefix: string; counterName: string }
 
@@ -527,5 +562,77 @@ function gridRows(counterCount: number): number {
   color: var(--color-border-dark);
   line-height: 1;
   padding: 4px 0;
+}
+
+/* ── Hint overlay ── */
+.hint-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 3, 22, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.hint-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px 40px 32px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(4, 3, 22, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.hint-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.hint-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.hint-body {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.hint-body strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.hint-btn {
+  margin-top: 8px;
+  padding: 10px 28px;
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  border: 1.5px solid var(--color-border);
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: not-allowed;
+  font-family: var(--font-family);
+  letter-spacing: 0.02em;
+}
+
+.overlay-enter-active,
+.overlay-leave-active {
+  transition: opacity 0.3s ease;
+}
+.overlay-enter-from,
+.overlay-leave-to {
+  opacity: 0;
 }
 </style>

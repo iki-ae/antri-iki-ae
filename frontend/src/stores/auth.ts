@@ -26,12 +26,16 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
-  async function logout() {
-    await authApi.logout()
+  function clear() {
     id.value        = null
     role.value      = null
     name.value      = ''
     counterId.value = null
+  }
+
+  async function logout() {
+    await authApi.logout()
+    clear()
   }
 
   async function restore() {
@@ -50,5 +54,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { id, role, name, counterId, isLoggedIn, isRestoring, restoreReady, login, logout, restore }
+  return { id, role, name, counterId, isLoggedIn, isRestoring, restoreReady, login, logout, clear, restore }
 })
