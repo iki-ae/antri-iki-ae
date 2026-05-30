@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify'
 import { db } from '../config/database.js'
 import { sessions, tickets, categories } from '../../drizzle/schema.js'
 import { requireAdmin } from '../middleware/auth.js'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, inArray } from 'drizzle-orm'
 import { broadcastQueueState } from '../plugins/sse.js'
 import { rebuildQueueState, formatDisplayNumber, nextTicketNumber } from '../services/queueService.js'
 
@@ -56,7 +56,17 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post('/close', { preHandler: requireAdmin }, async (_request, reply) => {
     const session = db.select().from(sessions).where(eq(sessions.status, 'open')).get()
     if (!session) return reply.code(404).send({ error: 'NO_ACTIVE_SESSION' })
-    db.update(sessions).set({ status: 'closed', closed_at: new Date().toISOString() }).where(eq(sessions.id, session.id)).run()
+    const now = new Date().toISOString()
+    db.transaction(() => {
+      db.update(tickets)
+        .set({ status: 'done', served_at: now })
+        .where(and(
+          eq(tickets.session_id, session.id),
+          inArray(tickets.status, ['called', 'recalled', 'serving'])
+        ))
+        .run()
+      db.update(sessions).set({ status: 'closed', closed_at: now }).where(eq(sessions.id, session.id)).run()
+    })
     await rebuildQueueState()
     broadcastQueueState()
     return { ok: true }

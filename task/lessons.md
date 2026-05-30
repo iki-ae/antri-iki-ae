@@ -7,6 +7,14 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-30] — `closeSession` only set `sessions.status = 'closed'` and left all in-flight tickets (`called`/`recalled`/`serving`) active indefinitely — they poisoned the `COUNTER_HAS_ACTIVE_TICKET` guard in future sessions. Rule: close session must atomically mark all active tickets for that session as `done` in the same transaction before setting session status to `closed`.
+
+[2026-05-30] — `COUNTER_HAS_ACTIVE_TICKET` guard in `callNext()` queried active tickets without filtering by `session_id` — tickets from old closed sessions blocked `callNext` on those counters forever. Rule: any ticket-status guard must always include `eq(tickets.session_id, session.id)`.
+
+[2026-05-30] — `watch(lastCalled)` on the display page only sees the final computed value after Vue batches reactive updates — if two SSE messages arrive before Vue flushes, the watcher fires once with the last value and the intermediate call is silently dropped. Rule: for per-SSE-message detection (rapid-fire operators), run detection synchronously inside `onmessage` before `state.value` is assigned, not in a Vue watcher on a computed derived from state.
+
+[2026-05-30] — The first SSE message after `connect()` always reflects the current page-load snapshot, not a new operator action. If `_lastCalledAt` is empty (fresh connect), every active ticket looks "new" and triggers announcements — causing sound to play on the first user click. Rule: treat the first SSE message as a silent seed: populate `_lastCalledAt` and fire a one-shot `onFirstState` callback, but do not fire `onAnnounce` listeners. Reset the seed flag on `disconnect()` so reconnects also skip their first message.
+
 [2026-05-30] — Recall sound "not playing after first recall" was diagnosed as a Web Speech API / frontend problem and led to replacing it with espeak-ng TTS — but the real bug was `recallTicket()` rejecting status `'recalled'` with `TICKET_CANNOT_RECALL`, so no SSE was ever broadcast and the frontend never had anything to speak. Before assuming a frontend/browser problem, verify the backend actually succeeded (check the API response, not just the UI symptom). A silent 400 from the API is invisible in the display page.
 
 [2026-05-30] — 401 interceptor called `store.logout()` on `/auth/me` 401 (expected unauthenticated) → `logout()` called `/api/auth/logout` → also 401 → interceptor fired again → infinite cascade redirecting to `/login`. Fix: never intercept 401s from `/auth/me` or `/auth/logout` — they are bootstrap/teardown endpoints designed to 401 unauthenticated. Use a `clear()` method (state reset only, no API call) instead of `logout()` inside the interceptor.

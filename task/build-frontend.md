@@ -114,6 +114,11 @@ The auth store exposes `clear()` (state reset, no API call) and `logout()` (call
 - Display, Kiosk, and Operator views all use this store — no polling anywhere
 - Reconnect on network drop — re-subscribe, get full state immediately
 
+**queue.ts extended API (display page use only):**
+- `onAnnounce(fn)` / `offAnnounce(fn)` — fires synchronously per SSE message (before Vue batches) for each counter whose `calledAt` changed. Use this for announcement queuing — never `watch(lastCalled)` which only sees the final batched value.
+- `onFirstState(fn)` / `offFirstState(fn)` — fires once on the first (seed) SSE message after connect. Use to initialise display state silently without triggering sound. Resets on disconnect.
+- The first SSE message after connect is always a silent seed — it populates `_lastCalledAt` and fires `onFirstState` but does NOT fire `onAnnounce`. This prevents page-load state from being treated as new calls.
+
 ---
 
 ## i18n — FRONTEND

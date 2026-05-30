@@ -41,10 +41,10 @@
         <div class="panel-left">
           <div class="slot-current">
             <div class="last-card">
-              <template v-if="lastCalled">
-                <div class="last-label">{{ $t('counter.label') }} {{ lastCalled.prefix }}-{{ lastCalled.counterName }}</div>
-                <div class="last-number" :class="{ blinking: isBlinking }" :style="{ color: lastCalled.color }">
-                  {{ lastCalled.displayNumber }}
+              <template v-if="displayCurrent">
+                <div class="last-label">{{ $t('counter.label') }} {{ displayCurrent.prefix }}-{{ displayCurrent.counterName }}</div>
+                <div class="last-number" :class="{ blinking: isBlinking }" :style="{ color: displayCurrent.color }">
+                  {{ displayCurrent.displayNumber }}
                 </div>
               </template>
               <div v-else class="last-idle">—</div>
@@ -116,6 +116,8 @@
 import { computed, watch, ref, onMounted, onUnmounted } from 'vue'
 import { useI18n }        from 'vue-i18n'
 import { useQueueStore }  from '@/stores/queue'
+import type { AnnouncedTicket } from '@/stores/queue'
+import type { QueueState } from '@/types'
 import { useConfigStore } from '@/stores/config'
 import TicketNumber       from '@/components/TicketNumber.vue'
 
@@ -123,107 +125,149 @@ const queue       = useQueueStore()
 const configStore = useConfigStore()
 const { t, locale } = useI18n()
 
-type CalledEntry = { displayNumber: string; color: string; prefix: string; counterName: string; calledAt: string }
+type CalledEntry = { displayNumber: string; color: string; prefix: string; counterName: string; calledAt: string; counterId: number }
 
-// Web Speech API — activated after first user gesture (hint dismiss button).
-// All subsequent SSE-triggered calls work because the audio context is unlocked.
+// ── Audio unlock ──────────────────────────────────────────────────────────────
 let _audioUnlocked = false
-let _pendingSpeak: (() => void) | null = null
 
 function onPageClick() {
+  if (_audioUnlocked) return
   _audioUnlocked = true
-  if (_pendingSpeak) {
-    _pendingSpeak()
-    _pendingSpeak = null
-  }
+  if (!_announcing) processQueue()
 }
 
-function speakCalled(entry: CalledEntry) {
-  const text = t('display.announce', {
+function speakText(text: string) {
+  const lang = locale.value === 'id' ? 'id-ID' : 'en-US'
+  window.speechSynthesis.cancel()
+  const u = new SpeechSynthesisUtterance(text)
+  u.lang = lang
+  u.rate = 0.9
+  window.speechSynthesis.speak(u)
+}
+
+// ── Announcement queue ────────────────────────────────────────────────────────
+const BLINK_DURATION = 5000
+
+const _queue: CalledEntry[] = []
+let _announcing = false
+
+const displayCurrent    = ref<CalledEntry | null>(null)
+const prevCalled        = ref<CalledEntry | null>(null)
+const isBlinking        = ref(false)
+const flashingCounterId = ref<number | null>(null)
+let blinkTimer: ReturnType<typeof setTimeout> | null = null
+
+function enqueue(entry: CalledEntry) {
+  const last = _queue[_queue.length - 1] ?? displayCurrent.value
+  if (last && last.displayNumber === entry.displayNumber && last.calledAt === entry.calledAt) return
+  _queue.push(entry)
+  if (!_announcing) processQueue()
+}
+
+function processQueue() {
+  if (_queue.length === 0) { _announcing = false; return }
+  if (!_audioUnlocked)     { _announcing = false; return }
+
+  _announcing = true
+  const entry = _queue.shift()!
+
+  if (displayCurrent.value && displayCurrent.value.displayNumber !== entry.displayNumber) {
+    prevCalled.value = displayCurrent.value
+  }
+  displayCurrent.value = entry
+
+  speakText(t('display.announce', {
     number:  entry.displayNumber,
     prefix:  entry.prefix,
     counter: entry.counterName,
+  }))
+
+  if (blinkTimer) clearTimeout(blinkTimer)
+  isBlinking.value = false
+  flashingCounterId.value = null
+
+  requestAnimationFrame(() => {
+    isBlinking.value = true
+    flashingCounterId.value = entry.counterId
+    blinkTimer = setTimeout(() => {
+      isBlinking.value = false
+      flashingCounterId.value = null
+      processQueue()
+    }, BLINK_DURATION)
   })
-  const lang = locale.value === 'id' ? 'id-ID' : 'en-US'
+}
 
-  const speak = () => {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.lang = lang
-    u.rate = 0.9
-    window.speechSynthesis.speak(u)
-  }
+// ── SSE announce listener (fires per-message, before Vue batches) ─────────────
+function handleAnnounce(ticket: AnnouncedTicket) {
+  enqueue({
+    counterId:     ticket.counterId,
+    displayNumber: ticket.displayNumber,
+    color:         ticket.color,
+    prefix:        ticket.prefix,
+    counterName:   ticket.counterName,
+    calledAt:      ticket.calledAt,
+  })
+}
 
-  if (_audioUnlocked) {
-    speak()
-  } else {
-    _pendingSpeak = speak
+// ── Hint overlay ──────────────────────────────────────────────────────────────
+const showHint = ref(true)
+
+function toEntry(c: QueueState['counters'][0]): CalledEntry {
+  return {
+    counterId:     c.id,
+    displayNumber: c.currentTicket!.display_number,
+    color:         c.category.color,
+    prefix:        c.category.prefix,
+    counterName:   c.name,
+    calledAt:      c.currentTicket!.called_at,
   }
 }
 
-const showHint = ref(true)
+function handleFirstState(state: QueueState) {
+  // Seed display from page-load snapshot: top box = most recent, bottom box = second most recent
+  const active = (state.counters ?? [])
+    .filter(c => !!c.currentTicket)
+    .sort((a, b) => b.currentTicket!.called_at.localeCompare(a.currentTicket!.called_at))
+  if (active[0]) displayCurrent.value = toEntry(active[0])
+  if (active[1]) prevCalled.value     = toEntry(active[1])
+}
 
 onMounted(() => {
   queue.connect()
+  queue.onAnnounce(handleAnnounce)
+  queue.onFirstState(handleFirstState)
   window.addEventListener('click', onPageClick)
 })
 
 onUnmounted(() => {
+  queue.offAnnounce(handleAnnounce)
+  queue.offFirstState(handleFirstState)
   queue.disconnect()
   window.removeEventListener('click', onPageClick)
+  if (blinkTimer) clearTimeout(blinkTimer)
 })
 
-const lastCalled = computed<(CalledEntry & { counterId: number }) | null>(() => {
-  const counters = queue.state?.counters ?? []
-  let best: typeof counters[0] | null = null
-  for (const c of counters) {
-    if (!c.currentTicket) continue
-    if (!best || c.currentTicket.called_at > best.currentTicket!.called_at) best = c
+// ── Watch for done/skip clearing the displayed ticket ────────────────────────
+// onAnnounce handles new calls. This watcher only handles the case where the
+// currently-displayed ticket is cleared (done/skip) with no new call following.
+watch(() => queue.state, (state) => {
+  if (!displayCurrent.value) return
+  const counters = state?.counters ?? []
+  const shownCounter = counters.find(c => c.id === displayCurrent.value!.counterId)
+  // If the counter that owns the displayed ticket no longer has an active ticket,
+  // or has a different ticket (already handled by onAnnounce), clear the display.
+  if (!shownCounter?.currentTicket || shownCounter.currentTicket.called_at !== displayCurrent.value!.calledAt) {
+    // Only clear if there's nothing queued — a queued announcement will update the display itself
+    if (_queue.length === 0 && !_announcing) {
+      if (displayCurrent.value) prevCalled.value = displayCurrent.value
+      displayCurrent.value = null
+      isBlinking.value = false
+      flashingCounterId.value = null
+    }
   }
-  if (!best) return null
-  return {
-    counterId:     best.id,
-    displayNumber: best.currentTicket!.display_number,
-    color:         best.category.color,
-    prefix:        best.category.prefix,
-    counterName:   best.name,
-    calledAt:      best.currentTicket!.called_at,
-  }
-})
+}, { deep: false })
 
-const prevCalled    = ref<CalledEntry | null>(null)
-const isBlinking    = ref(false)
-const flashingCounterId = ref<number | null>(null)
-let blinkTimer: ReturnType<typeof setTimeout> | null = null
-
-// 10 blinks × 500ms per blink = 5000ms total
-const BLINK_DURATION = 5000
-
-watch(lastCalled, (next, prev) => {
-  if (!next) return
-  const numberChanged = !prev || next.displayNumber !== prev.displayNumber
-  const recalled      = prev && next.displayNumber === prev.displayNumber && next.calledAt !== prev.calledAt
-  if (!numberChanged && !recalled) return
-
-  if (numberChanged && prev) prevCalled.value = prev
-  speakCalled(next)
-
-  if (numberChanged) {
-    if (blinkTimer) clearTimeout(blinkTimer)
-    isBlinking.value = false
-    flashingCounterId.value = null
-
-    requestAnimationFrame(() => {
-      isBlinking.value = true
-      flashingCounterId.value = next.counterId
-      blinkTimer = setTimeout(() => {
-        isBlinking.value = false
-        flashingCounterId.value = null
-      }, BLINK_DURATION)
-    })
-  }
-})
-
+// ── Board data ────────────────────────────────────────────────────────────────
 const grouped = computed(() => {
   const counters = queue.state?.counters ?? []
   const map = new Map<number, { category: typeof counters[0]['category']; counters: typeof counters }>()

@@ -142,6 +142,8 @@ QueueState = {
 
 **Mode branching** — `GET /api/display/state` includes `session.mode`. Kiosk frontend branches on this. Single source of truth, no separate endpoint.
 
+**Close session** — `POST /api/sessions/close` must atomically mark all `called`/`recalled`/`serving` tickets for that session as `done` in the same transaction before setting session status to `closed`. Leaving in-flight tickets active poisons the `COUNTER_HAS_ACTIVE_TICKET` guard in future sessions.
+
 **Session concurrency guard** — `sessionService.openSession()` must wrap check+insert in a single SQLite transaction:
 ```typescript
 db.transaction(() => {

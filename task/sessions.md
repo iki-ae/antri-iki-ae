@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-30 (Session 21)
+**Last updated:** 2026-05-30 (Session 22)
 
 ---
 
@@ -26,6 +26,25 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-30 — Session 22
+**Did:** Fixed three display page announcement bugs + operator Call Next regression:
+
+**Display page — announcement queue overhaul (`DisplayPage.vue`, `queue.ts`):**
+- **Issue 1 (sound on modal close):** Page-load SSE snapshot triggered `handleAnnounce` for every active ticket because `_lastCalledAt` was empty on connect. Fixed: first SSE message after `connect()` is silently seeded (`_seeded` flag) — populates `_lastCalledAt` and fires `onFirstState` callback without triggering any listeners. `_seeded` resets on `disconnect()` so reconnects behave the same way.
+- **Issue 2 (done/skip shows old number):** `displayCurrent` was driven by `lastCalled` computed — when a ticket was cleared, Vue's computed shifted to the next-most-recent ticket and showed it. Fixed: `displayCurrent` is now decoupled from `lastCalled`. A state watcher detects when the displayed ticket's counter no longer holds it and clears the top box (moving it to `prevCalled`). Bottom box (`prevCalled`) now also seeded on load from second-most-recent active ticket via `onFirstState`.
+- **Issue 3 (rapid-fire operators skip numbers):** `watch(lastCalled)` only sees the final value after Vue batches multiple rapid SSE updates — intermediate calls were silently dropped. Fixed: announcement detection moved into `queue.ts` `onmessage` handler, which runs synchronously per SSE message before Vue can batch. Each changed `calledAt` per counter fires `onAnnounce` individually. Display page processes these through a serial queue (BLINK_DURATION between each).
+- `queue.ts` now exposes: `onAnnounce`/`offAnnounce` (per-message call events), `onFirstState`/`offFirstState` (one-shot page-load snapshot).
+
+**Operator Call Next regression (`queueService.ts`, `sessions.ts`):**
+- `COUNTER_HAS_ACTIVE_TICKET` guard was not scoped to the current session — stale active tickets from closed sessions blocked `callNext` for those counters indefinitely. Fixed: added `eq(tickets.session_id, session.id)` to the guard query.
+- `closeSession` did not mark in-flight tickets (`called`/`recalled`/`serving`) as `done` — they persisted across sessions poisoning the guard. Fixed: close session now atomically marks all active tickets for that session as `done` in the same transaction before closing.
+
+**Decided:** Any DB guard that checks ticket status must be scoped to the current session. Closing a session must clean up all in-flight tickets atomically.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

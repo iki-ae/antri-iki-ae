@@ -114,6 +114,18 @@ export async function callNext(counter_id: number): Promise<{ ticket: any } | { 
   const now = new Date().toISOString()
 
   const claimed = db.transaction(() => {
+    const active = db
+      .select()
+      .from(tickets)
+      .where(and(
+        eq(tickets.session_id, session.id),
+        eq(tickets.counter_id, counter_id),
+        inArray(tickets.status, ['called', 'recalled', 'serving'])
+      ))
+      .get()
+
+    if (active) return 'COUNTER_HAS_ACTIVE_TICKET' as const
+
     const next = db
       .select()
       .from(tickets)
@@ -135,6 +147,7 @@ export async function callNext(counter_id: number): Promise<{ ticket: any } | { 
     return next
   })
 
+  if (claimed === 'COUNTER_HAS_ACTIVE_TICKET') return { error: 'COUNTER_HAS_ACTIVE_TICKET' }
   if (!claimed) return { error: 'NO_TICKETS_WAITING' }
 
   await rebuildQueueState()
