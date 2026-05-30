@@ -79,17 +79,31 @@ frontend/
 
 ## AUTH — AXIOS INTERCEPTOR
 
-`api/index.ts` must intercept 401 and redirect to login:
+`api/index.ts` intercepts 401 and redirects to login for mid-session token expiry. **Critical rules:**
+
+- **Never redirect on `/auth/me` or `/auth/logout` 401s** — these are expected to 401 when unauthenticated (bootstrap/teardown). Redirecting on them causes an infinite loop.
+- **Never redirect when already on a public route** (`/display`, `/kiosk`, `/login`) — these pages have no auth requirement and should load regardless.
+- **Use `store.clear()` not `store.logout()`** — `logout()` calls `/api/auth/logout` which itself 401s unauthenticated, re-entering the interceptor. `clear()` resets state only, no API call.
+
 ```typescript
-api.interceptors.response.use(null, (error) => {
-  if (error.response?.status === 401) {
-    authStore.clear();
-    router.push('/login');
+const PUBLIC_ROUTES = ['/display', '/kiosk', '/login']
+const SKIP_REDIRECT_URLS = ['/auth/me', '/auth/logout']
+
+api.interceptors.response.use(null, (err) => {
+  const url: string = err.config?.url ?? ''
+  if (err.response?.status === 401 && !SKIP_REDIRECT_URLS.some(u => url.includes(u))) {
+    import('@/router').then(({ default: router }) => {
+      const current = router.currentRoute.value.path
+      if (PUBLIC_ROUTES.some(p => current.startsWith(p))) return
+      import('@/stores/auth').then(({ useAuthStore }) => useAuthStore().clear())
+      router.replace('/login')
+    })
   }
-  return Promise.reject(error);
-});
+  return Promise.reject(err)
+})
 ```
-Covers mid-session token expiry — operator redirected cleanly instead of silent failure.
+
+The auth store exposes `clear()` (state reset, no API call) and `logout()` (calls `/api/auth/logout` then `clear()`). Only the interceptor uses `clear()` directly.
 
 ---
 
@@ -126,9 +140,10 @@ Covers mid-session token expiry — operator redirected cleanly instead of silen
 ## DISPLAY PAGE — SPECIAL RULES
 
 - NO `ion-header`, NO `ion-tab-bar`, NO `ion-menu`
-- Full viewport: `height: 100dvh`, `overflow: hidden`
-- Font sizes readable from 5 meters
-- `WatermarkFooter` always rendered at bottom
+- Fixed `1024×768` frame (`display-frame`) centered in a full-viewport shell (`display-root`)
+- All font sizes in fixed `px` — not `vw`/`clamp` (those reference the viewport, not the frame)
+- Watermark is inline in the accent header (institution name left, "powered by iki.ae" + QR pill right) — no `WatermarkFooter` component used
+- Login page quick-links to `/display` and `/kiosk` use plain `<a href="...">` — not `router.push` — to navigate outside the SPA router and avoid overlay/transparent rendering issues
 
 ---
 
