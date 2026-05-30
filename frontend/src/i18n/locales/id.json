@@ -106,13 +106,14 @@
     "skipped":   "Dilewati"
   },
   "display": {
-    "subtitle":  "Sistem Antrian",
-    "waiting":   "{count} menunggu",
-    "noSession": "Belum ada sesi antrian aktif",
+    "subtitle":   "Sistem Antrian",
+    "waiting":    "{count} menunggu",
+    "noSession":  "Belum ada sesi antrian aktif",
+    "announce":   "Antrian {number}, ke Loket {prefix}-{counter}",
     "hint": {
       "title":    "Pengaturan Tampilan Optimal",
       "body":     "Atur resolusi layar ke {resolution} dan tekan {key} untuk masuk ke layar penuh agar tampilan terbaik.",
-      "countdown": "Menutup otomatis dalam {n} detik"
+      "confirm": "Ok, petunjuk telah dipahami"
     }
   },
   "kiosk": {

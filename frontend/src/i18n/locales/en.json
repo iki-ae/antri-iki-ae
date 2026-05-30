@@ -106,13 +106,14 @@
     "skipped":   "Skipped"
   },
   "display": {
-    "subtitle":  "Queue System",
-    "waiting":   "{count} waiting",
-    "noSession": "No active queue session",
+    "subtitle":   "Queue System",
+    "waiting":    "{count} waiting",
+    "noSession":  "No active queue session",
+    "announce":   "Queue {number}, Counter {prefix}-{counter}",
     "hint": {
       "title":    "Optimal Display Setup",
       "body":     "Set your screen resolution to {resolution} and press {key} to enter fullscreen for the best visibility.",
-      "countdown": "Auto closed in {n}s"
+      "confirm": "Got it, instructions understood"
     }
   },
   "kiosk": {

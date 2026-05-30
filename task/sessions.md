@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-30 (Session 19)
+**Last updated:** 2026-05-30 (Session 21)
 
 ---
 
@@ -39,6 +39,21 @@ _Nothing yet._
 - i18n: `display.hint.title/body/countdown` keys added to both locales; body uses named interpolation slots so `1024 × 768` and `F11` stay bold in both languages
 
 **Decided:** 401 interceptor must never trigger on auth bootstrap endpoints (`/auth/me`, `/auth/logout`) — they are designed to 401 unauthenticated and the interceptor's job is only for mid-session expiry on protected endpoints.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-30 — Session 21
+**Did:** Category color live-sync across all surfaces:
+- `backend/src/routes/categories.ts`: `PUT /:id` now calls `broadcastQueueState()` after saving — pushes updated `counters[].category.color` to all SSE subscribers immediately
+- `OperatorPage.vue`: ticket card top border and `TicketNumber` color now driven by `myCounter?.category.color` via `--cat-color` CSS variable; fallback to `var(--color-primary)` when no counter assigned
+- `CountersPage.vue`: added `useQueueStore` + `watch(() => queueStore.state)` — reloads categories from REST whenever SSE delivers a `queue_update`; also connects SSE on `onIonViewWillEnter`
+
+**Decided:**
+- Category color in SSE payload (`counters[].category.color`) was already present — only the broadcast trigger was missing from the PUT route
+- `CountersPage` does not use SSE state for rendering (it uses REST `categories[]` directly); watching `queueStore.state` as a trigger to re-fetch is the minimal correct fix without redesigning the page
+- `DisplayPage` and `QueueBoard` (admin dashboard) were already reactive — they read color from `queueStore.state` which is SSE-driven; no changes needed there
 
 **Next:** Pack WSL2 distribution tar, README/deployment guide.
 

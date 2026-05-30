@@ -13,7 +13,7 @@
               <template #key><strong>F11</strong></template>
             </i18n-t>
           </p>
-          <button class="hint-btn" disabled>{{ $t('display.hint.countdown', { n: hintCountdown }) }}</button>
+          <button class="hint-btn" @click="showHint = false">{{ $t('display.hint.confirm') }}</button>
         </div>
       </div>
     </Transition>
@@ -114,34 +114,64 @@
 
 <script setup lang="ts">
 import { computed, watch, ref, onMounted, onUnmounted } from 'vue'
+import { useI18n }        from 'vue-i18n'
 import { useQueueStore }  from '@/stores/queue'
 import { useConfigStore } from '@/stores/config'
 import TicketNumber       from '@/components/TicketNumber.vue'
 
 const queue       = useQueueStore()
 const configStore = useConfigStore()
+const { t, locale } = useI18n()
 
-const showHint     = ref(true)
-const hintCountdown = ref(10)
-let hintTimer: ReturnType<typeof setInterval> | null = null
+type CalledEntry = { displayNumber: string; color: string; prefix: string; counterName: string; calledAt: string }
+
+// Web Speech API — activated after first user gesture (hint dismiss button).
+// All subsequent SSE-triggered calls work because the audio context is unlocked.
+let _audioUnlocked = false
+let _pendingSpeak: (() => void) | null = null
+
+function onPageClick() {
+  _audioUnlocked = true
+  if (_pendingSpeak) {
+    _pendingSpeak()
+    _pendingSpeak = null
+  }
+}
+
+function speakCalled(entry: CalledEntry) {
+  const text = t('display.announce', {
+    number:  entry.displayNumber,
+    prefix:  entry.prefix,
+    counter: entry.counterName,
+  })
+  const lang = locale.value === 'id' ? 'id-ID' : 'en-US'
+
+  const speak = () => {
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(text)
+    u.lang = lang
+    u.rate = 0.9
+    window.speechSynthesis.speak(u)
+  }
+
+  if (_audioUnlocked) {
+    speak()
+  } else {
+    _pendingSpeak = speak
+  }
+}
+
+const showHint = ref(true)
 
 onMounted(() => {
   queue.connect()
-  hintTimer = setInterval(() => {
-    hintCountdown.value--
-    if (hintCountdown.value <= 0) {
-      showHint.value = false
-      if (hintTimer) clearInterval(hintTimer)
-    }
-  }, 1000)
+  window.addEventListener('click', onPageClick)
 })
 
 onUnmounted(() => {
   queue.disconnect()
-  if (hintTimer) clearInterval(hintTimer)
+  window.removeEventListener('click', onPageClick)
 })
-
-type CalledEntry = { displayNumber: string; color: string; prefix: string; counterName: string }
 
 const lastCalled = computed<(CalledEntry & { counterId: number }) | null>(() => {
   const counters = queue.state?.counters ?? []
@@ -157,6 +187,7 @@ const lastCalled = computed<(CalledEntry & { counterId: number }) | null>(() => 
     color:         best.category.color,
     prefix:        best.category.prefix,
     counterName:   best.name,
+    calledAt:      best.currentTicket!.called_at,
   }
 })
 
@@ -170,23 +201,27 @@ const BLINK_DURATION = 5000
 
 watch(lastCalled, (next, prev) => {
   if (!next) return
-  const changed = !prev || next.displayNumber !== prev.displayNumber
-  if (!changed) return
+  const numberChanged = !prev || next.displayNumber !== prev.displayNumber
+  const recalled      = prev && next.displayNumber === prev.displayNumber && next.calledAt !== prev.calledAt
+  if (!numberChanged && !recalled) return
 
-  if (prev) prevCalled.value = prev
+  if (numberChanged && prev) prevCalled.value = prev
+  speakCalled(next)
 
-  if (blinkTimer) clearTimeout(blinkTimer)
-  isBlinking.value = false
-  flashingCounterId.value = null
+  if (numberChanged) {
+    if (blinkTimer) clearTimeout(blinkTimer)
+    isBlinking.value = false
+    flashingCounterId.value = null
 
-  requestAnimationFrame(() => {
-    isBlinking.value = true
-    flashingCounterId.value = next.counterId
-    blinkTimer = setTimeout(() => {
-      isBlinking.value = false
-      flashingCounterId.value = null
-    }, BLINK_DURATION)
-  })
+    requestAnimationFrame(() => {
+      isBlinking.value = true
+      flashingCounterId.value = next.counterId
+      blinkTimer = setTimeout(() => {
+        isBlinking.value = false
+        flashingCounterId.value = null
+      }, BLINK_DURATION)
+    })
+  }
 })
 
 const grouped = computed(() => {
@@ -616,16 +651,18 @@ function gridRows(counterCount: number): number {
 .hint-btn {
   margin-top: 8px;
   padding: 10px 28px;
-  background: var(--color-surface-alt);
-  color: var(--color-text-muted);
-  border: 1.5px solid var(--color-border);
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
   border-radius: 100px;
   font-size: 13px;
   font-weight: 600;
-  cursor: not-allowed;
+  cursor: pointer;
   font-family: var(--font-family);
   letter-spacing: 0.02em;
+  transition: opacity 0.15s;
 }
+.hint-btn:hover { opacity: 0.88; }
 
 .overlay-enter-active,
 .overlay-leave-active {
