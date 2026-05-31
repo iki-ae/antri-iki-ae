@@ -49,7 +49,7 @@ export const sessions = sqliteTable('sessions', {
   category_id: integer('category_id').references(() => categories.id),
   date:        text('date').notNull(),             // 'YYYY-MM-DD'
   mode:        text('mode', { enum: ['bulk', 'kiosk'] }).notNull(),
-  status:      text('status', { enum: ['open', 'closed'] }).notNull().default('open'),
+  status:      text('status', { enum: ['planned', 'open', 'closed'] }).notNull().default('planned'),
   opened_at:   text('opened_at').notNull().default(sql`(datetime('now'))`),
   closed_at:   text('closed_at'),
   opened_by:   integer('opened_by').notNull().references(() => users.id),

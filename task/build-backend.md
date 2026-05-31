@@ -51,7 +51,7 @@ config         // Single-row: institution_name, locale, app_version, watermark_t
 categories     // prefix(A/B/C), name, color, sort_order, is_active
 counters       // name, category_id, is_active
 users          // name, username, password_hash, role(admin|operator), counter_id
-sessions       // category_id(nullable FK), date, mode(bulk|kiosk), status(open|closed), opened_at, closed_at — one open session per category
+sessions       // category_id(nullable FK), date, mode(bulk|kiosk), status(planned|open|closed), opened_at, closed_at — one open session per category; multiple planned/closed allowed
 tickets        // session_id, category_id, number(int), display_number(A-001), status, counter_id, called_at, served_at, skipped_at
 audit_logs     // user_id, action, payload(JSON), created_at
 ```
@@ -76,7 +76,11 @@ audit_logs     // user_id, action, payload(JSON), created_at
 | `CRUD /api/categories` | admin |
 | `CRUD /api/counters` | admin |
 | `CRUD /api/users` | admin |
-| `POST /api/sessions/open\|close\|reset` | admin |
+| `GET /api/sessions/list` | admin |
+| `GET /api/sessions/current` | admin |
+| `POST /api/sessions/create\|start\|stop\|reset` | admin |
+| `PUT /api/sessions/:id` | admin |
+| `DELETE /api/sessions/:id` | admin |
 | `POST /api/tickets/issue\|call\|recall\|skip\|serve\|call-skipped` | operator |
 | `PUT /api/users/me` | any authenticated user (self-update name/password) |
 | `POST /api/kiosk/take` | none (public) |
@@ -142,16 +146,17 @@ QueueState = {
 
 **Mode branching** — `GET /api/display/state` includes `session.mode`. Kiosk frontend branches on this. Single source of truth, no separate endpoint.
 
-**Close session** — `POST /api/sessions/close` must atomically mark all `called`/`recalled`/`serving` tickets for that session as `done` in the same transaction before setting session status to `closed`. Leaving in-flight tickets active poisons the `COUNTER_HAS_ACTIVE_TICKET` guard in future sessions.
+**Session lifecycle:** `planned → open → closed`. Closed sessions can be re-opened (resumed). Only one `open` session per category at a time.
 
-**Session concurrency guard** — `POST /api/sessions/open` must wrap check+insert in a single SQLite transaction, scoped to the category:
+**Stop session** — `POST /api/sessions/stop` must atomically mark all `called`/`recalled`/`serving` tickets for that session as `done` in the same transaction before setting status to `closed`. Leaving in-flight tickets active poisons the `COUNTER_HAS_ACTIVE_TICKET` guard in future sessions.
+
+**Create session** — `POST /api/sessions/create` inserts with `status='planned'`. Bulk tickets are issued immediately at create time (not at start). This lets the admin see the ticket count before going live.
+
+**Start/resume guard** — `POST /api/sessions/start` checks for any existing `open` session for the same category before transitioning `planned → open` or `closed → open`:
 ```typescript
-db.transaction(() => {
-  const existing = db.select().from(sessions)
-    .where(and(eq(sessions.status, 'open'), eq(sessions.category_id, category_id))).get();
-  if (existing) throw new Error('SESSION_ALREADY_OPEN');
-  // insert new session
-})();
+const existing = db.select().from(sessions)
+  .where(and(eq(sessions.status, 'open'), eq(sessions.category_id, session.category_id))).get();
+if (existing) return reply.code(409).send({ error: 'SESSION_ALREADY_OPEN' });
 ```
 The same transaction pattern applies to `callNext()` in `queueService.ts` — check `status = 'waiting'` and update atomically so two operators cannot claim the same ticket.
 

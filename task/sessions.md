@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-31 (Session 26)
+**Last updated:** 2026-05-31 (Session 27)
 
 ---
 
@@ -26,6 +26,47 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-31 — Session 27
+**Did:** Session planning + start/stop lifecycle redesign:
+
+**Schema:** Added `'planned'` to `sessions.status` enum (`planned | open | closed`). SQLite TEXT column — no DDL migration needed; change is TypeScript-only.
+
+**Backend (`sessions.ts`) — full route overhaul:**
+- `GET /sessions/list` — all sessions for all categories with `issued` + `served` ticket counts; returns `{ ...session, category, issued, served }[]`
+- `POST /sessions/create` — creates a `planned` session; bulk tickets issued at create time (not start time)
+- `PUT /sessions/:id` — edits mode/bulk count on `planned` sessions only; re-issues tickets if bulk count changes
+- `POST /sessions/start` — moves `planned → open` or resumes `closed → open`; guard: one open per category
+- `POST /sessions/stop` — replaces `/close`; moves `open → closed`; flushes in-flight tickets atomically
+- `DELETE /sessions/:id` — deletes `planned` or `closed` session + all its tickets; rejects `open`
+- `GET /sessions/current` — unchanged (SSE/operator use)
+- `POST /sessions/reset` — unchanged
+
+**Frontend (`types/index.ts`, `api/index.ts`):**
+- `Session.status` union: `'planned' | 'open' | 'closed'`
+- Added `SessionWithStats` interface (`Session` + `category`, `issued`, `served`)
+- `sessionsApi`: replaced `open/close` with `list, create, update, start, stop, remove`; kept `current, reset`
+
+**Frontend (`SessionPage.vue`) — full rewrite:**
+- Per-category card layout with colored header
+- `+` button: desktop `card-add-btn` in `.card-header` + mobile FAB
+- Create/edit modal: category picker (create only), mode selector, bulk count input
+- Session list per category (newest first): date, status badge (Direncanakan/Berjalan/Selesai), mode, issued/served counts
+- Per-row actions: edit icon (`planned` only), delete icon (`planned`/`closed`), stop button (`open`), start/resume button (`planned`/`closed`)
+- Start disabled when category already has an open session
+- Stop requires confirmation alert
+
+**i18n:** Replaced old `open/close/active` session keys with `planned/open/closed/create/edit/start/stop/resume/none/issued/served/mode/confirmStop/confirmDelete`. Added new `errors.*` keys.
+
+**Decided:**
+- Bulk tickets issued at **create** time, not start — count visible before any session goes live
+- A `closed` session can be resumed (`start`) — only one `open` per category enforced at the backend
+- Edit is gated to `planned` only — no mid-session mode changes
+- Delete atomically removes all tickets belonging to the session
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

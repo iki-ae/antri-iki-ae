@@ -34,7 +34,7 @@ frontend/
     │   │   ├── CategoriesPage.vue
     │   │   ├── CountersPage.vue
     │   │   ├── UsersPage.vue
-    │   │   ├── SessionPage.vue  # Open/close + mode select + bulk-issue
+    │   │   ├── SessionPage.vue  # Plan/start/stop sessions per category — list with stats
     │   │   ├── ConfigPage.vue   # Institution name, locale, watermark preview
     │   │   └── BackupPage.vue   # Export / import
     │   ├── operator/            # /operator/* — role: operator

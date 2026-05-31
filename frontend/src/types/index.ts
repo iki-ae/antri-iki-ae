@@ -38,9 +38,15 @@ export interface Session {
   category_id: number
   date: string
   mode: 'bulk' | 'kiosk'
-  status: 'open' | 'closed'
+  status: 'planned' | 'open' | 'closed'
   opened_at: string
   closed_at?: string
+}
+
+export interface SessionWithStats extends Session {
+  category: { id: number; prefix: string; name: string; color: string } | null
+  issued: number
+  served: number
 }
 
 export interface Ticket {
