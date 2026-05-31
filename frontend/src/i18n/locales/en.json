@@ -92,10 +92,8 @@
     "counter":  "Counter"
   },
   "config": {
-    "institutionName":  "Display Title",
-    "locale":           "Language",
-    "watermarkUrl":     "Watermark URL",
-    "watermarkPreview": "Watermark Preview"
+    "institutionName": "Display Title",
+    "locale":          "Language"
   },
   "ticket": {
     "call_next": "Call Next",

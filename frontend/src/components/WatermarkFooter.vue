@@ -1,15 +1,10 @@
 <template>
   <div :class="['watermark-footer', variant]">
-    <a :href="configStore.watermarkUrl" target="_blank" rel="noopener">
-      {{ configStore.watermarkText }}
-    </a>
+    <a href="https://iki.ae" target="_blank" rel="noopener">by iki.ae</a>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useConfigStore } from '@/stores/config'
-const configStore = useConfigStore()
-
 defineProps<{
   variant?: 'display' | 'subtle'  // display = large white, subtle = small muted
 }>()

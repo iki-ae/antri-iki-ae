@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-31 (Session 24)
+**Last updated:** 2026-05-31 (Session 26)
 
 ---
 
@@ -26,6 +26,40 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-31 — Session 26
+**Did:** Watermark brand hardening + CountersPage card layout:
+
+**CountersPage.vue — card-per-category layout:**
+- Replaced `ion-list-header` + `ion-list` grouping with card layout matching `SessionPage.vue`: colored category header bar + card body containing the counters list. All logic and the modal form unchanged.
+
+**Watermark hardening (8 layers):**
+- `backend/drizzle/schema.ts`: dropped `watermark_url` column; `watermark_text` default changed to `'by iki.ae'`
+- `backend/drizzle/migrations/0001_lonely_night_thrasher.sql`: generated migration — `ALTER TABLE config DROP COLUMN watermark_url`; applied manually via Node (drizzle-kit up:sqlite does not apply pending migrations in v0.20, only drizzle-orm migrator does at app startup — but app doesn't auto-run migrations either, so manual apply required)
+- `backend/src/config/database.ts`: seed INSERT no longer includes `watermark_url`; integrity check added — `UPDATE config SET watermark_text = 'by iki.ae' WHERE id = 1` runs unconditionally on every boot
+- `backend/src/routes/config.ts`: PUT handler now deletes `watermark_text` from body before any update — field is non-writable via API
+- `backend/src/server.ts`: `onSend` hook injects `X-Powered-By: iki.ae` on every response
+- `frontend/src/stores/config.ts`: `watermarkText` and `watermarkUrl` are module-level string constants (`'by iki.ae'` / `'https://iki.ae'`) — not computed from DB; DB value is irrelevant to the frontend
+- `frontend/src/components/WatermarkFooter.vue`: hardcoded `href="https://iki.ae"` and text `by iki.ae` — no config store dependency
+- `frontend/src/types/index.ts`: `watermark_text` and `watermark_url` removed from `Config` interface
+- `frontend/src/api/index.ts`: `configApi.update` typed as `Partial<Omit<Config, 'id' | 'updated_at'>>` — watermark fields not present in type
+- `frontend/src/i18n/locales/en.json` + `id.json`: dead keys `config.watermarkUrl` and `config.watermarkPreview` removed
+- `backend/src/config/database.ts` + `schema.ts`: default `institution_name` changed to `'antri.iki.ae'`
+
+**Decided:** `watermark_url` is fully removed from DB — hardcoded `'https://iki.ae'` in the frontend store. Migration applied manually on dev DB. For fresh installs the migration runs via drizzle-orm migrator at first startup (if wired) or a clean DB from migration already has the correct schema.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-31 — Session 25
+**Did:** Admin sidebar reorder + default institution name:
+- `AdminShell.vue`: moved Session below Pengguna (Users) in `menuItems` — new order: Dashboard → Kategori → Loket → Pengguna → Sesi → Pengaturan → Cadangan
+- `schema.ts`, `database.ts`, `ConfigPage.vue`: default `institution_name` changed from `'Antri-Iki-Ae'` to `'antri.iki.ae'` for consistency with the product domain
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

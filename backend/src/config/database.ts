@@ -19,10 +19,13 @@ function seed() {
   const configRow = (raw.prepare('SELECT id FROM config WHERE id = 1').get() as { id: number } | undefined)
   if (!configRow) {
     raw.prepare(`
-      INSERT INTO config (id, institution_name, locale, app_version, watermark_text, watermark_url)
-      VALUES (1, 'Antri-Iki-Ae', 'id', '1.0.0', 'by iki.ae', 'https://iki.ae')
+      INSERT INTO config (id, institution_name, locale, app_version, watermark_text)
+      VALUES (1, 'antri.iki.ae', 'id', '1.0.0', 'by iki.ae')
     `).run()
   }
+
+  // Integrity check — enforce watermark on every boot regardless of DB state
+  raw.prepare(`UPDATE config SET watermark_text = 'by iki.ae' WHERE id = 1`).run()
 
   const adminRow = (raw.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get() as { id: number } | undefined)
   if (!adminRow) {

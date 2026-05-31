@@ -158,15 +158,14 @@ The auth store exposes `clear()` (state reset, no API call) and `logout()` (call
 - Large tap targets — minimum 120px buttons
 - Auto-reset to category picker after 10 seconds via `setTimeout`
 - Show ticket number full-screen after category selection
-- Mode branching on load — check `session.mode` from `GET /api/display/state`:
+- Mode branching on load — call `GET /api/kiosk/status` for kiosk-mode categories, and `GET /api/display/state` to detect any open sessions:
   ```typescript
-  if (state.session.mode === 'bulk') {
-    // show branding page (Mode A)
-  } else {
-    // show category picker (Mode B)
-  }
+  // categories with open kiosk-mode sessions → show category picker (Mode B)
+  // no kiosk categories but sessions exist → show bulk branding page (Mode A)
+  // no sessions at all → show unavailable screen
   ```
   Mode A branding page: full-screen, `antri.iki.ae` as the heading, large `iki.ae` barcode centered, no category picker. This is a holding screen — visitors are pre-issued tickets, the kiosk is not a point of entry.
+  Mode B: only categories with an open kiosk session appear in the picker — categories with bulk sessions are not shown.
 
 ---
 
@@ -245,7 +244,7 @@ Rules:
 The card footer (used on `LoginPage` and any branded card) is a fully clickable `<a>` strip, not `WatermarkFooter.vue`.
 
 ```html
-<a class="footer" :href="configStore.watermarkUrl" target="_blank" rel="noopener">
+<a class="footer" href="https://iki.ae" target="_blank" rel="noopener">
   <div class="footer-text">
     powered by
     <strong>iki.ae</strong>
@@ -262,7 +261,7 @@ Rules:
 - Layout: `display: flex; align-items: center; justify-content: flex-end; gap: 12px`
 - Text: right-aligned, `"powered by"` at 11px `rgba(255,255,255,0.65)`, `<strong>iki.ae</strong>` at 13px `rgba(255,255,255,0.95)`
 - QR container: `38×38px` white rounded box (`border-radius: var(--radius-sm)`), image inside at `34×34px`
-- QR asset: `src/assets/qr-iki-ae.svg` — encodes `https://iki.ae`, links to `configStore.watermarkUrl`
+- QR asset: `src/assets/qr-iki-ae.svg` — encodes `https://iki.ae`; href is always hardcoded `https://iki.ae`
 - The entire strip is the clickable target — no nested buttons
 
 ---
@@ -360,4 +359,5 @@ Placement differs by surface — see CLAUDE.md for the full table.
 
 - **Admin pages:** watermark is in the `AdminShell.vue` sidebar brand header. Do NOT add `WatermarkFooter` to admin pages.
 - **Display/Kiosk/Operator:** `WatermarkFooter.vue` still required.
-- `ConfigPage.vue` shows a watermark text preview — does NOT allow removing "by iki.ae"
+- `WatermarkFooter.vue` and all watermark surfaces are fully hardcoded — `href="https://iki.ae"`, text `"by iki.ae"`. No config store binding. The `configStore.watermarkText` and `configStore.watermarkUrl` are module-level string constants (not DB-driven).
+- `ConfigPage.vue` does not expose any watermark settings — watermark is immutable via UI and API

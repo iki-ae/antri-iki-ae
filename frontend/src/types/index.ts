@@ -3,8 +3,6 @@ export interface Config {
   institution_name: string
   locale: string
   app_version: string
-  watermark_text: string
-  watermark_url: string
   updated_at: string
 }
 

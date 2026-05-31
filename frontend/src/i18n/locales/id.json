@@ -92,10 +92,8 @@
     "counter":  "Loket"
   },
   "config": {
-    "institutionName":  "Judul Tampilan",
-    "locale":           "Bahasa",
-    "watermarkUrl":     "URL Tanda Air",
-    "watermarkPreview": "Pratinjau Tanda Air"
+    "institutionName": "Judul Tampilan",
+    "locale":          "Bahasa"
   },
   "ticket": {
     "call_next": "Panggil Berikutnya",

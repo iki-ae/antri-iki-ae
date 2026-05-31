@@ -40,6 +40,12 @@ await app.register(displayRoutes,  { prefix: '/api/display' })
 await app.register(eventsRoutes,   { prefix: '/api/events' })
 await app.register(backupRoutes,   { prefix: '/api/backup' })
 
+// Brand header on every response
+app.addHook('onSend', (_request, reply, _payload, done) => {
+  reply.header('X-Powered-By', 'iki.ae')
+  done()
+})
+
 // Health check
 app.get('/api/health', async () => ({ status: 'ok', app: 'antri-iki-ae' }))
 

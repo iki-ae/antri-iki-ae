@@ -62,7 +62,7 @@ onIonViewWillEnter(load)
 
 async function load() {
   const { data } = await configApi.get()
-  if (!data.institution_name) data.institution_name = 'iki.ae'
+  if (!data.institution_name) data.institution_name = 'antri.iki.ae'
   form.value = { ...data }
 }
 

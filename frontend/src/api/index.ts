@@ -32,8 +32,8 @@ export const authApi = {
 }
 
 export const configApi = {
-  get:    ()             => api.get<Config>('/config'),
-  update: (data: Partial<Config>) => api.put<Config>('/config', data),
+  get:    ()                       => api.get<Config>('/config'),
+  update: (data: Partial<Omit<Config, 'id' | 'updated_at'>>) => api.put<Config>('/config', data),
 }
 
 export const categoriesApi = {

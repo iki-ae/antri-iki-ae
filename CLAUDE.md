@@ -85,9 +85,10 @@ The "by iki.ae" mark must be visible on every surface. Placement differs by surf
 | Admin (`/admin/*`) | Sidebar brand header — persistent, always visible | `AdminShell.vue` sidebar — no per-page footer needed |
 | Login | Card footer strip — "powered by iki.ae" + QR | Inline `<a>` strip in `LoginPage.vue` |
 
-- `watermark_url` in config = customizable WA/website link (affects the QR/barcode target)
+- Watermark text (`by iki.ae`) and URL (`https://iki.ae`) are hardcoded in the frontend — not DB-driven, not configurable via UI or API
 - The QR is part of the watermark — not optional, not configurable
-- Config page shows a watermark preview only — cannot remove "by iki.ae"
+- On every boot, the backend integrity check force-resets `watermark_text = 'by iki.ae'` in the DB regardless of current value
+- The PUT `/api/config` handler strips `watermark_text` from the body — it cannot be changed via API
 - **Admin pages do NOT use `WatermarkFooter.vue`** — the sidebar brand header covers it
 
 ---

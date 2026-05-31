@@ -11,11 +11,9 @@ export const configRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.put('/', { preHandler: requireAdmin }, async (request, reply) => {
     const body = request.body as Record<string, string>
-    // Protect watermark_text — cannot be removed
+    // Strip non-configurable fields — watermark is immutable via API
     delete body.id
-    if (body.watermark_text !== undefined && !body.watermark_text.includes('iki.ae')) {
-      return reply.code(400).send({ error: 'WATERMARK_REQUIRED' })
-    }
+    delete body.watermark_text
     db.update(config).set({ ...body, updated_at: new Date().toISOString() }).where(eq(config.id, 1)).run()
     return db.select().from(config).get()
   })

@@ -47,11 +47,11 @@ backend/
 ```typescript
 // 7 tables — full definitions in drizzle/schema.ts
 
-config         // Single-row: institution_name, locale, app_version, watermark_text, watermark_url
+config         // Single-row: institution_name, locale, app_version, watermark_text (hardcoded, non-writable via API)
 categories     // prefix(A/B/C), name, color, sort_order, is_active
 counters       // name, category_id, is_active
 users          // name, username, password_hash, role(admin|operator), counter_id
-sessions       // date, mode(bulk|kiosk), status(open|closed), opened_at, closed_at
+sessions       // category_id(nullable FK), date, mode(bulk|kiosk), status(open|closed), opened_at, closed_at — one open session per category
 tickets        // session_id, category_id, number(int), display_number(A-001), status, counter_id, called_at, served_at, skipped_at
 audit_logs     // user_id, action, payload(JSON), created_at
 ```
@@ -102,7 +102,7 @@ GET /api/events — public, no auth
 Emits: { type: 'queue_update', data: QueueState }
 
 QueueState = {
-  session: { id, mode, status },
+  sessions: [{ id, category_id, date, mode, status }],  // one entry per open session
   counters: [{ id, name, category, currentTicket, calledAt }],
   waiting:  [{ category_id, prefix, count }],
   skipped:  [{ id, display_number, category_id }]   // tickets with status='skipped', ordered by number
@@ -144,11 +144,12 @@ QueueState = {
 
 **Close session** — `POST /api/sessions/close` must atomically mark all `called`/`recalled`/`serving` tickets for that session as `done` in the same transaction before setting session status to `closed`. Leaving in-flight tickets active poisons the `COUNTER_HAS_ACTIVE_TICKET` guard in future sessions.
 
-**Session concurrency guard** — `sessionService.openSession()` must wrap check+insert in a single SQLite transaction:
+**Session concurrency guard** — `POST /api/sessions/open` must wrap check+insert in a single SQLite transaction, scoped to the category:
 ```typescript
 db.transaction(() => {
-  const existing = db.query.sessions.findFirst({ where: eq(sessions.status, 'open') });
-  if (existing) throw new Error('session_already_open');
+  const existing = db.select().from(sessions)
+    .where(and(eq(sessions.status, 'open'), eq(sessions.category_id, category_id))).get();
+  if (existing) throw new Error('SESSION_ALREADY_OPEN');
   // insert new session
 })();
 ```

@@ -4,11 +4,10 @@ import { sql } from 'drizzle-orm'
 // ─── config (single row) ──────────────────────────────────────────────────────
 export const config = sqliteTable('config', {
   id:               integer('id').primaryKey({ autoIncrement: true }),
-  institution_name: text('institution_name').notNull().default('Antri-Iki-Ae'),
+  institution_name: text('institution_name').notNull().default('antri.iki.ae'),
   locale:           text('locale').notNull().default('id'),
   app_version:      text('app_version').notNull().default('1.0.0'),
-  watermark_text:   text('watermark_text').notNull().default('Powered by iki.ae'),
-  watermark_url:    text('watermark_url').notNull().default('https://iki.ae'),
+  watermark_text:   text('watermark_text').notNull().default('by iki.ae'),
   updated_at:       text('updated_at').notNull().default(sql`(datetime('now'))`),
 })
 
