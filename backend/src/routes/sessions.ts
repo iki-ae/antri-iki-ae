@@ -30,20 +30,22 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Create a planned session (no tickets issued yet for kiosk; pre-issued for bulk)
   fastify.post('/create', { preHandler: requireAdmin }, async (request, reply) => {
-    const { category_id, mode, bulk_count } = request.body as {
+    const { category_id, title, mode, bulk_count } = request.body as {
       category_id: number
+      title: string
       mode: 'bulk' | 'kiosk'
       bulk_count?: number
     }
 
     if (!category_id) return reply.code(400).send({ error: 'CATEGORY_REQUIRED' })
+    if (!title?.trim()) return reply.code(400).send({ error: 'TITLE_REQUIRED' })
 
     const cat = db.select().from(categories).where(eq(categories.id, category_id)).get()
     if (!cat) return reply.code(404).send({ error: 'CATEGORY_NOT_FOUND' })
 
     const today = new Date().toISOString().split('T')[0]
     const session = db.insert(sessions)
-      .values({ category_id, date: today, mode, status: 'planned', opened_by: request.user!.userId })
+      .values({ category_id, title: title.trim(), date: today, mode, status: 'planned', opened_by: request.user!.userId })
       .returning().get()
 
     if (mode === 'bulk' && bulk_count && bulk_count > 0) {
@@ -60,11 +62,11 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.code(201).send(session)
   })
 
-  // Edit a planned session (mode / bulk count)
+  // Edit a planned session (title / mode / bulk count)
   fastify.put('/:id', { preHandler: requireAdmin }, async (request, reply) => {
     const { id } = request.params as { id: string }
     const sessionId = Number(id)
-    const { mode, bulk_count } = request.body as { mode?: 'bulk' | 'kiosk'; bulk_count?: number }
+    const { title, mode, bulk_count } = request.body as { title?: string; mode?: 'bulk' | 'kiosk'; bulk_count?: number }
 
     const session = db.select().from(sessions).where(eq(sessions.id, sessionId)).get()
     if (!session) return reply.code(404).send({ error: 'SESSION_NOT_FOUND' })
@@ -76,6 +78,7 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
     if (!cat) return reply.code(404).send({ error: 'CATEGORY_NOT_FOUND' })
 
     const newMode = mode ?? session.mode
+    const newTitle = title?.trim() ?? session.title
 
     // If mode changed away from bulk, or bulk_count changed: delete existing waiting tickets and re-issue
     if (newMode === 'bulk' && bulk_count !== undefined) {
@@ -92,7 +95,7 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
             display_number: formatDisplayNumber(cat.prefix, i),
           }).run()
         }
-        db.update(sessions).set({ mode: newMode }).where(eq(sessions.id, sessionId)).run()
+        db.update(sessions).set({ mode: newMode, title: newTitle }).where(eq(sessions.id, sessionId)).run()
       })
     } else if (newMode === 'kiosk') {
       db.transaction(() => {
@@ -100,8 +103,10 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
           eq(tickets.session_id, sessionId),
           eq(tickets.status, 'waiting')
         )).run()
-        db.update(sessions).set({ mode: newMode }).where(eq(sessions.id, sessionId)).run()
+        db.update(sessions).set({ mode: newMode, title: newTitle }).where(eq(sessions.id, sessionId)).run()
       })
+    } else if (newTitle !== session.title) {
+      db.update(sessions).set({ title: newTitle }).where(eq(sessions.id, sessionId)).run()
     }
 
     return db.select().from(sessions).where(eq(sessions.id, sessionId)).get()

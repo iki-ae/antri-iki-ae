@@ -36,6 +36,7 @@ export interface User {
 export interface Session {
   id: number
   category_id: number
+  title: string
   date: string
   mode: 'bulk' | 'kiosk'
   status: 'planned' | 'open' | 'closed'

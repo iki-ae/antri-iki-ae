@@ -7,6 +7,10 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-31] — When given specific UI instructions ("resize X to match Y height", "add Z button with dark grey background"), implemented a full button system redesign instead of the literal minimal changes asked. Rule: each instruction is a surgical change — if something is not mentioned, do not touch it. When in doubt about scope, ask before implementing.
+
+[2026-05-31] — Hardcoded a UI string ("HAPUS SESI INI") directly in a `.vue` template instead of using an i18n key — violates the project's zero-hardcoded-strings rule. Rule: every user-visible string in a `.vue` file must go through `$t('key')`. Check both locale files are updated before building.
+
 [2026-05-30] — `closeSession` only set `sessions.status = 'closed'` and left all in-flight tickets (`called`/`recalled`/`serving`) active indefinitely — they poisoned the `COUNTER_HAS_ACTIVE_TICKET` guard in future sessions. Rule: close session must atomically mark all active tickets for that session as `done` in the same transaction before setting session status to `closed`.
 
 [2026-05-30] — `COUNTER_HAS_ACTIVE_TICKET` guard in `callNext()` queried active tickets without filtering by `session_id` — tickets from old closed sessions blocked `callNext` on those counters forever. Rule: any ticket-status guard must always include `eq(tickets.session_id, session.id)`.

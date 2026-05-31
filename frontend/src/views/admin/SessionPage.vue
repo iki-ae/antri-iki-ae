@@ -25,32 +25,35 @@
               :class="'session-row--' + s.status"
             >
               <div class="session-row-left">
-                <span class="session-date">{{ s.date }}</span>
-                <span :class="['session-badge', s.status]">{{ $t('session.' + s.status) }}</span>
-                <span class="session-mode">{{ s.mode === 'kiosk' ? $t('session.kiosk') : $t('session.bulk') }}</span>
-              </div>
-              <div class="session-stats">
-                <span>{{ $t('session.issued') }}: <strong>{{ s.issued }}</strong></span>
-                <span>{{ $t('session.served') }}: <strong>{{ s.served }}</strong></span>
+                <div class="session-title-row">
+                  <span class="session-title">{{ s.title }}</span>
+                  <span :class="['session-badge', s.status]">{{ $t('session.' + s.status) }}</span>
+                  <span class="session-mode">{{ s.mode === 'kiosk' ? $t('session.kiosk') : $t('session.bulk') }}</span>
+                </div>
+                <div class="session-meta">
+                  <span class="session-stat">{{ $t('session.issued') }}: <strong>{{ s.issued }}</strong></span>
+                  <span class="session-stat">{{ $t('session.served') }}: <strong>{{ s.served }}</strong></span>
+                </div>
               </div>
               <div class="session-actions">
-                <!-- Edit: only planned -->
+                <!-- Edit: planned only -->
                 <button
                   v-if="s.status === 'planned'"
-                  class="icon-btn"
+                  class="icon-btn edit-btn"
                   :title="$t('common.edit')"
                   @click="openEdit(s)"
                 >
                   <ion-icon :icon="pencilOutline" />
                 </button>
-                <!-- Delete: planned or closed -->
+                <!-- Reset: open only -->
                 <button
-                  v-if="s.status !== 'open'"
-                  class="icon-btn danger"
-                  :title="$t('common.delete')"
-                  @click="confirmDelete(s.id)"
+                  v-if="s.status === 'open'"
+                  class="icon-btn reset-btn"
+                  :title="$t('session.reset')"
+                  :disabled="!!busy[s.id]"
+                  @click="resetSession(s.category_id!)"
                 >
-                  <ion-icon :icon="trashOutline" />
+                  <ion-icon :icon="refreshOutline" />
                 </button>
                 <!-- Stop: open only -->
                 <button
@@ -62,7 +65,7 @@
                   <ion-icon :icon="stopCircleOutline" />
                   {{ $t('session.stop') }}
                 </button>
-                <!-- Start: planned or closed -->
+                <!-- Start / Resume: planned or closed -->
                 <button
                   v-if="s.status !== 'open'"
                   class="action-btn start-btn"
@@ -91,7 +94,7 @@
     </ion-content>
 
     <!-- Create / Edit modal -->
-    <ion-modal :is-open="modalOpen" @did-dismiss="closeModal">
+    <ion-modal :is-open="modalOpen" @did-dismiss="closeModal" class="session-modal">
       <ion-header>
         <ion-toolbar>
           <ion-title>{{ editTarget ? $t('session.edit') : $t('session.create') }}</ion-title>
@@ -103,40 +106,96 @@
       <ion-content class="ion-padding">
         <div class="modal-body">
 
-          <!-- Category selector (create only) -->
-          <div v-if="!editTarget" class="modal-field">
-            <label class="modal-label">{{ $t('category.label') }}</label>
-            <select v-model="form.category_id" class="modal-select">
-              <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                {{ cat.prefix }} — {{ cat.name }}
-              </option>
-            </select>
-          </div>
+          <!-- Date read-only (edit only) -->
+          <ion-input
+            v-if="editTarget"
+            :value="editTarget.date"
+            :label="$t('session.date')"
+            label-placement="floating"
+            fill="outline"
+            readonly
+          />
 
-          <!-- Mode -->
+          <!-- Category selector (create only) -->
+          <ion-select
+            v-if="!editTarget"
+            v-model="form.category_id"
+            :label="$t('category.label')"
+            label-placement="floating"
+            fill="outline"
+          >
+            <ion-select-option v-for="cat in categories" :key="cat.id" :value="cat.id">
+              {{ cat.prefix }} — {{ cat.name }}
+            </ion-select-option>
+          </ion-select>
+
+          <!-- Session title -->
+          <ion-input
+            v-model="form.title"
+            :label="$t('session.title')"
+            label-placement="floating"
+            fill="outline"
+            :placeholder="$t('session.titlePlaceholder')"
+            :maxlength="80"
+            class="ion-margin-top"
+          />
+
+          <!-- Mode cards -->
           <div class="modal-field">
             <label class="modal-label">{{ $t('session.mode') }}</label>
-            <ion-segment v-model="form.mode">
-              <ion-segment-button value="kiosk"><ion-label>{{ $t('session.kiosk') }}</ion-label></ion-segment-button>
-              <ion-segment-button value="bulk"><ion-label>{{ $t('session.bulk') }}</ion-label></ion-segment-button>
-            </ion-segment>
+            <div class="mode-cards">
+
+              <!-- BULK card -->
+              <div
+                class="mode-card"
+                :class="{ 'mode-card--active': form.mode === 'bulk' }"
+                @click="form.mode = 'bulk'"
+              >
+                <div class="mode-card-header">
+                  <span class="mode-radio" :class="{ active: form.mode === 'bulk' }"></span>
+                  <div class="mode-card-labels">
+                    <span class="mode-card-name">{{ $t('session.bulk') }}</span>
+                    <span class="mode-card-desc">{{ $t('session.bulkDesc') }}</span>
+                  </div>
+                </div>
+                <div v-if="form.mode === 'bulk'" class="mode-card-extra" @click.stop>
+                  <ion-input
+                    v-model="form.bulk_count"
+                    :label="$t('session.bulkCount')"
+                    label-placement="floating"
+                    fill="outline"
+                    type="number"
+                    :min="1"
+                  />
+                </div>
+              </div>
+
+              <!-- KIOSK card -->
+              <div
+                class="mode-card"
+                :class="{ 'mode-card--active': form.mode === 'kiosk' }"
+                @click="form.mode = 'kiosk'"
+              >
+                <div class="mode-card-header">
+                  <span class="mode-radio" :class="{ active: form.mode === 'kiosk' }"></span>
+                  <div class="mode-card-labels">
+                    <span class="mode-card-name">{{ $t('session.kiosk') }}</span>
+                    <span class="mode-card-desc">{{ $t('session.kioskDesc') }}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
 
-          <!-- Bulk count -->
-          <div v-if="form.mode === 'bulk'" class="modal-field">
-            <label class="modal-label">{{ $t('session.bulkCount') }}</label>
-            <input
-              v-model.number="form.bulk_count"
-              type="number"
-              min="1"
-              class="modal-input"
-              placeholder=" "
-            />
+          <div class="modal-actions">
+            <ion-button v-if="editTarget" expand="block" color="danger" class="modal-delete" :disabled="saving" @click="confirmDelete(editTarget.id)">
+              {{ $t('session.deleteThis') }}
+            </ion-button>
+            <ion-button expand="block" class="modal-submit" :disabled="saving || !form.title.trim()" @click="saveModal">
+              {{ editTarget ? $t('common.save') : $t('session.create') }}
+            </ion-button>
           </div>
-
-          <ion-button expand="block" class="modal-submit" :disabled="saving" @click="saveModal">
-            {{ editTarget ? $t('common.save') : $t('session.create') }}
-          </ion-button>
 
         </div>
       </ion-content>
@@ -149,20 +208,20 @@
 import { ref, reactive, computed } from 'vue'
 import {
   IonPage, IonContent, IonFab, IonFabButton, IonModal, IonHeader, IonToolbar,
-  IonTitle, IonButtons, IonButton, IonLabel, IonSegment, IonSegmentButton, IonIcon,
+  IonTitle, IonButtons, IonButton, IonInput, IonSelect, IonSelectOption, IonIcon,
   alertController, onIonViewWillEnter,
 } from '@ionic/vue'
 import { addIcons } from 'ionicons'
 import {
   addOutline, pencilOutline, trashOutline,
-  playCircleOutline, playSkipForwardOutline, stopCircleOutline,
+  playCircleOutline, playSkipForwardOutline, stopCircleOutline, refreshOutline,
 } from 'ionicons/icons'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import { sessionsApi, categoriesApi } from '@/api'
 import type { Category, SessionWithStats } from '@/types'
 
-addIcons({ addOutline, pencilOutline, trashOutline, playCircleOutline, playSkipForwardOutline, stopCircleOutline })
+addIcons({ addOutline, pencilOutline, trashOutline, playCircleOutline, playSkipForwardOutline, stopCircleOutline, refreshOutline })
 
 const { t } = useI18n()
 
@@ -211,13 +270,27 @@ async function stopSession(session_id: number) {
   await alert.present()
 }
 
+async function resetSession(category_id: number) {
+  const alert = await alertController.create({
+    header: t('session.confirmReset'),
+    message: t('session.resetWarning'),
+    buttons: [
+      { text: t('common.cancel'), role: 'cancel' },
+      { text: t('session.reset'), role: 'destructive', handler: async () => {
+        await sessionsApi.reset(category_id); await load()
+      }},
+    ],
+  })
+  await alert.present()
+}
+
 async function confirmDelete(id: number) {
   const alert = await alertController.create({
     header: t('session.confirmDelete'),
     buttons: [
       { text: t('common.cancel'), role: 'cancel' },
       { text: t('common.delete'), role: 'destructive', handler: async () => {
-        await sessionsApi.remove(id); await load()
+        await sessionsApi.remove(id); closeModal(); await load()
       }},
     ],
   })
@@ -232,14 +305,16 @@ const editTarget = ref<SessionWithStats | null>(null)
 
 const form = reactive<{
   category_id: number | null
+  title: string
   mode: 'kiosk' | 'bulk'
-  bulk_count: number
-}>({ category_id: null, mode: 'kiosk', bulk_count: 50 })
+  bulk_count: number | string
+}>({ category_id: null, title: '', mode: 'bulk', bulk_count: 50 })
 
 function openCreate() {
   editTarget.value    = null
   form.category_id    = categories.value[0]?.id ?? null
-  form.mode           = 'kiosk'
+  form.title          = ''
+  form.mode           = 'bulk'
   form.bulk_count     = 50
   modalOpen.value     = true
 }
@@ -247,6 +322,7 @@ function openCreate() {
 function openEdit(s: SessionWithStats) {
   editTarget.value    = s
   form.category_id    = s.category_id
+  form.title          = s.title
   form.mode           = s.mode
   form.bulk_count     = s.issued || 50
   modalOpen.value     = true
@@ -258,19 +334,23 @@ function closeModal() {
 }
 
 async function saveModal() {
+  if (!form.title.trim()) return
   saving.value = true
   try {
+    const bulkCount = form.mode === 'bulk' ? Number(form.bulk_count) || 50 : undefined
     if (editTarget.value) {
       await sessionsApi.update(editTarget.value.id, {
+        title: form.title.trim(),
         mode: form.mode,
-        bulk_count: form.mode === 'bulk' ? form.bulk_count : undefined,
+        bulk_count: bulkCount,
       })
     } else {
       if (!form.category_id) return
       await sessionsApi.create({
         category_id: form.category_id,
+        title: form.title.trim(),
         mode: form.mode,
-        bulk_count: form.mode === 'bulk' ? form.bulk_count : undefined,
+        bulk_count: bulkCount,
       })
     }
     closeModal()
@@ -332,19 +412,43 @@ async function saveModal() {
 
 .session-row-left {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   flex: 1;
   min-width: 0;
+}
+
+.session-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.session-date {
+.session-title {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
 }
+
+.session-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
+
+.session-stat {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.session-stat strong { color: var(--color-text); }
 
 .session-badge {
   font-size: var(--font-size-xs);
@@ -365,61 +469,63 @@ async function saveModal() {
   white-space: nowrap;
 }
 
-.session-stats {
-  display: flex;
-  gap: 12px;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
-.session-stats strong { color: var(--color-text); }
-
 .session-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
 }
 
 .icon-btn {
   width: 32px;
   height: 32px;
-  border: 1px solid var(--color-border);
+  border: none;
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
   font-size: 16px;
-  transition: background 0.15s, color 0.15s;
+  color: #fff;
+  transition: filter 0.15s;
+  flex-shrink: 0;
 }
-.icon-btn:hover { background: var(--color-surface-alt); color: var(--color-text); }
-.icon-btn.danger:hover { background: #fef2f2; color: var(--ion-color-danger); border-color: var(--ion-color-danger); }
+.icon-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+.icon-btn:not(:disabled):hover { filter: brightness(0.88); }
+
+.edit-btn  { background: #b8860b; }
+.reset-btn { background: #555; }
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.modal-actions ion-button { flex: 1; }
 
 .action-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 12px;
+  height: 32px;
+  padding: 0 10px;
   border: none;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
   font-weight: 700;
   font-family: var(--font-family);
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: filter 0.15s;
   white-space: nowrap;
   color: #fff;
+  flex-shrink: 0;
 }
-.action-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
 .action-btn ion-icon { font-size: 14px; }
+.action-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+.action-btn:not(:disabled):hover { filter: brightness(0.88); }
 
 .start-btn { background: var(--color-secondary); }
-.start-btn:not(:disabled):hover { background: var(--color-secondary-dark); }
 .stop-btn  { background: var(--ion-color-warning); }
-.stop-btn:not(:disabled):hover  { background: var(--ion-color-warning-shade); }
 
 .session-empty {
   padding: 16px;
@@ -429,11 +535,16 @@ async function saveModal() {
 }
 
 /* ── Modal ── */
+.session-modal {
+  --width: min(420px, 96vw);
+  --height: 600px;
+  --border-radius: 12px;
+}
+
 .modal-body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 480px;
 }
 
 .modal-field {
@@ -450,24 +561,75 @@ async function saveModal() {
   color: var(--color-text-muted);
 }
 
-.modal-select,
-.modal-input {
-  width: 100%;
-  height: 44px;
-  padding: 0 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  font-family: var(--font-family);
-  background: var(--color-surface);
-  color: var(--color-text);
-  outline: none;
-}
-.modal-select:focus,
-.modal-input:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(224,140,47,0.12);
+.modal-submit { margin-top: 8px; }
+
+/* ── Mode cards ── */
+.mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.modal-submit { margin-top: 8px; }
+.mode-card {
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--color-surface);
+  user-select: none;
+}
+.mode-card:hover { border-color: var(--color-accent); }
+.mode-card--active {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
+}
+
+.mode-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mode-radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+.mode-radio.active {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: inset 0 0 0 3px var(--color-surface);
+}
+
+.mode-card-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mode-card-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.mode-card-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.mode-card-extra {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 </style>

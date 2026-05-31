@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-31 (Session 27)
+**Last updated:** 2026-05-31 (Session 28)
 
 ---
 
@@ -26,6 +26,41 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-31 — Session 28
+**Did:** SessionPage create modal UX refactor + session row redesign:
+
+**Schema:** Added `title TEXT NOT NULL DEFAULT ''` to `sessions` table. Migration `0002_add_session_title.sql` applied manually (dev stage). Fixed migration 0001 comment-only statement bug that prevented drizzle migrator from running.
+
+**Backend (`sessions.ts`):**
+- `POST /sessions/create` — now requires `title` (400 `TITLE_REQUIRED` if missing/blank); stores trimmed value
+- `PUT /sessions/:id` — accepts optional `title`; updates it in all code paths including title-only edits
+
+**Frontend:**
+- `types/index.ts`: `Session.title: string` added
+- `api/index.ts`: `sessionsApi.create` and `.update` signatures updated to include `title`
+- `i18n`: new keys `session.title`, `session.titlePlaceholder`, `session.kioskDesc`, `session.bulkDesc`, `session.date`, `session.deleteThis` (→ `session.delete`), `session.kiosk`/`session.bulk` shortened to mode name only
+
+**SessionPage.vue — modal refactor:**
+- Field order: date (read-only, edit mode only) → category selector (create only) → title (ion-input floating) → mode cards
+- Mode picker replaced `ion-segment` with two card-style radio options; BULK card reveals quota input inline; KIOSK is standalone
+- Modal sized to 420×600px centered; floating label inputs throughout (consistent with rest of admin forms)
+- Delete moved out of session row and into edit modal as "Hapus Sesi" danger button adjacent to save button; confirmation alert still required
+
+**SessionPage.vue — session row redesign:**
+- Title + badge + mode on one line; issued/served stats on the line below (replacing datestamp)
+- Date removed from list view; shown read-only in edit modal
+- Action buttons: edit (dark yellow, icon-only 32×32, planned only), reset (dark grey, icon-only, open only), stop (text+icon, 32px height, open only), start/resume (text+icon, 32px height), delete moved to modal
+- Reset button wired to `POST /sessions/reset` with confirmation alert
+
+**Decided:**
+- Delete from list row is dangerous → moved inside edit modal, behind confirmation
+- Session title is required (not nullable) — meaningful label for each session day/shift
+- Bulk tickets still issued at create time; title is immutable after the session goes open (edit locked to `planned` only)
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 
