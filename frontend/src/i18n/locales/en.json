@@ -1,6 +1,6 @@
 {
   "app": {
-    "name":    "Antri-Iki-Ae",
+    "name":    "antri-iki-ae",
     "tagline": "General Purpose Queue System"
   },
   "admin": {
@@ -97,7 +97,12 @@
     "deleteThis":     "Delete Session",
     "confirmDelete":  "Delete Session?",
     "confirmReset":   "Reset Queue?",
-    "resetWarning":   "Waiting tickets will be deleted."
+    "resetWarning":   "Waiting tickets will be deleted.",
+    "print":          "Print Tickets",
+    "printSingle":    "Ticket Number",
+    "printFrom":      "From",
+    "printTo":        "To",
+    "printConfirm":   "Print"
   },
   "user": {
     "name":     "Full Name",
@@ -118,7 +123,8 @@
     "waiting":   "Waiting",
     "called":    "Called",
     "done":      "Done",
-    "skipped":   "Skipped"
+    "skipped":   "Skipped",
+    "issuedAt":  "Issued"
   },
   "display": {
     "subtitle":   "Queue System",

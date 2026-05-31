@@ -82,8 +82,9 @@ audit_logs     // user_id, action, payload(JSON), created_at
 | `PUT /api/sessions/:id` | admin |
 | `DELETE /api/sessions/:id` | admin |
 | `POST /api/tickets/issue\|call\|recall\|skip\|serve\|call-skipped` | operator |
+| `GET /api/tickets/by-session/:sessionId?from&to` | admin |
 | `PUT /api/users/me` | any authenticated user (self-update name/password) |
-| `POST /api/kiosk/take` | none (public) |
+| `POST /api/kiosk/take` | none (public) — returns `{ ticket, display_number, session_title, category_prefix, category_name, created_at }` |
 | `GET /api/display/state` | none (public) |
 | `GET /api/events` | none (public, SSE) |
 | `GET /api/backup/export` | admin |

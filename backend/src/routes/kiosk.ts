@@ -47,6 +47,13 @@ export const kioskRoutes: FastifyPluginAsync = async (fastify) => {
 
     await rebuildQueueState()
     broadcastQueueState()
-    return reply.code(201).send({ ticket, display_number })
+    return reply.code(201).send({
+      ticket,
+      display_number,
+      session_title:   session.title,
+      category_prefix: cat.prefix,
+      category_name:   cat.name,
+      created_at:      ticket.created_at,
+    })
   })
 }

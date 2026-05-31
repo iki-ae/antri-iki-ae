@@ -7,6 +7,12 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-31] — `@page` and `page-break` rules placed inside runtime-injected `<style>` elements (via `document.createElement('style')`) are silently ignored by browsers — only rules in stylesheets loaded at page-parse time (built CSS) take effect. Rule: always put `@page { size: ... }` and `.slip-page { page-break-after: always }` in the built stylesheet (`variables.css`), never in runtime-injected CSS strings.
+
+[2026-05-31] — `#print-area` rendered inside `ion-page` → `ion-app` → `#app` cannot be shown during print by hiding `#app` — it hides itself too. Layered CSS selector overrides (`ion-app ion-router-outlet > .ion-page:not(.ion-page-hidden) > * { display: none }`) are too fragile with Ionic's shadow DOM. Rule: place `#print-area` as a sibling of `#app` directly in `index.html` — completely outside the Vue/Ionic tree. Then `#app { display: none }` during print is a single reliable rule.
+
+[2026-05-31] — A function imported as `printSlips` from a utility collided with a local ref also named `printSlips` — TypeScript reported the error on the ref's `.value` access as "Property 'value' does not exist on type 'function'". Rule: when importing a utility function into a component, check for name collisions with local refs/vars and use an import alias (`import { printSlips as executePrint }`) to avoid silent shadowing.
+
 [2026-05-31] — When given specific UI instructions ("resize X to match Y height", "add Z button with dark grey background"), implemented a full button system redesign instead of the literal minimal changes asked. Rule: each instruction is a surgical change — if something is not mentioned, do not touch it. When in doubt about scope, ask before implementing.
 
 [2026-05-31] — Hardcoded a UI string ("HAPUS SESI INI") directly in a `.vue` template instead of using an i18n key — violates the project's zero-hardcoded-strings rule. Rule: every user-visible string in a `.vue` file must go through `$t('key')`. Check both locale files are updated before building.

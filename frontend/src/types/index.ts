@@ -73,6 +73,15 @@ export interface CategorySession {
   status: string
 }
 
+export interface PrintTicket {
+  display_number: string
+  number: number
+  created_at: string
+  session_title: string
+  category_prefix: string
+  category_name: string
+}
+
 export interface QueueState {
   sessions: CategorySession[]
   counters: {

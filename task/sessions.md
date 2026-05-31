@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-31 (Session 29)
+**Last updated:** 2026-05-31 (Session 30)
 
 ---
 
@@ -26,6 +26,41 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-31 — Session 30
+**Did:** Ticket printing feature — full implementation + multiple bug fixes:
+
+**New backend:**
+- `GET /api/tickets/by-session/:sessionId?from&to` (auth: admin) — returns `PrintTicket[]` joined with session title + category info, filtered by optional number range, ordered by `number ASC`
+- `POST /kiosk/take` response enriched with `session_title`, `category_prefix`, `category_name`, `created_at` — kiosk frontend no longer needs a second API call for slip data
+
+**New frontend:**
+- `src/utils/print.ts` — singleton print utility: `printSlips(tickets, docTitle, institutionName)` + `printSingleKiosk(data, institutionName)`; writes slip HTML into `#print-area`, swaps `document.title` for PDF filename, restores on `onafterprint`
+- `src/components/TicketSlip.vue` — slip component (kept for reference; actual print HTML is in `print.ts`)
+- `index.html` — `#print-area` div added as sibling of `#app` (outside Ionic tree — critical for print isolation)
+- `theme/variables.css` — `@media print` with `@page { size: 80mm 120mm; margin: 0 }`, `#app { display: none }`, `.slip-page { page-break-after: always }`
+- `KioskPage.vue` — auto-print on every `take()`; countdown starts via `window.onafterprint`
+- `SessionPage.vue` — print button (always visible, disabled when `issued === 0`) on every session row; print modal with single-number input (kiosk) or from/to range (bulk); inputs show zero-padded display (e.g. `007`)
+- `types/index.ts` — `PrintTicket` interface
+- `api/index.ts` — `ticketsApi.bySession(sessionId, from?, to?)`
+- Both locale files — `session.print/printSingle/printFrom/printTo/printConfirm`, `ticket.issuedAt`
+- `app.name` i18n key + `<title>` changed to `antri-iki-ae` (lowercase)
+
+**Bug fixes during this session:**
+- Institution name was missing from slip — `slipHtml()` was outputting category info in the institution name slot
+- Bulk print only showed 1 ticket — `@page { size }` in runtime-injected `<style>` is ignored by browsers; `80mm auto` in built CSS caused all slips to flow onto one infinite page; fixed by moving to `80mm 120mm` in `variables.css`
+- Blank PDF — `#print-area` was inside `ion-app`; hiding `#app` hid it too; fixed by moving `#print-area` to `index.html` as sibling of `#app`
+- Print button faded on kiosk sessions — changed from `v-if="s.issued > 0"` to always-visible with `:disabled="s.issued === 0"` for clarity; print button on kiosk is emergency reprint so validated range enforced in modal
+- PDF filename defaulted to "Antri Iki Ae" — now swaps `document.title` to ticket number(s) before `window.print()`
+
+**Decided:**
+- `@page` and page-break rules must live in built CSS (`variables.css`), never in runtime-injected `<style>` — browsers ignore the latter
+- `#print-area` must be a sibling of `#app` in `index.html` — Ionic shadow DOM makes CSS overrides for nested print isolation unreliable
+- Import alias (`printSlips as executePrint`) required when utility function name collides with a local ref
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

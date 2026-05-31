@@ -73,6 +73,7 @@
 
       <WatermarkFooter />
     </ion-content>
+
   </ion-page>
 </template>
 
@@ -83,19 +84,18 @@ import { displayApi, kioskApi } from '@/api'
 import { useConfigStore } from '@/stores/config'
 import WatermarkFooter from '@/components/WatermarkFooter.vue'
 import TicketNumber from '@/components/TicketNumber.vue'
+import { printSingleKiosk } from '@/utils/print'
 import type { Category } from '@/types'
 
 const configStore = useConfigStore()
 
-const categories    = ref<Category[]>([])
+const categories     = ref<Category[]>([])
 const hasAnySessions = ref(false)
 const issued         = ref<string | null>(null)
 const taking         = ref(false)
 const countdown      = ref(10)
 let   timer: ReturnType<typeof setInterval> | null = null
 
-// kiosk categories come from /kiosk/status (only open kiosk-mode sessions)
-// bulk screen: there are active sessions but no kiosk ones
 const isKioskMode = computed(() => categories.value.length > 0)
 const isBulkMode  = computed(() => !isKioskMode.value && hasAnySessions.value)
 
@@ -116,21 +116,37 @@ async function take(category_id: number) {
   taking.value = true
   try {
     const { data } = await kioskApi.take(category_id)
-    issued.value   = data.display_number
-    countdown.value = 10
-    timer = setInterval(() => {
-      countdown.value--
-      if (countdown.value <= 0) reset()
-    }, 1000)
+    issued.value = data.display_number
+
+    printSingleKiosk({
+      display_number:  data.display_number,
+      session_title:   data.session_title ?? '',
+      category_prefix: data.category_prefix ?? '',
+      category_name:   data.category_name ?? '',
+      created_at:      data.created_at ?? new Date().toISOString(),
+    }, configStore.config?.institution_name ?? 'antri.iki.ae')
+
+    // Countdown starts after print dialog closes
+    window.onafterprint = startCountdown
   } finally {
     taking.value = false
   }
+}
+
+function startCountdown() {
+  window.onafterprint = null
+  countdown.value = 10
+  timer = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) reset()
+  }, 1000)
 }
 
 function reset() {
   if (timer) { clearInterval(timer); timer = null }
   issued.value    = null
   countdown.value = 10
+  window.onafterprint = null
 }
 </script>
 

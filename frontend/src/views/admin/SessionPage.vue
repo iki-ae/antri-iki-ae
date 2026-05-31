@@ -36,6 +36,15 @@
                 </div>
               </div>
               <div class="session-actions">
+                <!-- Print: disabled until at least one ticket issued -->
+                <button
+                  class="icon-btn print-btn"
+                  :title="$t('session.print')"
+                  :disabled="s.issued === 0"
+                  @click="openPrint(s)"
+                >
+                  <ion-icon :icon="printOutline" />
+                </button>
                 <!-- Edit: planned or closed -->
                 <button
                   v-if="s.status !== 'open'"
@@ -201,11 +210,92 @@
       </ion-content>
     </ion-modal>
 
+    <!-- Print modal -->
+    <ion-modal :is-open="printModalOpen" @did-dismiss="closePrint" class="session-modal">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ $t('session.print') }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button @click="closePrint">{{ $t('common.cancel') }}</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <div class="modal-body" v-if="printTarget">
+
+          <!-- Kiosk mode: single number -->
+          <template v-if="printTarget.mode === 'kiosk'">
+            <div class="print-field">
+              <label class="modal-label">{{ $t('session.printSingle') }}</label>
+              <div class="print-number-row">
+                <span class="print-prefix">{{ printTarget.category?.prefix }}-</span>
+                <input
+                  :value="pad(printForm.from)"
+                  type="text"
+                  inputmode="numeric"
+                  class="print-number-input"
+                  @input="printForm.from = clamp(parseNum($event), 1, printTarget!.issued)"
+                  @blur="printForm.from = clamp(printForm.from, 1, printTarget!.issued)"
+                />
+              </div>
+              <span class="print-range-hint">{{ pad(1) }} – {{ pad(printTarget.issued) }}</span>
+            </div>
+          </template>
+
+          <!-- Bulk mode: range -->
+          <template v-else>
+            <div class="print-field">
+              <label class="modal-label">{{ $t('session.printFrom') }}</label>
+              <div class="print-number-row">
+                <span class="print-prefix">{{ printTarget.category?.prefix }}-</span>
+                <input
+                  :value="pad(printForm.from)"
+                  type="text"
+                  inputmode="numeric"
+                  class="print-number-input"
+                  @input="printForm.from = clamp(parseNum($event), 1, printForm.to)"
+                  @blur="printForm.from = clamp(printForm.from, 1, printForm.to)"
+                />
+              </div>
+            </div>
+            <div class="print-field">
+              <label class="modal-label">{{ $t('session.printTo') }}</label>
+              <div class="print-number-row">
+                <span class="print-prefix">{{ printTarget.category?.prefix }}-</span>
+                <input
+                  :value="pad(printForm.to)"
+                  type="text"
+                  inputmode="numeric"
+                  class="print-number-input"
+                  @input="printForm.to = clamp(parseNum($event), printForm.from, printTarget!.issued)"
+                  @blur="printForm.to = clamp(printForm.to, printForm.from, printTarget!.issued)"
+                />
+              </div>
+              <span class="print-range-hint">{{ pad(1) }} – {{ pad(printTarget.issued) }}</span>
+            </div>
+          </template>
+
+          <div class="modal-actions">
+            <ion-button
+              expand="block"
+              class="modal-submit"
+              :disabled="printBusy || !isPrintRangeValid"
+              @click="doPrint"
+            >
+              <ion-icon :icon="printOutline" slot="start" />
+              {{ $t('session.printConfirm') }}
+            </ion-button>
+          </div>
+
+        </div>
+      </ion-content>
+    </ion-modal>
+
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import {
   IonPage, IonContent, IonFab, IonFabButton, IonModal, IonHeader, IonToolbar,
   IonTitle, IonButtons, IonButton, IonInput, IonSelect, IonSelectOption, IonIcon,
@@ -213,19 +303,22 @@ import {
 } from '@ionic/vue'
 import { addIcons } from 'ionicons'
 import {
-  addOutline, pencilOutline, trashOutline,
+  addOutline, pencilOutline, trashOutline, printOutline,
   playCircleOutline, playSkipForwardOutline, stopCircleOutline, refreshOutline,
 } from 'ionicons/icons'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { useI18n } from 'vue-i18n'
-import { sessionsApi, categoriesApi } from '@/api'
+import { sessionsApi, categoriesApi, ticketsApi } from '@/api'
 import { useQueueStore } from '@/stores/queue'
-import type { Category, SessionWithStats } from '@/types'
+import { useConfigStore } from '@/stores/config'
+import { printSlips as executePrint } from '@/utils/print'
+import type { Category, SessionWithStats, PrintTicket } from '@/types'
 
-addIcons({ addOutline, pencilOutline, trashOutline, playCircleOutline, playSkipForwardOutline, stopCircleOutline, refreshOutline })
+addIcons({ addOutline, pencilOutline, trashOutline, printOutline, playCircleOutline, playSkipForwardOutline, stopCircleOutline, refreshOutline })
 
 const { t } = useI18n()
-const queueStore = useQueueStore()
+const queueStore  = useQueueStore()
+const configStore = useConfigStore()
 
 const categories = ref<Category[]>([])
 const sessions   = ref<SessionWithStats[]>([])
@@ -234,7 +327,6 @@ const busy       = reactive<Record<number, boolean>>({})
 onIonViewWillEnter(() => { queueStore.connect(); load() })
 onIonViewWillLeave(() => { queueStore.disconnect() })
 
-// Re-fetch session stats on every SSE queue update
 watch(() => queueStore.state, () => { loadSessions() })
 
 async function load() {
@@ -308,7 +400,7 @@ async function confirmDelete(id: number) {
   await alert.present()
 }
 
-// ── Modal ──────────────────────────────────────────────────────────────────────
+// ── Create/Edit Modal ──────────────────────────────────────────────────────────
 
 const modalOpen  = ref(false)
 const saving     = ref(false)
@@ -371,6 +463,65 @@ async function saveModal() {
     await load()
   } finally {
     saving.value = false
+  }
+}
+
+// ── Print Modal ────────────────────────────────────────────────────────────────
+
+const printModalOpen = ref(false)
+const printTarget    = ref<SessionWithStats | null>(null)
+const printBusy      = ref(false)
+const printForm      = reactive({ from: 1, to: 1 })
+
+const isPrintRangeValid = computed(() => {
+  if (!printTarget.value) return false
+  const { from, to } = printForm
+  if (printTarget.value.mode === 'kiosk') {
+    return from >= 1 && from <= printTarget.value.issued
+  }
+  return from >= 1 && to <= printTarget.value.issued && from <= to
+})
+
+function openPrint(s: SessionWithStats) {
+  printTarget.value = s
+  printForm.from    = 1
+  printForm.to      = s.issued
+  printModalOpen.value = true
+}
+
+function closePrint() {
+  printModalOpen.value = false
+  printTarget.value    = null
+}
+
+function pad(n: number): string {
+  return String(n).padStart(3, '0')
+}
+
+function parseNum(e: Event): number {
+  return parseInt((e.target as HTMLInputElement).value.replace(/\D/g, ''), 10) || 0
+}
+
+function clamp(n: number, min: number, max: number): number {
+  return Math.min(Math.max(n, min), max)
+}
+
+async function doPrint() {
+  if (!printTarget.value || !isPrintRangeValid.value) return
+  printBusy.value = true
+  try {
+    const { from, to } = printForm
+    const toParam = printTarget.value.mode === 'kiosk' ? from : to
+    const { data } = await ticketsApi.bySession(printTarget.value.id, from, toParam)
+    closePrint()
+    // Small delay so modal closes before print dialog opens
+    await new Promise(r => setTimeout(r, 150))
+    const docTitle = data.length === 1
+      ? data[0].display_number
+      : `${data[0]?.display_number} – ${data[data.length - 1]?.display_number}`
+    executePrint(data, docTitle, configStore.config?.institution_name ?? 'antri.iki.ae')
+  } finally {
+    printBusy.value = false
   }
 }
 </script>
@@ -509,6 +660,7 @@ async function saveModal() {
 
 .edit-btn  { background: #b8860b; }
 .reset-btn { background: #555; }
+.print-btn { background: var(--color-primary); }
 
 .modal-actions {
   display: flex;
@@ -548,7 +700,7 @@ async function saveModal() {
   font-style: italic;
 }
 
-/* ── Modal ── */
+/* ── Create/Edit Modal ── */
 .session-modal {
   --width: min(420px, 96vw);
   --height: 600px;
@@ -646,4 +798,49 @@ async function saveModal() {
   gap: 6px;
 }
 
+/* ── Print modal ── */
+.print-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.print-number-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  height: 48px;
+  background: var(--color-surface);
+  transition: border-color 0.15s;
+}
+.print-number-row:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(224,140,47,0.12);
+}
+
+.print-prefix {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.print-number-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background: transparent;
+  min-width: 0;
+}
+
+.print-range-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
 </style>

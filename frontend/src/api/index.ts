@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Config, Category, Counter, User, Session, SessionWithStats, QueueState, CategorySession } from '@/types'
+import type { Config, Category, Counter, User, Session, SessionWithStats, QueueState, CategorySession, PrintTicket } from '@/types'
 
 const api = axios.create({ baseURL: '/api', withCredentials: true })
 
@@ -75,6 +75,8 @@ export const ticketsApi = {
   skip:        (ticket_id: number)  => api.post('/tickets/skip', { ticket_id }),
   serve:       (ticket_id: number)  => api.post('/tickets/serve', { ticket_id }),
   callSkipped: (ticket_id: number)  => api.post('/tickets/call-skipped', { ticket_id }),
+  bySession:   (sessionId: number, from?: number, to?: number) =>
+    api.get<PrintTicket[]>(`/tickets/by-session/${sessionId}`, { params: { from, to } }),
 }
 
 export const kioskApi = {
