@@ -80,7 +80,7 @@ The "by iki.ae" mark must be visible on every surface. Placement differs by surf
 | Surface | Placement | Component |
 |---|---|---|
 | Display (`/display`) | Bottom-center, white, visible from 3 meters | `WatermarkFooter.vue` variant="display" |
-| Kiosk (`/kiosk`) | Bottom of screen | `WatermarkFooter.vue` |
+| Kiosk (`/kiosk`) | Header bar right — "powered by iki.ae" + QR pill | Inline in `KioskPage.vue` header (no `WatermarkFooter` component) |
 | Operator (`/operator`) | Bottom footer | `WatermarkFooter.vue` variant="subtle" |
 | Admin (`/admin/*`) | Sidebar brand header — persistent, always visible | `AdminShell.vue` sidebar — no per-page footer needed |
 | Login | Card footer strip — "powered by iki.ae" + QR | Inline `<a>` strip in `LoginPage.vue` |

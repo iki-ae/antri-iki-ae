@@ -87,6 +87,8 @@
     "title":          "Session Title",
     "titlePlaceholder": "e.g. Morning Session, General Service",
     "bulkCount":      "Ticket Quota",
+    "kioskLimit":     "Kiosk Quota (0 = unlimited)",
+    "kioskLimitHint": "Leave 0 or blank for no limit",
     "planned":        "Planned",
     "open":           "Running",
     "closed":         "Stopped",
@@ -143,7 +145,8 @@
     "yourNumber":   "Your Queue Number",
     "autoReset":    "Returning in {s} seconds...",
     "unavailable":  "Kiosk is not available at this time",
-    "bulkHint":     "Please use the queue number you have been issued"
+    "bulkHint":     "Please use the queue number you have been issued",
+    "quotaFull":    "Quota Full"
   },
   "backup": {
     "export":     "Export Data",

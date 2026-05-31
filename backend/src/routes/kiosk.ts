@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { db } from '../config/database.js'
 import { sessions, tickets, categories } from '../../drizzle/schema.js'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, count } from 'drizzle-orm'
 import { rebuildQueueState, formatDisplayNumber, nextTicketNumber } from '../services/queueService.js'
 import { broadcastQueueState } from '../plugins/sse.js'
 
@@ -22,7 +22,17 @@ export const kioskRoutes: FastifyPluginAsync = async (fastify) => {
       .all()
       .filter(c => openCategoryIds.includes(c.id))
 
-    return { available: true, categories: availableCategories }
+    // Attach quota_full flag per category
+    const categoriesWithQuota = availableCategories.map(cat => {
+      const session = openKioskSessions.find(s => s.category_id === cat.id)!
+      const limit = session.kiosk_limit
+      if (!limit || limit <= 0) return { ...cat, quota_full: false, kiosk_limit: null }
+      const issued = db.select({ n: count() }).from(tickets)
+        .where(eq(tickets.session_id, session.id)).get()?.n ?? 0
+      return { ...cat, quota_full: issued >= limit, kiosk_limit: limit }
+    })
+
+    return { available: true, categories: categoriesWithQuota }
   })
 
   fastify.post('/take', async (request, reply) => {
@@ -39,6 +49,15 @@ export const kioskRoutes: FastifyPluginAsync = async (fastify) => {
 
     const cat = db.select().from(categories).where(eq(categories.id, category_id)).get()
     if (!cat || !cat.is_active) return reply.code(404).send({ error: 'CATEGORY_NOT_FOUND' })
+
+    // Enforce kiosk_limit — 0 or null means unlimited
+    if (session.kiosk_limit && session.kiosk_limit > 0) {
+      const issued = db.select({ n: count() }).from(tickets)
+        .where(eq(tickets.session_id, session.id)).get()?.n ?? 0
+      if (issued >= session.kiosk_limit) {
+        return reply.code(409).send({ error: 'KIOSK_QUOTA_FULL' })
+      }
+    }
 
     const number = nextTicketNumber(session.id, category_id)
     const display_number = formatDisplayNumber(cat.prefix, number)

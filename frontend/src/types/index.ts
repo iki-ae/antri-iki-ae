@@ -39,6 +39,7 @@ export interface Session {
   title: string
   date: string
   mode: 'bulk' | 'kiosk'
+  kiosk_limit?: number | null
   status: 'planned' | 'open' | 'closed'
   opened_at: string
   closed_at?: string
@@ -91,5 +92,6 @@ export interface QueueState {
     currentTicket: { id: number; display_number: string; called_at: string } | null
   }[]
   waiting: { category_id: number; prefix: string; count: number }[]
+  served: { category_id: number; count: number }[]
   skipped: { id: number; display_number: string; category_id: number }[]
 }

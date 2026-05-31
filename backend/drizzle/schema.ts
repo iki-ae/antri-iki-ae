@@ -50,6 +50,7 @@ export const sessions = sqliteTable('sessions', {
   title:       text('title').notNull().default(''),
   date:        text('date').notNull(),             // 'YYYY-MM-DD'
   mode:        text('mode', { enum: ['bulk', 'kiosk'] }).notNull(),
+  kiosk_limit: integer('kiosk_limit'),                // null = unlimited; 0 = unlimited; >0 = max tickets
   status:      text('status', { enum: ['planned', 'open', 'closed'] }).notNull().default('planned'),
   opened_at:   text('opened_at').notNull().default(sql`(datetime('now'))`),
   closed_at:   text('closed_at'),

@@ -32,11 +32,12 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Create a planned session (no tickets issued yet for kiosk; pre-issued for bulk)
   fastify.post('/create', { preHandler: requireAdmin }, async (request, reply) => {
-    const { category_id, title, mode, bulk_count } = request.body as {
+    const { category_id, title, mode, bulk_count, kiosk_limit } = request.body as {
       category_id: number
       title: string
       mode: 'bulk' | 'kiosk'
       bulk_count?: number
+      kiosk_limit?: number
     }
 
     if (!category_id) return reply.code(400).send({ error: 'CATEGORY_REQUIRED' })
@@ -46,8 +47,9 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
     if (!cat) return reply.code(404).send({ error: 'CATEGORY_NOT_FOUND' })
 
     const today = new Date().toISOString().split('T')[0]
+    const resolvedKioskLimit = mode === 'kiosk' && kiosk_limit && kiosk_limit > 0 ? kiosk_limit : null
     const session = db.insert(sessions)
-      .values({ category_id, title: title.trim(), date: today, mode, status: 'planned', opened_by: request.user!.userId })
+      .values({ category_id, title: title.trim(), date: today, mode, kiosk_limit: resolvedKioskLimit, status: 'planned', opened_by: request.user!.userId })
       .returning().get()
 
     if (mode === 'bulk' && bulk_count && bulk_count > 0) {
@@ -68,7 +70,7 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.put('/:id', { preHandler: requireAdmin }, async (request, reply) => {
     const { id } = request.params as { id: string }
     const sessionId = Number(id)
-    const { title, mode, bulk_count } = request.body as { title?: string; mode?: 'bulk' | 'kiosk'; bulk_count?: number }
+    const { title, mode, bulk_count, kiosk_limit } = request.body as { title?: string; mode?: 'bulk' | 'kiosk'; bulk_count?: number; kiosk_limit?: number }
 
     const session = db.select().from(sessions).where(eq(sessions.id, sessionId)).get()
     if (!session) return reply.code(404).send({ error: 'SESSION_NOT_FOUND' })
@@ -79,8 +81,11 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
       : null
     if (!cat) return reply.code(404).send({ error: 'CATEGORY_NOT_FOUND' })
 
-    const newMode = mode ?? session.mode
+    const newMode  = mode ?? session.mode
     const newTitle = title?.trim() ?? session.title
+    const newKioskLimit = newMode === 'kiosk' && kiosk_limit !== undefined
+      ? (kiosk_limit > 0 ? kiosk_limit : null)
+      : session.kiosk_limit
 
     if (newMode === 'bulk' && bulk_count !== undefined) {
       // Count tickets that have already been processed (not waiting) — these set the floor
@@ -116,10 +121,10 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
           eq(tickets.session_id, sessionId),
           eq(tickets.status, 'waiting')
         )).run()
-        db.update(sessions).set({ mode: newMode, title: newTitle }).where(eq(sessions.id, sessionId)).run()
+        db.update(sessions).set({ mode: newMode, title: newTitle, kiosk_limit: newKioskLimit }).where(eq(sessions.id, sessionId)).run()
       })
-    } else if (newTitle !== session.title) {
-      db.update(sessions).set({ title: newTitle }).where(eq(sessions.id, sessionId)).run()
+    } else if (newTitle !== session.title || newKioskLimit !== session.kiosk_limit) {
+      db.update(sessions).set({ title: newTitle, kiosk_limit: newKioskLimit }).where(eq(sessions.id, sessionId)).run()
     }
 
     return db.select().from(sessions).where(eq(sessions.id, sessionId)).get()

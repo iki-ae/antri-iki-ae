@@ -3,7 +3,7 @@ import { tickets, counters, categories, sessions } from '../../drizzle/schema.js
 import { eq, and, asc, inArray } from 'drizzle-orm'
 
 // ─── In-memory queue state (rebuilt from DB on startup + after each mutation) ─
-let _state: QueueState = { sessions: [], counters: [], waiting: [], skipped: [] }
+let _state: QueueState = { sessions: [], counters: [], waiting: [], served: [], skipped: [] }
 
 export interface CategorySession {
   id: number
@@ -21,6 +21,7 @@ export interface QueueState {
     currentTicket: { id: number; display_number: string; called_at: string } | null
   }[]
   waiting: { category_id: number; prefix: string; count: number }[]
+  served: { category_id: number; count: number }[]
   skipped: { id: number; display_number: string; category_id: number }[]
 }
 
@@ -36,7 +37,7 @@ export async function rebuildQueueState() {
     .all()
 
   if (!openSessions.length) {
-    _state = { sessions: [], counters: [], waiting: [], skipped: [] }
+    _state = { sessions: [], counters: [], waiting: [], served: [], skipped: [] }
     return
   }
 
@@ -98,6 +99,25 @@ export async function rebuildQueueState() {
     count,
   }))
 
+  const servedRows = db
+    .select({ category_id: tickets.category_id })
+    .from(tickets)
+    .where(and(
+      inArray(tickets.session_id, openSessionIds),
+      eq(tickets.status, 'done')
+    ))
+    .all()
+
+  const servedCounts: Record<number, number> = {}
+  for (const r of servedRows) {
+    servedCounts[r.category_id] = (servedCounts[r.category_id] ?? 0) + 1
+  }
+
+  const served = Object.entries(servedCounts).map(([cat_id, count]) => ({
+    category_id: Number(cat_id),
+    count,
+  }))
+
   const skippedRows = db
     .select({ id: tickets.id, display_number: tickets.display_number, category_id: tickets.category_id })
     .from(tickets)
@@ -118,6 +138,7 @@ export async function rebuildQueueState() {
     })),
     counters: counterStates,
     waiting,
+    served,
     skipped: skippedRows,
   }
 }

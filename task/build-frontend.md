@@ -155,18 +155,15 @@ The auth store exposes `clear()` (state reset, no API call) and `logout()` (call
 
 ## KIOSK PAGE — SPECIAL RULES
 
-- NO `ion-header`, NO nav
-- Large tap targets — minimum 120px buttons
-- Auto-reset to category picker after 10 seconds via `setTimeout`
-- Show ticket number full-screen after category selection
-- Mode branching on load — call `GET /api/kiosk/status` for kiosk-mode categories, and `GET /api/display/state` to detect any open sessions:
-  ```typescript
-  // categories with open kiosk-mode sessions → show category picker (Mode B)
-  // no kiosk categories but sessions exist → show bulk branding page (Mode A)
-  // no sessions at all → show unavailable screen
-  ```
-  Mode A branding page: full-screen, `antri.iki.ae` as the heading, large `iki.ae` barcode centered, no category picker. This is a holding screen — visitors are pre-issued tickets, the kiosk is not a point of entry.
-  Mode B: only categories with an open kiosk session appear in the picker — categories with bulk sessions are not shown.
+- NO `ion-header`, NO `IonPage`/`IonContent` — plain `<div class="kiosk-root">` (same pattern as `DisplayPage`)
+- Light theme (`--color-surface-alt` background), accent header bar matching display page
+- Watermark: inline "powered by iki.ae" + QR pill in the header (right side) — no `WatermarkFooter` component
+- Layout: single 420px-wide column centred on desktop, full-width on mobile
+- **Top section:** fixed-height (260px) ticket preview card — always present. Idle: ticket icon. After issue: thermal slip style (institution name, category, dashed dividers, number in category colour, datetime). Auto-clears 8s after issue via `setTimeout` — NOT via `window.onafterprint` (unreliable).
+- **Bottom section:** category list — always rendered, one full-width row per category. Prefix large on left, name bold+uppercase + live stats (Dilayani / Belum Dipanggil) below right. Disabled (bulk/no session/quota full) shown at 45% opacity + grayscale.
+- SSE: `useQueueStore.connect()` on mount, `disconnect()` on unmount — drives live per-category stats from `QueueState.waiting[]` and `QueueState.served[]`
+- On `take()`: timer starts immediately after API response — no `onafterprint` gating
+- Kiosk quota: `quota_full` flag from `/kiosk/status` disables buttons pre-emptively; backend enforces at `POST /kiosk/take`
 
 ---
 
@@ -356,10 +353,10 @@ The component renders: hamburger (toggles sidebar) → `configStore.institutionN
 
 ## TICKET PRINTING
 
-Printing opens a **popup window** (`window.open('', '_blank')`) containing a self-contained HTML document with all slip HTML and CSS written inline. This is the only reliable approach — injecting into the main document fails because Ionic's global stylesheet interferes with `page-break-after` regardless of DOM isolation, CSS placement, or timing workarounds.
+Printing is device-aware. On **desktop** a popup window is used (required for CSS isolation). On **mobile** a hidden `<iframe>` is used so no new tab opens.
 
 **`src/utils/print.ts`** — the single print entry point. Two exports:
-- `printSlips(tickets, docTitle, institutionName)` — opens a popup, writes a full HTML document with all slips and inline `PRINT_CSS`, calls `win.print()` from `win.onload`, closes window on `win.onafterprint`.
+- `printSlips(tickets, docTitle, institutionName)` — detects `navigator.maxTouchPoints > 0` for mobile; mobile uses a hidden `<iframe>` injected + removed after 2s; desktop uses `window.open()` popup with `win.onafterprint` auto-close.
 - `printSingleKiosk(data, institutionName)` — wraps a single kiosk-issued ticket as a `PrintTicket` and calls `printSlips`.
 
 **`PRINT_CSS`** (inline string in `print.ts` — injected into the popup `<style>` tag):

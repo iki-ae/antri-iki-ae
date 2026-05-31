@@ -57,11 +57,8 @@ export interface SingleSlipData {
   created_at: string
 }
 
-export function printSlips(tickets: PrintTicket[], docTitle: string, institutionName: string): void {
-  const win = window.open('', '_blank', 'width=300,height=500')
-  if (!win) return
-
-  const html = `<!DOCTYPE html>
+function buildHtml(tickets: PrintTicket[], docTitle: string, institutionName: string): string {
+  return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -72,15 +69,42 @@ export function printSlips(tickets: PrintTicket[], docTitle: string, institution
   ${tickets.map(t => slipHtml(t, institutionName)).join('')}
 </body>
 </html>`
+}
 
+function printViaIframe(html: string): void {
+  const iframe = document.createElement('iframe')
+  iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;'
+  document.body.appendChild(iframe)
+  const doc = iframe.contentDocument!
+  doc.open()
+  doc.write(html)
+  doc.close()
+  iframe.onload = () => {
+    iframe.contentWindow!.print()
+    // Remove after a short delay to allow the print dialog to initialise
+    setTimeout(() => document.body.removeChild(iframe), 2000)
+  }
+}
+
+function printViaPopup(html: string, docTitle: string): void {
+  const win = window.open('', '_blank', 'width=300,height=500')
+  if (!win) return
   win.document.write(html)
   win.document.close()
-
-  // Print after the new window has fully loaded and laid out
   win.onload = () => {
     win.focus()
     win.print()
     win.onafterprint = () => win.close()
+  }
+}
+
+export function printSlips(tickets: PrintTicket[], docTitle: string, institutionName: string): void {
+  const html = buildHtml(tickets, docTitle, institutionName)
+  const isMobile = navigator.maxTouchPoints > 0
+  if (isMobile) {
+    printViaIframe(html)
+  } else {
+    printViaPopup(html, docTitle)
   }
 }
 

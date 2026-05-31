@@ -51,7 +51,7 @@ config         // Single-row: institution_name, locale, app_version, watermark_t
 categories     // prefix(A/B/C), name, color, sort_order, is_active
 counters       // name, category_id, is_active
 users          // name, username, password_hash, role(admin|operator), counter_id
-sessions       // category_id(nullable FK), date, mode(bulk|kiosk), status(planned|open|closed), opened_at, closed_at — one open session per category; multiple planned/closed allowed
+sessions       // category_id(nullable FK), date, mode(bulk|kiosk), kiosk_limit(nullable int — null/0=unlimited), status(planned|open|closed), opened_at, closed_at — one open session per category; multiple planned/closed allowed
 tickets        // session_id, category_id, number(int), display_number(A-001), status, counter_id, called_at, served_at, skipped_at
 audit_logs     // user_id, action, payload(JSON), created_at
 ```
@@ -110,6 +110,7 @@ QueueState = {
   sessions: [{ id, category_id, date, mode, status }],  // one entry per open session
   counters: [{ id, name, category, currentTicket, calledAt }],
   waiting:  [{ category_id, prefix, count }],
+  served:   [{ category_id, count }],                 // status='done' tickets per open session
   skipped:  [{ id, display_number, category_id }]   // tickets with status='skipped', ordered by number
 }
 ```

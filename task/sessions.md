@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-31 (Session 31)
+**Last updated:** 2026-05-31 (Session 33)
 
 ---
 
@@ -26,6 +26,80 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-31 — Session 33
+**Did:** Kiosk page full UX redesign + SSE live stats + mobile print fix:
+
+**Kiosk page redesign (`KioskPage.vue`):**
+- Replaced dark full-screen mode-switching layout with persistent two-section light-theme column (420px max-width, centred on desktop)
+- Top: fixed-height (260px) ticket preview card — thermal slip style (institution name, category, dashed dividers, number in category colour, datetime); idle shows ticket icon only; auto-clears 8s after issue via `setTimeout`
+- Bottom: category list always rendered — one full-width row per category; large prefix left, name (bold uppercase) + live stats below right; disabled at 45% opacity + grayscale, no badge
+- Header: accent bar with institution name + "powered by iki.ae" QR pill (replaces `WatermarkFooter`)
+- `window.onafterprint` dependency removed — timer fires unconditionally after `take()` returns
+- `useQueueStore` connected on mount/unmount for SSE-driven stat updates
+
+**Backend — `served` count in SSE (`queueService.ts`, `types/index.ts`):**
+- `QueueState.served: { category_id, count }[]` added — counts `status='done'` tickets per open session
+- `rebuildQueueState()` queries served counts alongside waiting counts
+
+**Mobile print fix (`print.ts`):**
+- `printSlips()` detects mobile via `navigator.maxTouchPoints > 0`
+- Mobile: hidden `<iframe>` injected and removed after 2s — no new tab opened
+- Desktop: `window.open()` popup unchanged
+
+**Decided:**
+- `window.onafterprint` is unreliable on kiosk surfaces — unconditional `setTimeout` is the correct approach
+- Mobile iframe print avoids new-tab UX friction; desktop popup preserved for CSS isolation
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-31 — Session 32
+**Did:** Added `kiosk_limit` — per-session quota cap for kiosk mode:
+
+**Schema:** Added `kiosk_limit INTEGER` (nullable) to `sessions` table. Migration `0003_add_kiosk_limit.sql` applied to live DB.
+
+**Backend (`backend/drizzle/schema.ts`):**
+- `sessions.kiosk_limit: integer` — nullable; `null` = unlimited; `0` stored as `null` (unlimited); `>0` = max tickets that can be issued
+
+**Backend (`backend/src/routes/sessions.ts`):**
+- `POST /sessions/create` — accepts `kiosk_limit?: number`; stored as `null` when `0` or absent
+- `PUT /sessions/:id` — accepts `kiosk_limit?: number`; only applied when mode is kiosk; computed `newKioskLimit` carried through all update branches
+
+**Backend (`backend/src/routes/kiosk.ts`):**
+- `POST /kiosk/take` — enforces limit: counts total issued tickets for the session; returns `409 KIOSK_QUOTA_FULL` if `issued >= kiosk_limit`
+- `GET /kiosk/status` — now returns `quota_full: boolean` and `kiosk_limit: number | null` per category; kiosk frontend uses this to pre-disable buttons before the user tries to take
+
+**Frontend (`frontend/src/types/index.ts`):**
+- `Session.kiosk_limit?: number | null` added
+
+**Frontend (`frontend/src/api/index.ts`):**
+- `sessionsApi.create` and `.update` signatures extended with `kiosk_limit?: number`
+
+**Frontend (`frontend/src/views/admin/SessionPage.vue`):**
+- Kiosk mode card now shows a `kiosk_limit` number input (mirrors how bulk shows `bulk_count`)
+- Label: `session.kioskLimit` i18n key; hint: `session.kioskLimitHint`
+- Form reactive object extended with `kiosk_limit: number | string`; initialised to `0` on create, loaded from session on edit
+
+**Frontend (`frontend/src/views/kiosk/KioskPage.vue`):**
+- `kioskQuotaFull` ref tracks `quota_full` per category from `/kiosk/status`
+- `allCategories` computed: `available = mode === 'kiosk' && !quotaFull`; `quota_full` flag passed through
+- Category buttons: show "Kuota Penuh" badge (`cat-quota-badge`) and disabled when `quota_full`
+
+**i18n (both locales):**
+- `session.kioskLimit` — "Kuota Kios (0 = tidak terbatas)" / "Kiosk Quota (0 = unlimited)"
+- `session.kioskLimitHint` — "Kosongkan atau isi 0 agar tidak terbatas" / "Leave 0 or blank for no limit"
+- `kiosk.quotaFull` — "Kuota Penuh" / "Quota Full"
+
+**Decided:**
+- `0` means unlimited — stored as `null` in DB; UI shows `0` as the default to make the hint meaningful
+- Limit is against total issued (all statuses), not just waiting — once a ticket is issued it counts permanently
+- `quota_full` is computed at read time in `/kiosk/status` — no extra column needed
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

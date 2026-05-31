@@ -192,6 +192,17 @@
                     <span class="mode-card-desc">{{ $t('session.kioskDesc') }}</span>
                   </div>
                 </div>
+                <div v-if="form.mode === 'kiosk'" class="mode-card-extra" @click.stop>
+                  <ion-input
+                    v-model="form.kiosk_limit"
+                    :label="$t('session.kioskLimit')"
+                    label-placement="floating"
+                    fill="outline"
+                    type="number"
+                    :min="0"
+                  />
+                  <p class="mode-card-hint">{{ $t('session.kioskLimitHint') }}</p>
+                </div>
               </div>
 
             </div>
@@ -412,7 +423,8 @@ const form = reactive<{
   mode: 'kiosk' | 'bulk'
   bulk_count: number | string
   min_bulk_count: number
-}>({ category_id: null, title: '', mode: 'bulk', bulk_count: 50, min_bulk_count: 1 })
+  kiosk_limit: number | string
+}>({ category_id: null, title: '', mode: 'bulk', bulk_count: 50, min_bulk_count: 1, kiosk_limit: 0 })
 
 function openCreate() {
   editTarget.value    = null
@@ -421,6 +433,7 @@ function openCreate() {
   form.mode           = 'bulk'
   form.bulk_count     = 50
   form.min_bulk_count = 1
+  form.kiosk_limit    = 0
   modalOpen.value     = true
 }
 
@@ -431,6 +444,7 @@ function openEdit(s: SessionWithStats) {
   form.mode           = s.mode
   form.bulk_count     = s.issued || 50
   form.min_bulk_count = s.processed || 1
+  form.kiosk_limit    = s.kiosk_limit ?? 0
   modalOpen.value     = true
 }
 
@@ -443,12 +457,14 @@ async function saveModal() {
   if (!form.title.trim()) return
   saving.value = true
   try {
-    const bulkCount = form.mode === 'bulk' ? Number(form.bulk_count) || form.min_bulk_count : undefined
+    const bulkCount  = form.mode === 'bulk' ? Number(form.bulk_count) || form.min_bulk_count : undefined
+    const kioskLimit = form.mode === 'kiosk' ? Number(form.kiosk_limit) || 0 : undefined
     if (editTarget.value) {
       await sessionsApi.update(editTarget.value.id, {
         title: form.title.trim(),
         mode: form.mode,
         bulk_count: bulkCount,
+        kiosk_limit: kioskLimit,
       })
     } else {
       if (!form.category_id) return
@@ -457,6 +473,7 @@ async function saveModal() {
         title: form.title.trim(),
         mode: form.mode,
         bulk_count: bulkCount,
+        kiosk_limit: kioskLimit,
       })
     }
     closeModal()
@@ -796,6 +813,12 @@ async function doPrint() {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.mode-card-hint {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
 }
 
 /* ── Print modal ── */

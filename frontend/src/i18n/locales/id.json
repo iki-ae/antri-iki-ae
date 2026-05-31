@@ -87,6 +87,8 @@
     "title":          "Judul Sesi Antrian",
     "titlePlaceholder": "mis. Sesi Pagi, Pelayanan Umum",
     "bulkCount":      "Kuota Antrian",
+    "kioskLimit":     "Kuota Kios (0 = tidak terbatas)",
+    "kioskLimitHint": "Kosongkan atau isi 0 agar tidak terbatas",
     "planned":        "Direncanakan",
     "open":           "Berjalan",
     "closed":         "Selesai",
@@ -143,7 +145,8 @@
     "yourNumber":   "Nomor Antrian Anda",
     "autoReset":    "Kembali dalam {s} detik...",
     "unavailable":  "Kios tidak tersedia saat ini",
-    "bulkHint":     "Silakan gunakan nomor antrian yang telah diterbitkan"
+    "bulkHint":     "Silakan gunakan nomor antrian yang telah diterbitkan",
+    "quotaFull":    "Kuota Penuh"
   },
   "backup": {
     "export":     "Ekspor Data",
