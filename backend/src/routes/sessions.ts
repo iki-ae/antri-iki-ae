@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify'
 import { db } from '../config/database.js'
 import { sessions, tickets, categories } from '../../drizzle/schema.js'
 import { requireAdmin } from '../middleware/auth.js'
-import { eq, and, inArray, count, sql } from 'drizzle-orm'
+import { eq, and, inArray, count, max, not } from 'drizzle-orm'
 import { broadcastQueueState } from '../plugins/sse.js'
 import { rebuildQueueState, formatDisplayNumber } from '../services/queueService.js'
 
@@ -18,8 +18,10 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
         .where(eq(tickets.session_id, s.id)).get()?.n ?? 0
       const served = db.select({ n: count() }).from(tickets)
         .where(and(eq(tickets.session_id, s.id), eq(tickets.status, 'done'))).get()?.n ?? 0
+      const processed = db.select({ n: count() }).from(tickets)
+        .where(and(eq(tickets.session_id, s.id), not(eq(tickets.status, 'waiting')))).get()?.n ?? 0
       const cat = s.category_id ? catMap[s.category_id] : null
-      return { ...s, category: cat ?? null, issued, served }
+      return { ...s, category: cat ?? null, issued, served, processed }
     })
   })
 
@@ -70,7 +72,7 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
 
     const session = db.select().from(sessions).where(eq(sessions.id, sessionId)).get()
     if (!session) return reply.code(404).send({ error: 'SESSION_NOT_FOUND' })
-    if (session.status !== 'planned') return reply.code(409).send({ error: 'SESSION_NOT_EDITABLE' })
+    if (session.status === 'open') return reply.code(409).send({ error: 'SESSION_NOT_EDITABLE' })
 
     const cat = session.category_id
       ? db.select().from(categories).where(eq(categories.id, session.category_id)).get()
@@ -80,14 +82,25 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
     const newMode = mode ?? session.mode
     const newTitle = title?.trim() ?? session.title
 
-    // If mode changed away from bulk, or bulk_count changed: delete existing waiting tickets and re-issue
     if (newMode === 'bulk' && bulk_count !== undefined) {
+      // Count tickets that have already been processed (not waiting) — these set the floor
+      const usedCount = db.select({ n: count() }).from(tickets)
+        .where(and(eq(tickets.session_id, sessionId), not(eq(tickets.status, 'waiting')))).get()?.n ?? 0
+      const maxUsedNumber = db.select({ n: max(tickets.number) }).from(tickets)
+        .where(and(eq(tickets.session_id, sessionId), not(eq(tickets.status, 'waiting')))).get()?.n ?? 0
+
+      if (bulk_count < usedCount) {
+        return reply.code(400).send({ error: 'BULK_COUNT_TOO_LOW' })
+      }
+
       db.transaction(() => {
+        // Wipe all waiting tickets — they will be re-issued fresh
         db.delete(tickets).where(and(
           eq(tickets.session_id, sessionId),
           eq(tickets.status, 'waiting')
         )).run()
-        for (let i = 1; i <= bulk_count; i++) {
+        // Issue new waiting tickets to fill up to bulk_count total
+        for (let i = maxUsedNumber + 1; i <= bulk_count; i++) {
           db.insert(tickets).values({
             session_id: sessionId,
             category_id: cat.id,

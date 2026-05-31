@@ -74,9 +74,9 @@
   "session": {
     "create":         "Buat Sesi",
     "edit":           "Edit Sesi",
-    "start":          "Mulai",
-    "stop":           "Hentikan",
-    "resume":         "Lanjutkan",
+    "start":          "Buka Sesi",
+    "stop":           "Tutup Sesi",
+    "resume":         "Buka Sesi",
     "reset":          "Reset Antrian",
     "kiosk":          "KIOSK",
     "kioskDesc":      "Ticket dicetak pengantri",

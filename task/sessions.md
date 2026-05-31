@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-31 (Session 28)
+**Last updated:** 2026-05-31 (Session 29)
 
 ---
 
@@ -26,6 +26,30 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-31 — Session 29
+**Did:** Session edit unlock for closed sessions + live stats + button label rename:
+
+**Backend (`sessions.ts`):**
+- `PUT /:id` edit guard relaxed from `!== 'planned'` to `=== 'open'` — closed sessions are now editable (title, mode, bulk_count)
+- `GET /sessions/list` now returns `processed` (count of non-waiting tickets) alongside `issued` and `served` — used as the floor for bulk_count edits
+- `PUT /:id` bulk_count edit logic rewritten: `bulk_count` is the new **total** desired count; floor = count of non-waiting tickets (`usedCount`); waiting tickets are wiped and re-issued from `maxUsedNumber+1` up to `bulk_count`; returns 400 `BULK_COUNT_TOO_LOW` if value < floor
+
+**Frontend:**
+- `types/index.ts`: `SessionWithStats.processed: number` added
+- `SessionPage.vue`: edit button condition changed from `status === 'planned'` to `status !== 'open'` — pencil shows on planned and closed rows
+- `SessionPage.vue`: `form.min_bulk_count` set to `s.processed` when opening edit modal; bulk count `ion-input :min` bound to it; `saveModal` falls back to `min_bulk_count` if input is empty
+- `SessionPage.vue`: SSE-driven stats — `useQueueStore` connected on view enter, disconnected on leave; `watch(queueStore.state)` triggers `loadSessions()` on every SSE queue update so issued/served counts refresh live
+- `i18n` (both locales): `session.start` → "Buka Sesi" / "Open Session", `session.stop` → "Tutup Sesi" / "Close Session", `session.resume` → "Buka Sesi" / "Open Session"
+
+**Decided:**
+- `bulk_count` is always a total (not a delta) — user inputs the final desired count; system figures out what to add/remove
+- Floor = `processed` (non-waiting tickets) not `issued` — already-active/served tickets cannot be un-issued, but waiting tickets are free to be replaced
+- Start and Resume share the same label ("Buka Sesi") — both actions open the session; the distinction is internal only
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

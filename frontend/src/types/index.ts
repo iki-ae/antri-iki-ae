@@ -48,6 +48,7 @@ export interface SessionWithStats extends Session {
   category: { id: number; prefix: string; name: string; color: string } | null
   issued: number
   served: number
+  processed: number
 }
 
 export interface Ticket {

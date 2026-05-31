@@ -74,9 +74,9 @@
   "session": {
     "create":         "New Session",
     "edit":           "Edit Session",
-    "start":          "Start",
-    "stop":           "Stop",
-    "resume":         "Resume",
+    "start":          "Open Session",
+    "stop":           "Close Session",
+    "resume":         "Open Session",
     "reset":          "Reset Queue",
     "kiosk":          "KIOSK",
     "kioskDesc":      "Tickets printed by each visitor",

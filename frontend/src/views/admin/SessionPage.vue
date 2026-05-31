@@ -36,9 +36,9 @@
                 </div>
               </div>
               <div class="session-actions">
-                <!-- Edit: planned only -->
+                <!-- Edit: planned or closed -->
                 <button
-                  v-if="s.status === 'planned'"
+                  v-if="s.status !== 'open'"
                   class="icon-btn edit-btn"
                   :title="$t('common.edit')"
                   @click="openEdit(s)"
@@ -165,7 +165,7 @@
                     label-placement="floating"
                     fill="outline"
                     type="number"
-                    :min="1"
+                    :min="form.min_bulk_count"
                   />
                 </div>
               </div>
@@ -205,11 +205,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import {
   IonPage, IonContent, IonFab, IonFabButton, IonModal, IonHeader, IonToolbar,
   IonTitle, IonButtons, IonButton, IonInput, IonSelect, IonSelectOption, IonIcon,
-  alertController, onIonViewWillEnter,
+  alertController, onIonViewWillEnter, onIonViewWillLeave,
 } from '@ionic/vue'
 import { addIcons } from 'ionicons'
 import {
@@ -219,22 +219,33 @@ import {
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import { sessionsApi, categoriesApi } from '@/api'
+import { useQueueStore } from '@/stores/queue'
 import type { Category, SessionWithStats } from '@/types'
 
 addIcons({ addOutline, pencilOutline, trashOutline, playCircleOutline, playSkipForwardOutline, stopCircleOutline, refreshOutline })
 
 const { t } = useI18n()
+const queueStore = useQueueStore()
 
 const categories = ref<Category[]>([])
 const sessions   = ref<SessionWithStats[]>([])
 const busy       = reactive<Record<number, boolean>>({})
 
-onIonViewWillEnter(load)
+onIonViewWillEnter(() => { queueStore.connect(); load() })
+onIonViewWillLeave(() => { queueStore.disconnect() })
+
+// Re-fetch session stats on every SSE queue update
+watch(() => queueStore.state, () => { loadSessions() })
 
 async function load() {
   const [cats, sess] = await Promise.all([categoriesApi.list(), sessionsApi.list()])
   categories.value = (cats.data as Category[]).filter(c => c.is_active)
   sessions.value   = sess.data as SessionWithStats[]
+}
+
+async function loadSessions() {
+  const sess = await sessionsApi.list()
+  sessions.value = sess.data as SessionWithStats[]
 }
 
 function sessionsOf(category_id: number): SessionWithStats[] {
@@ -308,7 +319,8 @@ const form = reactive<{
   title: string
   mode: 'kiosk' | 'bulk'
   bulk_count: number | string
-}>({ category_id: null, title: '', mode: 'bulk', bulk_count: 50 })
+  min_bulk_count: number
+}>({ category_id: null, title: '', mode: 'bulk', bulk_count: 50, min_bulk_count: 1 })
 
 function openCreate() {
   editTarget.value    = null
@@ -316,6 +328,7 @@ function openCreate() {
   form.title          = ''
   form.mode           = 'bulk'
   form.bulk_count     = 50
+  form.min_bulk_count = 1
   modalOpen.value     = true
 }
 
@@ -325,6 +338,7 @@ function openEdit(s: SessionWithStats) {
   form.title          = s.title
   form.mode           = s.mode
   form.bulk_count     = s.issued || 50
+  form.min_bulk_count = s.processed || 1
   modalOpen.value     = true
 }
 
@@ -337,7 +351,7 @@ async function saveModal() {
   if (!form.title.trim()) return
   saving.value = true
   try {
-    const bulkCount = form.mode === 'bulk' ? Number(form.bulk_count) || 50 : undefined
+    const bulkCount = form.mode === 'bulk' ? Number(form.bulk_count) || form.min_bulk_count : undefined
     if (editTarget.value) {
       await sessionsApi.update(editTarget.value.id, {
         title: form.title.trim(),
