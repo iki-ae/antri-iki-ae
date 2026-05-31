@@ -7,15 +7,22 @@ import { broadcastQueueState } from '../plugins/sse.js'
 import { rebuildQueueState, formatDisplayNumber, nextTicketNumber } from '../services/queueService.js'
 
 export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
+  // Returns all open sessions keyed by category_id
   fastify.get('/current', async () => {
-    return db.select().from(sessions).where(eq(sessions.status, 'open')).get() ?? null
+    return db.select().from(sessions).where(eq(sessions.status, 'open')).all()
   })
 
   fastify.post('/open', { preHandler: requireAdmin }, async (request, reply) => {
-    const { mode, bulk } = request.body as {
+    const { category_id, mode, bulk_count } = request.body as {
+      category_id: number
       mode: 'bulk' | 'kiosk'
-      bulk?: { category_id: number; count: number }[]
+      bulk_count?: number
     }
+
+    if (!category_id) return reply.code(400).send({ error: 'CATEGORY_REQUIRED' })
+
+    const cat = db.select().from(categories).where(eq(categories.id, category_id)).get()
+    if (!cat) return reply.code(404).send({ error: 'CATEGORY_NOT_FOUND' })
 
     const today = new Date().toISOString().split('T')[0]
 
@@ -23,9 +30,11 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
 
     try {
       session = db.transaction(() => {
-        const existing = db.select().from(sessions).where(eq(sessions.status, 'open')).get()
+        const existing = db.select().from(sessions)
+          .where(and(eq(sessions.status, 'open'), eq(sessions.category_id, category_id)))
+          .get()
         if (existing) throw new Error('SESSION_ALREADY_OPEN')
-        return db.insert(sessions).values({ date: today, mode, opened_by: request.user!.userId }).returning().get()
+        return db.insert(sessions).values({ category_id, date: today, mode, opened_by: request.user!.userId }).returning().get()
       })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'OPEN_FAILED'
@@ -33,18 +42,14 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(code).send({ error: msg })
     }
 
-    if (mode === 'bulk' && bulk?.length) {
-      for (const { category_id, count } of bulk) {
-        const cat = db.select().from(categories).where(eq(categories.id, category_id)).get()
-        if (!cat) continue
-        for (let i = 1; i <= count; i++) {
-          db.insert(tickets).values({
-            session_id: session.id,
-            category_id,
-            number: i,
-            display_number: formatDisplayNumber(cat.prefix, i),
-          }).run()
-        }
+    if (mode === 'bulk' && bulk_count && bulk_count > 0) {
+      for (let i = 1; i <= bulk_count; i++) {
+        db.insert(tickets).values({
+          session_id: session.id,
+          category_id,
+          number: i,
+          display_number: formatDisplayNumber(cat.prefix, i),
+        }).run()
       }
     }
 
@@ -53,9 +58,15 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.code(201).send(session)
   })
 
-  fastify.post('/close', { preHandler: requireAdmin }, async (_request, reply) => {
-    const session = db.select().from(sessions).where(eq(sessions.status, 'open')).get()
+  fastify.post('/close', { preHandler: requireAdmin }, async (request, reply) => {
+    const { category_id } = request.body as { category_id: number }
+    if (!category_id) return reply.code(400).send({ error: 'CATEGORY_REQUIRED' })
+
+    const session = db.select().from(sessions)
+      .where(and(eq(sessions.status, 'open'), eq(sessions.category_id, category_id)))
+      .get()
     if (!session) return reply.code(404).send({ error: 'NO_ACTIVE_SESSION' })
+
     const now = new Date().toISOString()
     db.transaction(() => {
       db.update(tickets)
@@ -67,14 +78,21 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
         .run()
       db.update(sessions).set({ status: 'closed', closed_at: now }).where(eq(sessions.id, session.id)).run()
     })
+
     await rebuildQueueState()
     broadcastQueueState()
     return { ok: true }
   })
 
-  fastify.post('/reset', { preHandler: requireAdmin }, async (_request, reply) => {
-    const session = db.select().from(sessions).where(eq(sessions.status, 'open')).get()
+  fastify.post('/reset', { preHandler: requireAdmin }, async (request, reply) => {
+    const { category_id } = request.body as { category_id: number }
+    if (!category_id) return reply.code(400).send({ error: 'CATEGORY_REQUIRED' })
+
+    const session = db.select().from(sessions)
+      .where(and(eq(sessions.status, 'open'), eq(sessions.category_id, category_id)))
+      .get()
     if (!session) return reply.code(404).send({ error: 'NO_ACTIVE_SESSION' })
+
     db.delete(tickets).where(and(eq(tickets.session_id, session.id), eq(tickets.status, 'waiting'))).run()
     await rebuildQueueState()
     broadcastQueueState()

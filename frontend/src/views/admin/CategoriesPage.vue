@@ -63,9 +63,47 @@ const editing    = ref<Category | null>(null)
 const form       = ref({ prefix: '', name: '', color: '#378ADD' })
 onIonViewWillEnter(load)
 async function load() { const { data } = await categoriesApi.list(); categories.value = data }
+
+function hexToHue(hex: string): number {
+  const r = parseInt(hex.slice(1, 3), 16) / 255
+  const g = parseInt(hex.slice(3, 5), 16) / 255
+  const b = parseInt(hex.slice(5, 7), 16) / 255
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min
+  if (d === 0) return 0
+  let h = max === r ? ((g - b) / d + (g < b ? 6 : 0)) : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+  return (h / 6) * 360
+}
+
+function hueDist(a: number, b: number): number {
+  const d = Math.abs(a - b) % 360
+  return d > 180 ? 360 - d : d
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const a = s * Math.min(l, 1 - l)
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12
+    const v = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))
+    return Math.round(v * 255).toString(16).padStart(2, '0')
+  }
+  return `#${f(0)}${f(8)}${f(4)}`
+}
+
+function pickDistinctColor(): string {
+  const usedHues = categories.value.map(c => hexToHue(c.color))
+  for (let i = 0; i < 20; i++) {
+    const h = Math.random() * 360
+    if (usedHues.every(u => hueDist(h, u) >= 30)) {
+      return hslToHex(h, 0.65, 0.50)
+    }
+  }
+  // fallback: just pick a random hue
+  return hslToHex(Math.random() * 360, 0.65, 0.50)
+}
+
 function openForm(cat?: Category) {
   editing.value = cat ?? null
-  form.value = cat ? { prefix: cat.prefix, name: cat.name, color: cat.color } : { prefix: '', name: '', color: '#378ADD' }
+  form.value = cat ? { prefix: cat.prefix, name: cat.name, color: cat.color } : { prefix: '', name: '', color: pickDistinctColor() }
   showForm.value = true
 }
 async function confirmDelete(cat: Category) {

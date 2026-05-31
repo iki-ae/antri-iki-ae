@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-30 (Session 22)
+**Last updated:** 2026-05-31 (Session 24)
 
 ---
 
@@ -26,6 +26,55 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-31 — Session 24
+**Did:** i18n label polish + category create UX improvement:
+
+**i18n (id.json):**
+- `category.prefix`: `"Awalan"` → `"Jenis Kategori (mis. A, B, C, D)"`
+- `category.name`: `"Nama Kategori"` → `"Judul Kategori"`
+- `counter.name`: `"Nama Loket"` → `"Nomor Loket"`
+- `auth.username`: `"Nama Pengguna"` → `"Username"` (login form)
+- `user.username`: `"Nama Pengguna"` → `"Login Username"` (user create/edit modal)
+
+**i18n (en.json):**
+- `category.name`: `"Category Name"` → `"Category Title"`
+- `counter.name`: `"Counter Name"` → `"Counter Number"`
+
+**CategoriesPage.vue — random distinct color on create:**
+- `pickDistinctColor()`: generates a random HSL color (s=0.65, l=0.50) and re-rolls up to 20 times until the hue is ≥30° from all existing category colors. Falls back to any random hue after 20 tries. Uses `hexToHue()`, `hueDist()`, `hslToHex()` pure helpers.
+- Create modal opens with this color pre-filled; edit modal still loads the saved color.
+- No extra API call needed — `categories.value` is already loaded before `openForm()` is called.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
+
+---
+
+### 2026-05-30 — Session 23
+**Did:** Per-category independent sessions:
+
+**Schema:** Added `category_id` (nullable FK → `categories`) to `sessions` table. Nullable so old rows and restored backups don't break; application enforces non-null on all new inserts. DB wiped and recreated from migration (development stage — no migration path needed for existing data).
+
+**Backend:**
+- `sessions.ts`: `GET /current` returns `CategorySession[]` (all open sessions). `POST /open` takes `{ category_id, mode, bulk_count? }` — one open session per category, not per system. `POST /close` and `POST /reset` take `{ category_id }`.
+- `queueService.ts`: `QueueState.session` → `QueueState.sessions: CategorySession[]`. `rebuildQueueState()` queries all open sessions, maps counters and waiting/skipped counts across all open session IDs. `callNext()` looks up the open session for the counter's specific category.
+- `kiosk.ts`: `GET /status` returns categories with open kiosk-mode sessions only. `POST /take` looks up session by category_id.
+- `categories.ts`: prefix-change guard scoped to the specific category's session (not a global open session).
+
+**Frontend:**
+- `types/index.ts`: Added `CategorySession` interface; `QueueState.session` → `sessions: CategorySession[]`; `Session` gets `category_id`.
+- `api/index.ts`: `sessionsApi.current()` returns `CategorySession[]`; open/close/reset signatures updated.
+- `SessionPage.vue`: Per-category card layout — each category shows its session status, mode selector, bulk count input, and independent open/close/reset controls.
+- `OperatorDashboard.vue`, `OperatorPage.vue`: "no session" check uses `categorySession` computed (finds session for operator's category) instead of global `state.session`.
+- `DisplayPage.vue`, `QueueBoard.vue`: "no session" guard uses `sessions.length` instead of `session`.
+- `KioskPage.vue`: calls `/kiosk/status` for available kiosk categories; bulk screen shown when sessions exist but none are kiosk mode.
+- i18n: added `session.closed`, `session.bulkCount`, `errors.SESSION_ALREADY_OPEN`, `errors.CATEGORY_REQUIRED`.
+
+**Decided:** `sessions.category_id` is nullable in the DB (portability — deleted categories shouldn't orphan backups); non-null enforced at the route handler level.
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

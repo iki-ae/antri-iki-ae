@@ -24,7 +24,9 @@ export const categoryRoutes: FastifyPluginAsync = async (fastify) => {
     if (body.prefix !== undefined) {
       const current = db.select().from(categories).where(eq(categories.id, numId)).get()
       if (current && body.prefix !== current.prefix) {
-        const openSession = db.select().from(sessions).where(eq(sessions.status, 'open')).get()
+        const openSession = db.select().from(sessions)
+          .where(and(eq(sessions.status, 'open'), eq(sessions.category_id, numId)))
+          .get()
         if (openSession) {
           const hasTickets = db
             .select({ id: tickets.id })

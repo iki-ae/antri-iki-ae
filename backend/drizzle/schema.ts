@@ -47,6 +47,7 @@ export const users = sqliteTable('users', {
 // ─── sessions ─────────────────────────────────────────────────────────────────
 export const sessions = sqliteTable('sessions', {
   id:          integer('id').primaryKey({ autoIncrement: true }),
+  category_id: integer('category_id').references(() => categories.id),
   date:        text('date').notNull(),             // 'YYYY-MM-DD'
   mode:        text('mode', { enum: ['bulk', 'kiosk'] }).notNull(),
   status:      text('status', { enum: ['open', 'closed'] }).notNull().default('open'),

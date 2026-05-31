@@ -1,6 +1,6 @@
 <template>
   <div class="queue-board">
-    <div v-if="!state || !state.session" class="no-session">
+    <div v-if="!state || !state.sessions?.length" class="no-session">
       <p>{{ $t('display.noSession') }}</p>
     </div>
     <template v-else>

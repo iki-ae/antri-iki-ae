@@ -3,7 +3,7 @@
     <AdminPageHeader />
 
     <ion-content>
-      <div v-if="!queueStore.state?.session" class="no-session">
+      <div v-if="!categorySession" class="no-session">
         <p>{{ $t('operator.noSession') }}</p>
       </div>
 
@@ -105,6 +105,10 @@ const myCounter = computed(() =>
   queueStore.state?.counters.find(c => c.id === auth.counterId) ?? null
 )
 const myCategory = computed(() => myCounter.value?.category ?? null)
+const categorySession = computed(() => {
+  if (!myCategory.value) return null
+  return queueStore.state?.sessions.find(s => s.category_id === myCategory.value!.id) ?? null
+})
 const currentTicket = computed(() => myCounter.value?.currentTicket ?? null)
 const waitingCount  = computed(() => {
   if (!myCategory.value) return null

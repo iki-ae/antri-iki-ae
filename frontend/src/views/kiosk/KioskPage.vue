@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { IonPage, IonContent, IonIcon } from '@ionic/vue'
-import { displayApi, kioskApi, categoriesApi } from '@/api'
+import { displayApi, kioskApi } from '@/api'
 import { useConfigStore } from '@/stores/config'
 import WatermarkFooter from '@/components/WatermarkFooter.vue'
 import TicketNumber from '@/components/TicketNumber.vue'
@@ -87,26 +87,26 @@ import type { Category } from '@/types'
 
 const configStore = useConfigStore()
 
-const sessionMode = ref<string | null>(null)
-const categories  = ref<Category[]>([])
-const issued      = ref<string | null>(null)
-const taking      = ref(false)
-const countdown   = ref(10)
+const categories    = ref<Category[]>([])
+const hasAnySessions = ref(false)
+const issued         = ref<string | null>(null)
+const taking         = ref(false)
+const countdown      = ref(10)
 let   timer: ReturnType<typeof setInterval> | null = null
 
-const isBulkMode  = computed(() => sessionMode.value === 'bulk')
-const isKioskMode = computed(() => sessionMode.value === 'kiosk')
+// kiosk categories come from /kiosk/status (only open kiosk-mode sessions)
+// bulk screen: there are active sessions but no kiosk ones
+const isKioskMode = computed(() => categories.value.length > 0)
+const isBulkMode  = computed(() => !isKioskMode.value && hasAnySessions.value)
 
 onMounted(async () => {
   try {
-    const { data } = await displayApi.state()
-    sessionMode.value = data.session?.mode ?? null
-    if (sessionMode.value === 'kiosk') {
-      const { data: cats } = await categoriesApi.list()
-      categories.value = cats.filter(c => c.is_active)
-    }
+    const [kioskRes, stateRes] = await Promise.all([kioskApi.status(), displayApi.state()])
+    categories.value     = kioskRes.data.categories ?? []
+    hasAnySessions.value = (stateRes.data.sessions?.length ?? 0) > 0
   } catch {
-    sessionMode.value = null
+    categories.value     = []
+    hasAnySessions.value = false
   }
 })
 

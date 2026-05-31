@@ -93,10 +93,10 @@ onUnmounted(() => window.removeEventListener('resize', onResize))
 
 const menuItems = [
   { path: '/admin/dashboard',  iconKey: 'gridOutline',          label: 'admin.nav.dashboard'  },
-  { path: '/admin/session',    iconKey: 'playCircleOutline',    label: 'admin.nav.session'    },
   { path: '/admin/categories', iconKey: 'layersOutline',        label: 'admin.nav.categories' },
   { path: '/admin/counters',   iconKey: 'peopleOutline',        label: 'admin.nav.counters'   },
   { path: '/admin/users',      iconKey: 'personOutline',        label: 'admin.nav.users'      },
+  { path: '/admin/session',    iconKey: 'playCircleOutline',    label: 'admin.nav.session'    },
   { path: '/admin/config',     iconKey: 'settingsOutline',      label: 'admin.nav.config'     },
   { path: '/admin/backup',     iconKey: 'cloudDownloadOutline', label: 'admin.nav.backup'     },
 ] as const

@@ -65,7 +65,7 @@
 
         <!-- Queue board -->
         <div class="panel-right">
-          <div v-if="queue.state?.session" class="board-scroll">
+          <div v-if="queue.state?.sessions?.length" class="board-scroll">
             <div
               v-for="group in grouped"
               :key="group.category.id"

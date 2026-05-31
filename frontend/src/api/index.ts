@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Config, Category, Counter, User, Session, QueueState } from '@/types'
+import type { Config, Category, Counter, User, Session, QueueState, CategorySession } from '@/types'
 
 const api = axios.create({ baseURL: '/api', withCredentials: true })
 
@@ -59,10 +59,10 @@ export const usersApi = {
 }
 
 export const sessionsApi = {
-  current: ()            => api.get<Session | null>('/sessions/current'),
-  open:    (data: { mode: 'bulk' | 'kiosk'; bulk?: { category_id: number; count: number }[] }) => api.post<Session>('/sessions/open', data),
-  close:   ()            => api.post('/sessions/close'),
-  reset:   ()            => api.post('/sessions/reset'),
+  current:        ()                                           => api.get<CategorySession[]>('/sessions/current'),
+  open:           (data: { category_id: number; mode: 'bulk' | 'kiosk'; bulk_count?: number }) => api.post<Session>('/sessions/open', data),
+  close:          (category_id: number)                        => api.post('/sessions/close', { category_id }),
+  reset:          (category_id: number)                        => api.post('/sessions/reset', { category_id }),
 }
 
 export const ticketsApi = {

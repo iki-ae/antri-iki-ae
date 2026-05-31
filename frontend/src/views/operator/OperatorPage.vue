@@ -10,7 +10,7 @@
     </ion-header>
 
     <ion-content>
-      <div v-if="!queueStore.state?.session" class="no-session">
+      <div v-if="!categorySession" class="no-session">
         <p>{{ $t('operator.noSession') }}</p>
       </div>
 
@@ -80,6 +80,11 @@ onUnmounted(() => queueStore.disconnect())
 const myCounter = computed(() =>
   queueStore.state?.counters.find(c => c.id === auth.counterId) ?? null
 )
+const categorySession = computed(() => {
+  const cat = myCounter.value?.category
+  if (!cat) return null
+  return queueStore.state?.sessions.find(s => s.category_id === cat.id) ?? null
+})
 const currentTicket = computed(() => myCounter.value?.currentTicket ?? null)
 const waitingCount  = computed(() => {
   const cat = myCounter.value?.category

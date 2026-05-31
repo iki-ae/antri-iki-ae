@@ -16,7 +16,7 @@
   },
   "auth": {
     "login":              "Masuk",
-    "username":           "Nama Pengguna",
+    "username":           "Username",
     "password":           "Kata Sandi",
     "logout":             "Keluar",
     "invalidCredentials": "Nama pengguna atau kata sandi salah"
@@ -55,7 +55,7 @@
   "counter": {
     "label":       "Loket",
     "label_plural":"Loket",
-    "name":        "Nama Loket",
+    "name":        "Nomor Loket",
     "category":    "Kategori",
     "active":      "Aktif",
     "add":         "Tambah Loket",
@@ -65,26 +65,28 @@
   },
   "category": {
     "label":  "Kategori",
-    "prefix": "Awalan",
-    "name":   "Nama Kategori",
+    "prefix": "Jenis Kategori (mis. A, B, C, D)",
+    "name":   "Judul Kategori",
     "color":  "Warna",
     "add":    "Tambah Kategori",
     "edit":   "Edit Kategori"
   },
   "session": {
-    "open":    "Buka Sesi",
-    "close":   "Tutup Sesi",
-    "reset":   "Reset Antrian",
-    "kiosk":   "Kios Mandiri",
-    "bulk":    "Tiket Massal",
-    "active":  "Sesi Aktif",
+    "open":        "Buka Sesi",
+    "close":       "Tutup Sesi",
+    "reset":       "Reset Antrian",
+    "kiosk":       "Kios Mandiri",
+    "bulk":        "Tiket Massal",
+    "bulkCount":   "Jumlah Tiket",
+    "active":      "Sesi Aktif",
+    "closed":      "Belum Dibuka",
     "confirmClose": "Tutup Sesi?",
     "confirmReset": "Reset Antrian?",
     "resetWarning": "Tiket yang menunggu akan dihapus."
   },
   "user": {
     "name":     "Nama Lengkap",
-    "username": "Nama Pengguna",
+    "username": "Login Username",
     "password": "Kata Sandi",
     "role":     "Peran",
     "counter":  "Loket"
@@ -135,13 +137,15 @@
     "version_mismatch": "Versi tidak kompatibel"
   },
   "errors": {
-    "COUNTER_NOT_FOUND":   "Loket tidak ditemukan",
-    "NO_ACTIVE_SESSION":   "Tidak ada sesi yang aktif",
-    "NO_TICKETS_WAITING":  "Tidak ada nomor antrian yang menunggu",
-    "TICKET_NOT_FOUND":    "Tiket tidak ditemukan",
-    "TICKET_CANNOT_RECALL":"Tiket tidak dapat dipanggil ulang",
-    "PREFIX_LOCKED":       "Awalan tidak dapat diubah saat sesi aktif",
-    "UNKNOWN":             "Terjadi kesalahan"
+    "COUNTER_NOT_FOUND":    "Loket tidak ditemukan",
+    "NO_ACTIVE_SESSION":    "Tidak ada sesi yang aktif",
+    "NO_TICKETS_WAITING":   "Tidak ada nomor antrian yang menunggu",
+    "TICKET_NOT_FOUND":     "Tiket tidak ditemukan",
+    "TICKET_CANNOT_RECALL": "Tiket tidak dapat dipanggil ulang",
+    "PREFIX_LOCKED":        "Awalan tidak dapat diubah saat sesi aktif",
+    "SESSION_ALREADY_OPEN": "Sesi untuk kategori ini sudah dibuka",
+    "CATEGORY_REQUIRED":    "Kategori harus dipilih",
+    "UNKNOWN":              "Terjadi kesalahan"
   },
   "common": {
     "save":           "Simpan",

@@ -37,6 +37,7 @@ export interface User {
 
 export interface Session {
   id: number
+  category_id: number
   date: string
   mode: 'bulk' | 'kiosk'
   status: 'open' | 'closed'
@@ -58,8 +59,16 @@ export interface Ticket {
   created_at: string
 }
 
+export interface CategorySession {
+  id: number
+  category_id: number
+  date: string
+  mode: string
+  status: string
+}
+
 export interface QueueState {
-  session: { id: number; mode: string; status: string } | null
+  sessions: CategorySession[]
   counters: {
     id: number
     name: string

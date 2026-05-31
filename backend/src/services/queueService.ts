@@ -3,10 +3,18 @@ import { tickets, counters, categories, sessions } from '../../drizzle/schema.js
 import { eq, and, asc, inArray } from 'drizzle-orm'
 
 // ─── In-memory queue state (rebuilt from DB on startup + after each mutation) ─
-let _state: QueueState = { session: null, counters: [], waiting: [], skipped: [] }
+let _state: QueueState = { sessions: [], counters: [], waiting: [], skipped: [] }
+
+export interface CategorySession {
+  id: number
+  category_id: number
+  date: string
+  mode: string
+  status: string
+}
 
 export interface QueueState {
-  session: { id: number; mode: string; status: string } | null
+  sessions: CategorySession[]
   counters: {
     id: number; name: string
     category: { id: number; prefix: string; name: string; color: string }
@@ -21,16 +29,19 @@ export function getQueueState(): QueueState {
 }
 
 export async function rebuildQueueState() {
-  const openSession = db
+  const openSessions = db
     .select()
     .from(sessions)
     .where(eq(sessions.status, 'open'))
-    .get()
+    .all()
 
-  if (!openSession) {
-    _state = { session: null, counters: [], waiting: [], skipped: [] }
+  if (!openSessions.length) {
+    _state = { sessions: [], counters: [], waiting: [], skipped: [] }
     return
   }
+
+  const openSessionIds = openSessions.map(s => s.id)
+  const sessionByCategoryId = Object.fromEntries(openSessions.map(s => [s.category_id!, s]))
 
   const allCounters = db
     .select({ id: counters.id, name: counters.name, category_id: counters.category_id })
@@ -42,16 +53,19 @@ export async function rebuildQueueState() {
   const catMap = Object.fromEntries(allCategories.map(c => [c.id, c]))
 
   const counterStates = allCounters.map(l => {
-    const current = db
-      .select()
-      .from(tickets)
-      .where(and(
-        eq(tickets.session_id, openSession.id),
-        eq(tickets.counter_id, l.id),
-        inArray(tickets.status, ['called', 'recalled', 'serving'])
-      ))
-      .orderBy(asc(tickets.called_at))
-      .get()
+    const sessionForCategory = sessionByCategoryId[l.category_id]
+    const current = sessionForCategory
+      ? db
+          .select()
+          .from(tickets)
+          .where(and(
+            eq(tickets.session_id, sessionForCategory.id),
+            eq(tickets.counter_id, l.id),
+            inArray(tickets.status, ['called', 'recalled', 'serving'])
+          ))
+          .orderBy(asc(tickets.called_at))
+          .get()
+      : undefined
 
     const cat = catMap[l.category_id]
     return {
@@ -68,7 +82,7 @@ export async function rebuildQueueState() {
     .select({ category_id: tickets.category_id })
     .from(tickets)
     .where(and(
-      eq(tickets.session_id, openSession.id),
+      inArray(tickets.session_id, openSessionIds),
       eq(tickets.status, 'waiting')
     ))
     .all()
@@ -88,14 +102,20 @@ export async function rebuildQueueState() {
     .select({ id: tickets.id, display_number: tickets.display_number, category_id: tickets.category_id })
     .from(tickets)
     .where(and(
-      eq(tickets.session_id, openSession.id),
+      inArray(tickets.session_id, openSessionIds),
       eq(tickets.status, 'skipped')
     ))
     .orderBy(asc(tickets.number))
     .all()
 
   _state = {
-    session: { id: openSession.id, mode: openSession.mode, status: openSession.status },
+    sessions: openSessions.map(s => ({
+      id: s.id,
+      category_id: s.category_id!,
+      date: s.date,
+      mode: s.mode,
+      status: s.status,
+    })),
     counters: counterStates,
     waiting,
     skipped: skippedRows,
@@ -108,7 +128,13 @@ export async function callNext(counter_id: number): Promise<{ ticket: any } | { 
   const counter = db.select().from(counters).where(eq(counters.id, counter_id)).get()
   if (!counter) return { error: 'COUNTER_NOT_FOUND' }
 
-  const session = db.select().from(sessions).where(eq(sessions.status, 'open')).get()
+  // Find the open session for this counter's category
+  const session = db.select().from(sessions)
+    .where(and(
+      eq(sessions.status, 'open'),
+      eq(sessions.category_id, counter.category_id)
+    ))
+    .get()
   if (!session) return { error: 'NO_ACTIVE_SESSION' }
 
   const now = new Date().toISOString()

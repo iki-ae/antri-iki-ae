@@ -55,7 +55,7 @@
   "counter": {
     "label":       "Counter",
     "label_plural":"Counters",
-    "name":        "Counter Name",
+    "name":        "Counter Number",
     "category":    "Category",
     "active":      "Active",
     "add":         "Add Counter",
@@ -66,18 +66,20 @@
   "category": {
     "label":  "Category",
     "prefix": "Prefix",
-    "name":   "Category Name",
+    "name":   "Category Title",
     "color":  "Color",
     "add":    "Add Category",
     "edit":   "Edit Category"
   },
   "session": {
-    "open":    "Open Session",
-    "close":   "Close Session",
-    "reset":   "Reset Queue",
-    "kiosk":   "Self-Service Kiosk",
-    "bulk":    "Bulk Tickets",
-    "active":  "Active Session",
+    "open":        "Open Session",
+    "close":       "Close Session",
+    "reset":       "Reset Queue",
+    "kiosk":       "Self-Service Kiosk",
+    "bulk":        "Bulk Tickets",
+    "bulkCount":   "Ticket Count",
+    "active":      "Active Session",
+    "closed":      "Not Open",
     "confirmClose": "Close Session?",
     "confirmReset": "Reset Queue?",
     "resetWarning": "Waiting tickets will be deleted."
@@ -135,13 +137,15 @@
     "version_mismatch": "Incompatible version"
   },
   "errors": {
-    "COUNTER_NOT_FOUND":   "Counter not found",
-    "NO_ACTIVE_SESSION":   "No active session",
-    "NO_TICKETS_WAITING":  "No tickets waiting in queue",
-    "TICKET_NOT_FOUND":    "Ticket not found",
-    "TICKET_CANNOT_RECALL":"Ticket cannot be recalled",
-    "PREFIX_LOCKED":       "Prefix cannot be changed while a session is active",
-    "UNKNOWN":             "An error occurred"
+    "COUNTER_NOT_FOUND":    "Counter not found",
+    "NO_ACTIVE_SESSION":    "No active session",
+    "NO_TICKETS_WAITING":   "No tickets waiting in queue",
+    "TICKET_NOT_FOUND":     "Ticket not found",
+    "TICKET_CANNOT_RECALL": "Ticket cannot be recalled",
+    "PREFIX_LOCKED":        "Prefix cannot be changed while a session is active",
+    "SESSION_ALREADY_OPEN": "A session for this category is already open",
+    "CATEGORY_REQUIRED":    "Category is required",
+    "UNKNOWN":              "An error occurred"
   },
   "common": {
     "save":           "Save",

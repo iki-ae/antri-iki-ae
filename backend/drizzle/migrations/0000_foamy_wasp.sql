@@ -38,12 +38,14 @@ CREATE TABLE `counters` (
 --> statement-breakpoint
 CREATE TABLE `sessions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`category_id` integer,
 	`date` text NOT NULL,
 	`mode` text NOT NULL,
 	`status` text DEFAULT 'open' NOT NULL,
 	`opened_at` text DEFAULT (datetime('now')) NOT NULL,
 	`closed_at` text,
 	`opened_by` integer NOT NULL,
+	FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`opened_by`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint

@@ -9,21 +9,28 @@
             <ion-icon :icon="addOutline" />
           </button>
         </div>
-        <template v-for="cat in categories" :key="cat.id">
-          <ion-list-header :style="{ background: cat.color }">
-            <ion-label :style="{ color: '#fff' }">{{ cat.prefix }} — {{ cat.name }}</ion-label>
-          </ion-list-header>
-          <ion-list>
-            <ion-item v-for="c in countersByCategory(cat.id)" :key="c.id">
-              <ion-label><h2>{{ cat.prefix }}-{{ c.name }}</h2></ion-label>
-              <ion-button fill="clear" slot="end" @click="openForm(c)"><ion-icon :icon="pencilOutline" /></ion-button>
-              <ion-button fill="clear" slot="end" color="danger" @click="remove(c)"><ion-icon :icon="trashOutline" /></ion-button>
-            </ion-item>
-            <ion-item v-if="countersByCategory(cat.id).length === 0">
-              <ion-label color="medium"><p>{{ $t('counter.none') }}</p></ion-label>
-            </ion-item>
-          </ion-list>
-        </template>
+
+        <div v-for="cat in categories" :key="cat.id" class="category-card">
+          <div class="category-header" :style="{ background: cat.color }">
+            <span class="category-label">{{ cat.prefix }} — {{ cat.name }}</span>
+          </div>
+          <div class="category-body">
+            <ion-list lines="full" class="counter-list">
+              <ion-item v-for="c in countersByCategory(cat.id)" :key="c.id">
+                <ion-label><h2>{{ cat.prefix }}-{{ c.name }}</h2></ion-label>
+                <ion-button fill="clear" slot="end" @click="openForm(c)">
+                  <ion-icon :icon="pencilOutline" />
+                </ion-button>
+                <ion-button fill="clear" slot="end" color="danger" @click="remove(c)">
+                  <ion-icon :icon="trashOutline" />
+                </ion-button>
+              </ion-item>
+              <ion-item v-if="countersByCategory(cat.id).length === 0" lines="none">
+                <ion-label color="medium"><p>{{ $t('counter.none') }}</p></ion-label>
+              </ion-item>
+            </ion-list>
+          </div>
+        </div>
       </div>
 
       <ion-fab class="mobile-fab" slot="fixed" vertical="bottom" horizontal="end">
@@ -48,9 +55,10 @@
     </ion-content>
   </ion-page>
 </template>
+
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { IonPage, IonContent, IonList, IonListHeader, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle, IonInput, IonSelect, IonSelectOption, IonFab, IonFabButton, onIonViewWillEnter } from '@ionic/vue'
+import { IonPage, IonContent, IonList, IonItem, IonLabel, IonButton, IonButtons, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle, IonInput, IonSelect, IonSelectOption, IonFab, IonFabButton, onIonViewWillEnter } from '@ionic/vue'
 import { addIcons } from 'ionicons'
 import { addOutline, pencilOutline, trashOutline } from 'ionicons/icons'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
@@ -102,7 +110,61 @@ async function save() {
   showForm.value = false; await load()
 }
 </script>
+
 <style scoped>
-.page-body { padding: 24px 16px 48px; min-height: 100%; background: var(--color-surface-alt); }
-.page-body > * { max-width: 480px; }
+.page-body {
+  padding: 24px 16px 48px;
+  min-height: 100%;
+  background: var(--color-surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 560px;
+}
+
+.card-header {
+  margin-bottom: 4px;
+}
+
+.card-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  margin: 0;
+}
+
+.category-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+}
+
+.category-label {
+  color: #fff;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.category-body {
+  padding: 0;
+}
+
+.counter-list {
+  background: transparent;
+}
+
+.counter-list ion-item {
+  --background: transparent;
+  --padding-start: 16px;
+  --inner-padding-end: 8px;
+}
 </style>
