@@ -197,20 +197,5 @@
   border-radius: 3px;
 }
 
-/* ── Print area ─────────────────────────────────────────────── */
+/* ── Print area (legacy, kept for #print-area base) ────────── */
 #print-area { display: none; }
-
-@media print {
-  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  @page { size: 80mm 120mm; margin: 0; }
-
-  #app { display: none !important; }
-  #print-area {
-    display: block !important;
-    background: #fff;
-  }
-  .slip-page {
-    page-break-after: always;
-    page-break-inside: avoid;
-  }
-}

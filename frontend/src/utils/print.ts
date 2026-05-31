@@ -10,45 +10,43 @@ function formatDate(iso: string): string {
 
 function slipHtml(ticket: PrintTicket, institutionName: string): string {
   return `
-    <div class="ticket-slip">
+    <div class="slip-page">
       <div class="slip-institution">${institutionName}</div>
       <div class="slip-session">${ticket.session_title}</div>
       <div class="slip-category">${ticket.category_prefix} — ${ticket.category_name}</div>
-      <div class="slip-divider"></div>
+      <hr class="slip-divider" />
       <div class="slip-number">${ticket.display_number}</div>
-      <div class="slip-divider"></div>
+      <hr class="slip-divider" />
       <div class="slip-issued">${formatDate(ticket.created_at)}</div>
-      <div class="slip-divider"></div>
       <div class="slip-watermark">powered by iki.ae</div>
     </div>
   `
 }
 
-const SLIP_CSS = `
+const PRINT_CSS = `
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: 55mm auto; margin: 0; }
+
+  body { background: #fff; width: 55mm; }
+
   .slip-page {
-    width: 80mm;
-    height: 120mm;
-    padding: 5mm 4mm;
     font-family: 'Courier New', Courier, monospace;
+    font-size: 8pt;
     color: #000;
-    background: #fff;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
+    width: 55mm;
+    padding: 3mm;
+    page-break-after: always;
+    break-after: page;
   }
-  .ticket-slip {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-  .slip-institution { font-size: 11pt; font-weight: 700; letter-spacing: 0.03em; text-align: center; }
-  .slip-session     { font-size: 8pt; margin-top: 1mm; text-align: center; }
-  .slip-category    { font-size: 8pt; margin-top: 0.5mm; text-align: center; }
-  .slip-divider     { border-top: 1px dashed #000; margin: 2.5mm 0; }
-  .slip-number      { text-align: center; font-size: 40pt; font-weight: 900; letter-spacing: 0.05em; line-height: 1; flex: 1; display: flex; align-items: center; justify-content: center; }
-  .slip-issued      { text-align: center; font-size: 8pt; }
-  .slip-watermark   { text-align: center; font-size: 7pt; color: #555; margin-top: 1.5mm; }
+
+  .slip-institution { font-size: 9pt; font-weight: 700; text-align: center; margin-bottom: 1mm; }
+  .slip-session     { font-size: 7pt; text-align: center; }
+  .slip-category    { font-size: 7pt; text-align: center; margin-bottom: 1mm; }
+  .slip-divider     { border: none; border-top: 1px dashed #000; margin: 2mm 0; }
+  .slip-number      { font-size: 30pt; font-weight: 900; text-align: center; letter-spacing: 0.04em; padding: 3mm 0; }
+  .slip-issued      { font-size: 7pt; text-align: center; margin-bottom: 1mm; }
+  .slip-watermark   { font-size: 6pt; color: #555; text-align: center; }
 `
 
 export interface SingleSlipData {
@@ -60,29 +58,29 @@ export interface SingleSlipData {
 }
 
 export function printSlips(tickets: PrintTicket[], docTitle: string, institutionName: string): void {
-  const area = document.getElementById('print-area')
-  if (!area) return
+  const win = window.open('', '_blank', 'width=300,height=500')
+  if (!win) return
 
-  let style = document.getElementById('slip-print-style')
-  if (!style) {
-    style = document.createElement('style')
-    style.id = 'slip-print-style'
-    document.head.appendChild(style)
-  }
-  style.textContent = SLIP_CSS
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${docTitle}</title>
+  <style>${PRINT_CSS}</style>
+</head>
+<body>
+  ${tickets.map(t => slipHtml(t, institutionName)).join('')}
+</body>
+</html>`
 
-  area.innerHTML = tickets.map(t =>
-    `<div class="slip-page">${slipHtml(t, institutionName)}</div>`
-  ).join('')
+  win.document.write(html)
+  win.document.close()
 
-  const prev = document.title
-  document.title = docTitle
-  window.print()
-
-  window.onafterprint = () => {
-    document.title = prev
-    area.innerHTML = ''
-    window.onafterprint = null
+  // Print after the new window has fully loaded and laid out
+  win.onload = () => {
+    win.focus()
+    win.print()
+    win.onafterprint = () => win.close()
   }
 }
 
