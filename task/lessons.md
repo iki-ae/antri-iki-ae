@@ -7,6 +7,10 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-05-31] — `page-break-after: always` and `break-after: page` on flex or fixed-height elements inside a document that has Ionic/app CSS loaded are silently ignored by Chrome — even with `display: block`, `height: 100vh`, or multiple rAF delays before `window.print()`. The only reliable solution is `window.open()` a fresh blank window and write a self-contained HTML document with all CSS inline. The new window has no inherited stylesheets, so page-break rules work correctly. Rule: for multi-page printing in a Vite/Ionic SPA, always use a popup window with inline CSS — never inject into the main document.
+
+[2026-05-31] — Chrome ignores `@page { size: Xmm Ymm }` when saving to PDF — it always uses the paper size selected in the print dialog (default A4/Letter). Physical thermal printer drivers handle roll width independently of the PDF page size. This is a known Chrome limitation with no browser-side workaround. Document this as a known constraint rather than spending time fighting it.
+
 [2026-05-31] — `@page` and `page-break` rules placed inside runtime-injected `<style>` elements (via `document.createElement('style')`) are silently ignored by browsers — only rules in stylesheets loaded at page-parse time (built CSS) take effect. Rule: always put `@page { size: ... }` and `.slip-page { page-break-after: always }` in the built stylesheet (`variables.css`), never in runtime-injected CSS strings.
 
 [2026-05-31] — `#print-area` rendered inside `ion-page` → `ion-app` → `#app` cannot be shown during print by hiding `#app` — it hides itself too. Layered CSS selector overrides (`ion-app ion-router-outlet > .ion-page:not(.ion-page-hidden) > * { display: none }`) are too fragile with Ionic's shadow DOM. Rule: place `#print-area` as a sibling of `#app` directly in `index.html` — completely outside the Vue/Ionic tree. Then `#app { display: none }` during print is a single reliable rule.
