@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-31 (Session 30)
+**Last updated:** 2026-05-31 (Session 31)
 
 ---
 
@@ -26,6 +26,27 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-05-31 — Session 31
+**Did:** Fixed bulk printing — all pages now print correctly; switched to popup window approach:
+
+**Root cause:** `page-break-after: always` was silently ignored in the main document even with `display: block`, correct built-CSS placement, and double-rAF deferral. Ionic's global stylesheet was interfering with the browser's page-break algorithm regardless of DOM isolation attempts.
+
+**Fix:** Replaced `#print-area` injection into the main document with `window.open()` — a fresh blank window with a fully self-contained HTML document (slips + all CSS inline as `PRINT_CSS` constant in `print.ts`). No inherited stylesheets, no Ionic interference. Page breaks work correctly in an isolated document.
+
+**Other changes:**
+- Paper width updated from 80mm → 55mm throughout (`@page`, `.slip-page width`, `body width`)
+- `#print-area` div kept in `index.html` but is now unused (left as dead markup — harmless)
+- `SLIP_CSS` runtime injection removed from `print.ts`; all slip styles now live in `PRINT_CSS` inside the popup document string
+- Known constraint documented: Chrome ignores `@page { size }` when saving to PDF — physical thermal printer drivers handle roll width correctly; PDF output will always be A4 unless user changes paper size in print dialog
+
+**Decided:**
+- Multi-page printing in Ionic/Vite SPA must always use `window.open()` with inline CSS — injecting into the main document is unreliable regardless of CSS placement
+- `@page { size: Xmm }` for PDF is a known Chrome non-feature — not worth further time
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

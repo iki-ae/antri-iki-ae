@@ -356,48 +356,50 @@ The component renders: hamburger (toggles sidebar) → `configStore.institutionN
 
 ## TICKET PRINTING
 
-Printing uses `window.print()` with a `#print-area` div that lives **outside** `ion-app` — declared as a sibling of `<div id="app">` in `index.html`. This is the only reliable way to hide the Ionic shell and show only the slip during print.
+Printing opens a **popup window** (`window.open('', '_blank')`) containing a self-contained HTML document with all slip HTML and CSS written inline. This is the only reliable approach — injecting into the main document fails because Ionic's global stylesheet interferes with `page-break-after` regardless of DOM isolation, CSS placement, or timing workarounds.
 
 **`src/utils/print.ts`** — the single print entry point. Two exports:
-- `printSlips(tickets, docTitle, institutionName)` — renders N slips into `#print-area`, sets `document.title` for the PDF filename, calls `window.print()`, restores title on `onafterprint`.
+- `printSlips(tickets, docTitle, institutionName)` — opens a popup, writes a full HTML document with all slips and inline `PRINT_CSS`, calls `win.print()` from `win.onload`, closes window on `win.onafterprint`.
 - `printSingleKiosk(data, institutionName)` — wraps a single kiosk-issued ticket as a `PrintTicket` and calls `printSlips`.
 
-**Print CSS** (`theme/variables.css`):
+**`PRINT_CSS`** (inline string in `print.ts` — injected into the popup `<style>` tag):
 ```css
-@media print {
-  @page { size: 80mm 120mm; margin: 0; }
-  #app { display: none !important; }
-  #print-area { display: block !important; }
-  .slip-page { page-break-after: always; page-break-inside: avoid; }
-}
+@page { size: 55mm auto; margin: 0; }
+body  { width: 55mm; }
+.slip-page { width: 55mm; padding: 3mm; page-break-after: always; break-after: page; }
+/* ... slip content styles ... */
 ```
-- `@page { size: 80mm 120mm }` is in the **built stylesheet** — runtime-injected `@page` rules are ignored by browsers.
-- Each slip is wrapped in `.slip-page` (80mm × 120mm, flex column) — one per printed page.
-- `SLIP_CSS` in `print.ts` only styles slip content (font, layout) — never `@page` or page-break rules.
+- `@page { size: 55mm auto }` — respected for physical thermal printers; ignored by Chrome when saving to PDF (known limitation, not fixable browser-side).
+- Each `.slip-page` div is one ticket. `page-break-after: always` works correctly in the isolated popup document.
+- Paper width: **55mm** (standard narrow thermal roll).
 
-**Slip layout** (top to bottom):
-1. Institution name (`configStore.config?.institution_name`) — 11pt bold, center
-2. Session title — 8pt, center
-3. Category prefix — category name — 8pt, center
-4. Dashed divider
-5. Display number (e.g. `A-007`) — 40pt bold, center, vertically centered in flex-grow area
-6. Dashed divider
-7. Issued date+time (`created_at` formatted as `DD/MM/YYYY HH:mm` in `id-ID` locale)
-8. Dashed divider
-9. `powered by iki.ae` — 7pt, gray, center
+**Slip layout** (top to bottom, all centered):
+1. Institution name — 9pt bold
+2. Session title — 7pt
+3. Category prefix — category name — 7pt
+4. Dashed `<hr>`
+5. Display number (e.g. `A-007`) — 30pt bold
+6. Dashed `<hr>`
+7. Issued date+time (`created_at` formatted `DD/MM/YYYY HH:mm` in `id-ID` locale)
+8. `powered by iki.ae` — 6pt gray
 
 **Trigger surfaces:**
-- **Kiosk** (`KioskPage.vue`): auto-print on every `take()` — `printSingleKiosk()` called immediately after API response; countdown starts via `window.onafterprint`.
+- **Kiosk** (`KioskPage.vue`): auto-print on every `take()` — `printSingleKiosk()` called immediately after API response; countdown starts via `window.onafterprint` on the **main** window (set before `win.print()` is called in the popup).
 - **SessionPage** (`SessionPage.vue`): print button (blue printer icon) on every session row. Always visible, disabled when `issued === 0`. Opens a print modal:
-  - Kiosk session: single number input (padded `001`–`NNN`), validates against `issued` count.
-  - Bulk session: from/to range inputs (padded), both validated against `issued` count.
-  - On confirm: `ticketsApi.bySession(sessionId, from, to)` → `executePrint()`.
+  - Kiosk session: single number input (zero-padded, e.g. `007`), validates `1 ≤ n ≤ issued`.
+  - Bulk session: from/to range inputs (zero-padded), validates `1 ≤ from ≤ to ≤ issued`.
+  - On confirm: `ticketsApi.bySession(sessionId, from, to)` → `executePrint()` (aliased import).
 
-**PDF filename**: `document.title` is swapped to the ticket number(s) before `window.print()` (e.g. `A-007` or `A-001 – A-050`), then restored in `onafterprint`. Chrome uses `document.title` as the default PDF filename.
+**PDF filename**: popup `<title>` is set to the ticket number(s) (e.g. `A-007` or `A-001 – A-050`). Chrome uses the window title as the default PDF filename.
 
 **`app.name` i18n + `<title>`**: both set to `antri-iki-ae` (all lowercase, hyphenated).
 
-**Key rule:** Never put `@page` or `page-break` rules inside runtime-injected `<style>` tags — browsers ignore them. Always put print layout rules in the built stylesheet (`variables.css`).
+**Known constraint:** Chrome ignores `@page { size }` when saving to PDF — output is always A4/Letter unless the user changes paper size in the print dialog. Physical thermal printer drivers handle roll width independently.
+
+**Key rules:**
+- Always use `window.open()` for printing — never inject slips into the main document.
+- Popup blocker: `window.open()` called from a button click handler is exempt from most blockers (user gesture). Do not call it from a timer or async callback detached from the click event.
+- `#print-area` div in `index.html` is currently unused dead markup — do not remove it yet, may be repurposed.
 
 ---
 
