@@ -7,6 +7,10 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-06-02] — On Android Chrome, `window.open()` popup and hidden `<iframe>` both fail for printing: popup hangs on "Preparing preview"; `iframe.contentWindow.print()` triggers the main window's print dialog and captures the entire kiosk page. The only reliable approach is `document.open('text/html', 'replace')` + `document.write(html)` — this fully destroys all Ionic web components and shadow DOM in the current tab before the print dialog opens. Rule: for kiosk/mobile printing, replace the current document rather than opening a new context.
+
+[2026-06-02] — `window.onafterprint` fires on Android before the ESC/POS print service has finished receiving the job — navigating away immediately causes the printer to capture the newly loaded page instead of the slip. Rule: always delay navigation by at least 5 seconds after `onafterprint` when printing to a Bluetooth thermal printer. Set a longer fallback timeout (30s) for cases where `onafterprint` fires late or not at all, and cancel it with `clearTimeout` inside `onafterprint` to prevent double-navigation.
+
 [2026-05-31] — `page-break-after: always` and `break-after: page` on flex or fixed-height elements inside a document that has Ionic/app CSS loaded are silently ignored by Chrome — even with `display: block`, `height: 100vh`, or multiple rAF delays before `window.print()`. The only reliable solution is `window.open()` a fresh blank window and write a self-contained HTML document with all CSS inline. The new window has no inherited stylesheets, so page-break rules work correctly. Rule: for multi-page printing in a Vite/Ionic SPA, always use a popup window with inline CSS — never inject into the main document.
 
 [2026-05-31] — Chrome ignores `@page { size: Xmm Ymm }` when saving to PDF — it always uses the paper size selected in the print dialog (default A4/Letter). Physical thermal printer drivers handle roll width independently of the PDF page size. This is a known Chrome limitation with no browser-side workaround. Document this as a known constraint rather than spending time fighting it.

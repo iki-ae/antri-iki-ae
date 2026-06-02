@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-05-31 (Session 33)
+**Last updated:** 2026-06-02 (Session 34)
 
 ---
 
@@ -26,6 +26,37 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-06-02 — Session 34
+**Did:** Mobile kiosk printing — full rework to work reliably on Android Chrome with RPP02N thermal printer:
+
+**Core architecture change (`print.ts`):**
+- Abandoned all popup/iframe/`#print-area` approaches — all failed on Android Chrome in various ways (blank page, wrong content captured, "Preparing preview" hang)
+- Final approach: `document.open('text/html', 'replace')` + `document.write(html)` + `document.close()` — completely replaces the live document, destroying all Ionic web components and shadow DOM before the print dialog opens
+- Slip HTML + CSS fully self-contained in the replaced document — no Ionic CSS present at all
+- `window.print()` called from `window.onload` inside the injected `<script>` tag — runs in the new document's context after full layout
+- Auto-navigate back: `window.onafterprint` → 5s delay → `location.replace(origin + '/kiosk')`; fallback `setTimeout(goKiosk, 30s)` set immediately; manual "← Klik di sini" button visible from the start (hidden behind OS dialog normally); `clearTimeout(fallback)` in `onafterprint` prevents double-navigation
+
+**Print page layout:**
+- Dark screen (`#0a0a1a`) shown to visitor while printer spools — ticket number in orange, "Tiket sedang dicetak...", "Halaman akan kembali otomatis dalam 30 detik"
+- Manual back button always visible (behind OS dialog during normal flow), shown immediately
+- Slip content `display: none` on screen; `display: block` only in `@media print` — print subsystem sees clean slip, visitor sees dark status screen
+- Page size: `@page { size: 55mm 80mm; margin: 0 }`
+- QR code embedded as inline SVG (generated via `qrcode-generator` npm package at call time) — payload: `{institutionName} | {display_number} | powered by iki.ae`; placed between issued date and watermark
+- All blank second-page issues fixed: `page-break-after` removed from single slip; `page-break-before` on `.slip-page + .slip-page` (only fires between multiple slips)
+
+**KioskPage.vue:**
+- Auto-reset timer removed — ticket result stays on screen until next visitor taps a category (no countdown)
+
+**Decided:**
+- `document.open()` + `document.write()` is the only approach that fully destroys Ionic web components before print on Android — every alternative left ghost elements that the print renderer captured
+- `onafterprint` on Android fires before the ESC/POS service finishes receiving — a 5s delay after `onafterprint` before navigating back prevents the printer capturing the reloaded kiosk page
+- 30s fallback timeout gives confused users enough time with the OS print dialog before auto-returning; manual button is always visible as last resort
+- QR payload includes institution name and watermark — self-contained when scanned, no context needed
+
+**Next:** Pack WSL2 distribution tar, README/deployment guide.
 
 ---
 

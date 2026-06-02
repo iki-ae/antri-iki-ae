@@ -104,7 +104,6 @@ const issuedColor         = ref('#e08c2f')
 const issuedCategoryName  = ref('')
 const issuedAt            = ref('')
 const taking = ref(false)
-let   timer: ReturnType<typeof setTimeout> | null = null
 
 // Build a merged list: all categories in any open session, with availability + live stats
 const allCategories = computed(() => {
@@ -114,11 +113,18 @@ const allCategories = computed(() => {
   const servedMap: Record<number, number> = {}
   for (const s of queueStore.state?.served ?? []) servedMap[s.category_id] = s.count
 
+  // SSE carries live category colors via counters[].category — use them as the source of truth
+  const colorMap: Record<number, string> = {}
+  for (const c of queueStore.state?.counters ?? []) {
+    if (c.category?.color) colorMap[c.category.id] = c.category.color
+  }
+
   return allCategoryList.value.map(cat => {
     const mode      = sessionModeMap.value[cat.id]
     const quotaFull = kioskQuotaFull.value[cat.id] ?? false
     return {
       ...cat,
+      color:      colorMap[cat.id] ?? cat.color,
       available:  mode === 'kiosk' && !quotaFull,
       quota_full: mode === 'kiosk' && quotaFull,
       waiting:    waitingMap[cat.id] ?? 0,
@@ -178,7 +184,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  if (timer) clearTimeout(timer)
   queueStore.disconnect()
 })
 
@@ -188,32 +193,22 @@ async function take(category_id: number) {
     const cat = allCategoryList.value.find(c => c.id === category_id)
     const { data } = await kioskApi.take(category_id)
 
-    // Reset any running timer before showing new result
-    if (timer) { clearTimeout(timer); timer = null }
-
     const createdAt = data.created_at ?? new Date().toISOString()
     issued.value             = data.display_number
     issuedColor.value        = cat?.color ?? 'var(--color-accent)'
     issuedCategoryName.value = cat ? `${cat.prefix} — ${cat.name}` : ''
     issuedAt.value           = new Date(createdAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
 
-    printSingleKiosk({
+    await printSingleKiosk({
       display_number:  data.display_number,
       session_title:   data.session_title ?? '',
       category_prefix: data.category_prefix ?? '',
       category_name:   data.category_name ?? '',
       created_at:      createdAt,
     }, configStore.config?.institution_name ?? 'antri.iki.ae')
-
-    timer = setTimeout(() => reset(), 8000)
   } finally {
     taking.value = false
   }
-}
-
-function reset() {
-  if (timer) { clearTimeout(timer); timer = null }
-  issued.value = null
 }
 </script>
 
