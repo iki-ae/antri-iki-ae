@@ -59,9 +59,11 @@ Default credentials: `admin` / `antri123` — **change immediately after first l
 
 ### License
 
-IKI Antri is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+IKI Antri is licensed under the **Business Source License 1.1 (BSL 1.1)**.
 
-You are free to use, modify, and self-host this software. If you run a modified version as a public-facing internet service, you must make the modified source code available under the same license.
+You are free to read, self-host, and use this software for internal organizational purposes. You may not remove or obscure attribution to iki.ae, nor offer it as a hosted or managed service to third parties without a commercial license.
+
+On **2029-01-01** this software converts to the **MIT License** and becomes fully open source.
 
 See [LICENSE](LICENSE) for the full license text.
 
@@ -70,7 +72,11 @@ See [LICENSE](LICENSE) for the full license text.
 For paid support, customization, or hardware bundles:
 **[https://support.iki.ae](https://support.iki.ae)**
 
-Organizations or individuals that need to use IKI Antri commercially without AGPL obligations may contact us for a commercial license.
+Organizations that need white-label rights or managed-service rights may contact us for a commercial license.
+
+### Credits
+
+IKI Antri is built and maintained by [Sion Thutu](https://iki.ae), founder of [iki.ae](https://iki.ae).
 
 ---
 
@@ -112,9 +118,11 @@ Kredensial default: `admin` / `antri123` — **segera ganti setelah login pertam
 
 ### Lisensi
 
-IKI Antri dilisensikan di bawah **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+IKI Antri dilisensikan di bawah **Business Source License 1.1 (BSL 1.1)**.
 
-Anda bebas menggunakan, memodifikasi, dan menjalankan secara mandiri perangkat lunak ini di server Anda sendiri. Jika Anda menjalankan versi yang dimodifikasi sebagai layanan publik yang dapat diakses melalui internet, Anda harus membuat kode sumber yang telah dimodifikasi tersebut tersedia di bawah lisensi AGPL-3.0 yang sama.
+Anda bebas membaca, menjalankan secara mandiri, dan menggunakan perangkat lunak ini untuk keperluan internal organisasi. Anda tidak diperbolehkan menghapus atau menyembunyikan atribusi iki.ae, maupun menawarkannya sebagai layanan yang dihosting kepada pihak ketiga tanpa lisensi komersial.
+
+Pada **2029-01-01**, perangkat lunak ini akan beralih ke **MIT License** dan menjadi sepenuhnya open source.
 
 Lihat [LICENSE](LICENSE) untuk teks lisensi lengkap.
 
@@ -123,7 +131,11 @@ Lihat [LICENSE](LICENSE) untuk teks lisensi lengkap.
 Untuk dukungan berbayar, kustomisasi, atau paket hardware:
 **[https://support.iki.ae](https://support.iki.ae)**
 
-Organisasi atau individu yang perlu menggunakan IKI Antri secara komersial tanpa kewajiban AGPL dapat menghubungi kami untuk lisensi komersial.
+Organisasi yang membutuhkan hak white-label atau layanan terkelola dapat menghubungi kami untuk lisensi komersial.
+
+### Kredit
+
+IKI Antri dibuat dan dipelihara oleh [Sion Thutu](https://iki.ae), pendiri [iki.ae](https://iki.ae).
 
 ---
 

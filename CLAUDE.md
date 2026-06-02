@@ -3,7 +3,7 @@
 **Product:** Multi-purpose queue management system
 **Tagline:** IKI Antri · Sistem Antrian Multiguna
 **Studio:** iki.ae — github.com/iki-ae/antri-iki-ae
-**License:** GNU Affero General Public License v3.0 (AGPL-3.0)
+**License:** Business Source License 1.1 (BSL 1.1) — converts to MIT on 2029-01-01
 **Watermark:** "by iki.ae" — hardcoded, always visible, non-removable via UI
 
 ---

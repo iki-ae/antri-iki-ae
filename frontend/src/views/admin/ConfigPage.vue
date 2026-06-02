@@ -105,7 +105,7 @@
             <p class="terms-text">{{ $t('config.terms.body') }}</p>
             <a
               class="license-link"
-              href="https://www.gnu.org/licenses/agpl-3.0.html"
+              href="https://mariadb.com/bsl11/"
               target="_blank"
               rel="noopener"
             >{{ $t('config.terms.viewLicense') }}</a>

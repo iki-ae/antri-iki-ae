@@ -137,10 +137,10 @@
       "notAccepted":  "Belum disetujui",
       "modalTitle":   "Ketentuan Penggunaan",
       "agree":        "Saya Setuju",
-      "viewLicense":  "Lihat Lisensi (AGPL-3.0)"
+      "viewLicense":  "Lihat Lisensi (BSL 1.1)"
     },
     "license": {
-      "modalTitle": "Lisensi — GNU AGPL v3.0",
+      "modalTitle": "Lisensi — Business Source License 1.1",
       "close":      "Tutup"
     },
     "about": {
@@ -187,7 +187,7 @@
     "export":     "Ekspor Data",
     "import":     "Impor Data",
     "exportDesc": "Unduh file cadangan konfigurasi dan data antrian",
-    "importDesc": "Pulihkan dari file cadangan (.zip)",
+    "importDesc": "Pulihkan dari file cadangan (.db)",
     "download":   "Unduh Cadangan",
     "restore":    "Pulihkan",
     "success":    "Berhasil dipulihkan",

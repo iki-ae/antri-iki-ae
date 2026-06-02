@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-06-02 (Session 36)
+**Last updated:** 2026-06-02 (Session 37)
 
 ---
 
@@ -22,13 +22,70 @@
 - PM2 running (`antri-iki-ae-api`, port 3001)
 - Settings page: timezone, contact/consent, terms of use sections, about/support strip
 - Terms of Use modal: first-login forced acknowledgement, acceptance timestamp stored in DB
-- LICENSE file (AGPL-3.0 full text), README.md (bilingual EN/ID)
+- LICENSE file (BSL 1.1 — attribution clause, Change Date 2029-01-01 → MIT), README.md (bilingual EN/ID)
 
 ---
 
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-06-02 — Session 38
+**Did:** Fixed backup page export warning + import failure:
+
+**Export — browser "harmful file" warning:**
+- Root cause: `<ion-button :href="/api/backup/export">` navigated the browser to the ZIP URL — Chrome/Edge shows a "this file can harm your computer" interstitial for ZIP downloads via navigation
+- Fix: replaced with programmatic `fetch` via axios (`responseType: 'blob'`) + `URL.createObjectURL` + synthetic `<a download>` click — bypasses the navigation-based warning entirely
+- `backupApi.exportUrl` replaced with `backupApi.exportDownload()` async function in `api/index.ts`
+- `BackupPage.vue`: button now calls `doExport()` with loading spinner + error state; icon fixed from `name="..."` string (broken) to `addIcons` + `:icon` binding
+
+**Import — always failed (Content-Type mismatch):**
+- Root cause: axios sends `Content-Type: application/json` as default for all POST requests; this overrode the `multipart/form-data` that `FormData` should have set — Fastify received `application/json` with multipart body → `FST_ERR_CTP_EMPTY_JSON_BODY`
+- Fix: `backupApi.import()` now explicitly passes `headers: { 'Content-Type': 'multipart/form-data' }` so axios sets the correct content type with boundary
+
+**Import — secondary failure (Drizzle migrator path + journal):**
+- `MIGRATIONS_DIR` in `backup.ts` resolved to `backend/dist/drizzle/migrations` (wrong) — path was `../../` from compiled `dist/src/routes/` which is inside `dist/`; should be `../../../` (3 levels up to reach `backend/drizzle/migrations`)
+- `_journal.json` in migrations/meta only had 3 entries; migrations 0003 and 0004 were applied manually and not tracked → migrator tried to re-run them on the already-migrated imported DB → duplicate column error
+- Fix: removed `migrate()` call entirely from import path — backup restores are always from the same app version so migrations are already applied; replaced with table existence check against `REQUIRED_TABLES` list
+- Updated `_journal.json` to include all 5 migration entries
+
+**Decided:**
+- Import validation should check table presence, not re-run migrations — re-running on an already-migrated DB causes duplicate column errors; the migrator's tracking table (`__drizzle_migrations`) may not be populated when migrations were applied manually
+- Export uses blob download to avoid browser security warnings — cleaner than Content-Disposition workarounds
+
+**Next:** Push commits to dev remote; set up prod remote + push-prod.sh strip script.
+
+---
+
+### 2026-06-02 — Session 37
+**Did:** License revert to BSL 1.1 + README Credits + two-remote strategy discussion:
+
+**License:**
+- Reverted AGPL-3.0 → BSL 1.1 with custom attribution clause — watermark removal prohibited, no hosted/managed resale without commercial license
+- Change Date: 2029-01-01 → MIT License
+- `LICENSE` file replaced with BSL 1.1 full text (fetched from HashiCorp Terraform repo as reference)
+- `CLAUDE.md`, `README.md` (EN+ID), `en.json`, `id.json`, `TermsModal.vue`, `ConfigPage.vue` all updated
+
+**README:**
+- Credits section added (EN + ID): "IKI Antri is built and maintained by Sion Thutu, founder of iki.ae"
+- License sections updated to reflect BSL 1.1 + Change Date
+- Support section: updated to reference white-label / managed-service rights instead of AGPL obligations
+
+**Two-repo strategy (decided, not yet implemented):**
+- Dev repo (private): `github.com/iki-ae/antri-iki-ae-dev` — all files including `CLAUDE.md`, `task/`
+- Prod repo (public): `github.com/iki-ae/antri-iki-ae` — same source minus `CLAUDE.md` and `task/`
+- Approach: second `prod` remote + strip script (`push-prod.sh`) — creates temp branch, removes dev-only files, pushes to prod, deletes temp branch
+- Not yet committed or pushed to either remote
+
+**Decided:**
+- BSL 1.1 chosen over AGPL: watermark is a funnel channel, not just branding — AGPL allows private watermark removal; BSL attribution clause prohibits it contractually
+- BSL 1.1 is source-available (not OSI open source) — acceptable for target market (Indonesian SMBs, not OSS developers)
+- Can relicense any time as sole copyright holder — no contributor sign-off needed
+- All dependencies are MIT/Apache 2.0 — no GPL contamination, BSL 1.1 is clean
+
+**Next:** Set up prod remote + push-prod.sh strip script; push 28 commits to dev remote.
 
 ---
 

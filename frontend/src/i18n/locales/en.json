@@ -137,10 +137,10 @@
       "notAccepted":  "Not yet accepted",
       "modalTitle":   "Terms of Use",
       "agree":        "I Agree",
-      "viewLicense":  "View License (AGPL-3.0)"
+      "viewLicense":  "View License (BSL 1.1)"
     },
     "license": {
-      "modalTitle": "License — GNU AGPL v3.0",
+      "modalTitle": "License — Business Source License 1.1",
       "close":      "Close"
     },
     "about": {
@@ -187,7 +187,7 @@
     "export":     "Export Data",
     "import":     "Import Data",
     "exportDesc": "Download a backup of your config and queue data",
-    "importDesc": "Restore from a backup file (.zip)",
+    "importDesc": "Restore from a backup file (.db)",
     "download":   "Download Backup",
     "restore":    "Restore",
     "success":    "Successfully restored",
