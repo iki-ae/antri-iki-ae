@@ -135,7 +135,7 @@ ok "PM2 $(pm2 --version)"
 # --- App dependencies + build ---
 log "$MSG_DEPS"
 cd "$APP_DIR/backend"
-npm ci
+npm install
 
 log "$MSG_BUILD"
 npm run build
