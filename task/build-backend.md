@@ -168,20 +168,18 @@ The same transaction pattern applies to `callNext()` in `queueService.ts` — ch
 ## BACKUP — EXPORT / IMPORT
 
 **Export** `GET /api/backup/export`
-Returns `.zip`:
-- `config.json` — full config row including `app_version`
-- `antri-iki-ae.db` — SQLite copy (not live file)
+Returns the live SQLite DB as `application/octet-stream`, filename `antri-iki-ae-backup-YYYY-MM-DD.db`.
+- Uses `fs.readFileSync` + `reply.send(buf)` — do NOT pipe to `reply.raw` (returns 0 bytes in Fastify async handlers)
 
 **Import** `POST /api/backup/import`
-Multipart `.zip` upload:
-1. Validate `app_version` in config.json — reject if incompatible
-2. Write to temp `antri-iki-ae.db.incoming`
-3. Run Drizzle migrations on the temp file
-4. Only if migrations pass: rename live → `antri-iki-ae.db.bak.<unix_timestamp>`, rename `.incoming` → live
-5. Reload config into memory
-6. Any failure before step 4: delete `.incoming`, return i18n error — live DB untouched
+Multipart `.db` upload:
+1. Write buffer to `antri-iki-ae.db.incoming`
+2. Open with `better-sqlite3` (readonly) — verify all required tables present (`config`, `categories`, `counters`, `users`, `sessions`, `tickets`)
+3. Close connection
+4. Only if validation passes: rename live → `antri-iki-ae.db.bak.<unix_timestamp>`, rename `.incoming` → live
+5. Any failure: delete `.incoming`, return 500 — live DB untouched
 
-**Rule:** Live DB is never touched until migrations have passed on the incoming file.
+**Rule:** Live DB is never touched until the incoming file has been validated.
 
 ---
 

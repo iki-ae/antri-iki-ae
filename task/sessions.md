@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-06-02 (Session 37)
+**Last updated:** 2026-06-02 (Session 39)
 
 ---
 
@@ -29,6 +29,32 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-06-02 — Session 39
+**Did:** Backup format settled on SQLite `.db` after iteration through ZIP → JSON → SQLite:
+
+**Final state:**
+- Export: `GET /api/backup/export` streams the live SQLite DB as `application/octet-stream`, filename `antri-iki-ae-backup-YYYY-MM-DD.db`
+- Import: `POST /api/backup/import` accepts `.db` file, validates required tables, swaps atomically
+- Frontend: `accept=".db"`, programmatic blob download, i18n `importDesc` updated to `.db`
+- Chrome shows "Insecure download blocked" soft warning on `.db` — user can click "Keep"; not a hard block
+
+**Format journey this session (documented for context):**
+- ZIP → "harmful file" hard warning (blocked)
+- JSON → no warning, worked; 30KB file size
+- SQLite `.db` → "Insecure download blocked" soft warning; 53KB file size
+- Decision: keep SQLite — exact DB state, no transform logic, soft warning is acceptable for infrequent admin use
+
+**Decided:**
+- SQLite `.db` is marginally harder to tamper with than JSON (binary vs text) but not meaningfully more secure — the real boundary is admin access control
+- HMAC signature rejected: breaks cross-server restore portability (signature tied to server secret)
+- Password-protected backup rejected: adds UX friction not worth the complexity for target market
+- `archiver` and `unzipper` packages no longer used in backup route (removed)
+- Export uses `fs.readFileSync` + `reply.send(buf)` — streaming via `pipe(reply.raw)` returned 0 bytes (Fastify headers not yet sent when pipe started)
+
+**Next:** Push commits to dev remote; set up prod remote + push-prod.sh strip script.
 
 ---
 

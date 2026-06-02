@@ -7,6 +7,18 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-06-02] — `fs.createReadStream(path).pipe(reply.raw)` in a Fastify async route handler returned 0 bytes — Fastify had not yet flushed the response headers when the pipe started, so the stream ended before any data was sent. Rule: for binary file downloads in Fastify, use `fs.readFileSync` + `reply.send(buf)` instead of piping to `reply.raw`.
+
+[2026-06-02] — Made confident claims about Chrome's download blocklist (`.db` files "not flagged") without testing. Both `.zip` and `.db` triggered browser warnings; only `.json` passed silently. Rule: never state that a file extension will or won't trigger a browser security warning without testing it first.
+
+[2026-06-02] — `MIGRATIONS_DIR` in `backup.ts` used `path.resolve(__dirname, '../../drizzle/migrations')` — from the compiled output at `dist/src/routes/`, two levels up lands inside `dist/`, not `backend/`. The correct path is `../../../` (three levels) to reach `backend/drizzle/migrations`. Rule: always verify `__dirname`-relative paths by tracing from the compiled output directory, not the source directory.
+
+[2026-06-02] — Import called `migrate()` on the incoming DB to validate schema compatibility, but the `__drizzle_migrations` tracking table was missing entries for manually-applied migrations (0003, 0004). Drizzle migrator re-ran those migrations → duplicate column error. Rule: never use `migrate()` to validate a backup restore — the backup is always from the same app version and migrations are already applied. Use table existence checks instead.
+
+[2026-06-02] — Axios sets `Content-Type: application/json` as the default for all POST requests. When passing a `FormData` body, axios in the browser should auto-detect and remove the JSON content-type — but explicitly passing `FormData` does not always override the default in all versions. Rule: when posting `FormData` via axios, always explicitly set `headers: { 'Content-Type': 'multipart/form-data' }` to guarantee the correct boundary is used.
+
+[2026-06-02] — `<ion-button :href="/api/backup/export">` triggers browser navigation to a ZIP URL, causing Chrome/Edge to show a "harmful file" security warning interstitial. Rule: never use `href` navigation for binary file downloads from an authenticated API. Always use programmatic `fetch` + `Blob` + synthetic `<a download>` click.
+
 [2026-06-02] — On Android Chrome, `window.open()` popup and hidden `<iframe>` both fail for printing: popup hangs on "Preparing preview"; `iframe.contentWindow.print()` triggers the main window's print dialog and captures the entire kiosk page. The only reliable approach is `document.open('text/html', 'replace')` + `document.write(html)` — this fully destroys all Ionic web components and shadow DOM in the current tab before the print dialog opens. Rule: for kiosk/mobile printing, replace the current document rather than opening a new context.
 
 [2026-06-02] — `window.onafterprint` fires on Android before the ESC/POS print service has finished receiving the job — navigating away immediately causes the printer to capture the newly loaded page instead of the slip. Rule: always delay navigation by at least 5 seconds after `onafterprint` when printing to a Bluetooth thermal printer. Set a longer fallback timeout (30s) for cases where `onafterprint` fires late or not at all, and cancel it with `clearTimeout` inside `onafterprint` to prevent double-navigation.

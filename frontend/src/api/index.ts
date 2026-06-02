@@ -90,11 +90,22 @@ export const displayApi = {
 }
 
 export const backupApi = {
-  exportUrl: '/api/backup/export',
+  exportDownload: async () => {
+    const res = await api.get('/backup/export', { responseType: 'blob' })
+    const date = new Date().toISOString().slice(0, 10)
+    const url = URL.createObjectURL(res.data as Blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `antri-iki-ae-backup-${date}.db`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  },
   import: (file: File) => {
     const form = new FormData()
     form.append('file', file)
-    return api.post('/backup/import', form)
+    return api.post('/backup/import', form, { headers: { 'Content-Type': 'multipart/form-data' } })
   },
 }
 

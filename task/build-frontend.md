@@ -36,7 +36,7 @@ frontend/
     │   │   ├── UsersPage.vue
     │   │   ├── SessionPage.vue  # Plan/start/stop sessions per category — list with stats
     │   │   ├── ConfigPage.vue   # Institution name, locale, watermark preview
-    │   │   └── BackupPage.vue   # Export / import
+    │   │   └── BackupPage.vue   # Export (.db download) / import (.db upload)
     │   ├── operator/            # /operator/* — role: operator
     │   │   ├── OperatorShell.vue     # CSS flex shell (same pattern as AdminShell)
     │   │   ├── OperatorDashboard.vue # Queue actions — call, recall, skip, serve, skipped recall
