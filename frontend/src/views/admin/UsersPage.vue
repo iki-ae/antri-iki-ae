@@ -58,8 +58,8 @@
           <ion-input v-model="form.username" :label="$t('user.username')" label-placement="floating" fill="outline" class="ion-margin-top" :disabled="!!editing" />
           <ion-input v-model="form.password" :label="$t('user.password')" label-placement="floating" fill="outline" class="ion-margin-top" type="password" />
           <ion-select v-if="!editing" v-model="form.role" :label="$t('user.role')" label-placement="floating" fill="outline" class="ion-margin-top">
-            <ion-select-option value="admin">Admin</ion-select-option>
-            <ion-select-option value="operator">Operator</ion-select-option>
+            <ion-select-option value="admin">{{ $t('user.role_admin') }}</ion-select-option>
+            <ion-select-option value="operator">{{ $t('user.role_operator') }}</ion-select-option>
           </ion-select>
           <ion-select
             v-if="form.role === 'operator'"

@@ -43,10 +43,10 @@
           <section class="settings-section">
             <div class="field">
               <select id="timezone" v-model="form.timezone" @change="saveField('timezone')">
-                <option value="Asia/Jakarta">WIB — Waktu Indonesia Barat (UTC+7)</option>
-                <option value="Asia/Makassar">WITA — Waktu Indonesia Tengah (UTC+8)</option>
-                <option value="Asia/Jayapura">WIT — Waktu Indonesia Timur (UTC+9)</option>
-                <option value="UTC">UTC</option>
+                <option value="Asia/Jakarta">{{ $t('config.about.timezone_jakarta') }}</option>
+                <option value="Asia/Makassar">{{ $t('config.about.timezone_makassar') }}</option>
+                <option value="Asia/Jayapura">{{ $t('config.about.timezone_jayapura') }}</option>
+                <option value="UTC">{{ $t('config.about.timezone_utc') }}</option>
               </select>
               <label for="timezone">{{ $t('config.timezone') }}</label>
               <span class="icon">
@@ -121,7 +121,7 @@
 
         <!-- ── About strip ───────────────────────────────────────────── -->
         <div class="about-strip">
-          <span class="about-version">IKI Antri v{{ form?.app_version ?? '—' }} &nbsp;·&nbsp; &copy; 2024 iki.ae</span>
+          <span class="about-version">{{ $t('config.about.version', { version: form?.app_version ?? '—', year: currentYear }) }}</span>
           <span class="about-support">
             {{ $t('config.about.support') }} —
             <a href="https://support.iki.ae" target="_blank" rel="noopener">support.iki.ae</a>
@@ -145,6 +145,7 @@ import type { Config } from '@/types'
 const { t } = useI18n()
 const configStore = useConfigStore()
 const form = ref<Partial<Config> | null>(null)
+const currentYear = new Date().getFullYear()
 
 onIonViewWillEnter(load)
 

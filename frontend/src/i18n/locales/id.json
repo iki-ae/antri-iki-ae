@@ -107,11 +107,13 @@
     "printConfirm":   "Cetak"
   },
   "user": {
-    "name":     "Nama Lengkap",
-    "username": "Login Username",
-    "password": "Kata Sandi",
-    "role":     "Peran",
-    "counter":  "Loket"
+    "name":       "Nama Lengkap",
+    "username":   "Login Username",
+    "password":   "Kata Sandi",
+    "role":       "Peran",
+    "role_admin":    "Admin",
+    "role_operator": "Operator",
+    "counter":    "Loket"
   },
   "config": {
     "institutionName": "Judul Tampilan",
@@ -142,7 +144,12 @@
       "close":      "Tutup"
     },
     "about": {
-      "support": "Untuk dukungan berbayar, kustomisasi, atau paket hardware"
+      "support": "Untuk dukungan berbayar, kustomisasi, atau paket hardware",
+      "version": "IKI Antri v{version} · © {year} iki.ae",
+      "timezone_jakarta":  "WIB — Waktu Indonesia Barat (UTC+7)",
+      "timezone_makassar": "WITA — Waktu Indonesia Tengah (UTC+8)",
+      "timezone_jayapura": "WIT — Waktu Indonesia Timur (UTC+9)",
+      "timezone_utc":      "UTC"
     }
   },
   "ticket": {

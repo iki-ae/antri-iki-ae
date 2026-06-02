@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-06-02 (Session 35)
+**Last updated:** 2026-06-02 (Session 36)
 
 ---
 
@@ -29,6 +29,32 @@
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-06-02 — Session 36
+**Did:** i18n audit + hardcoded string fixes across all view files:
+
+**Findings:** Scanned all `.vue` files for hardcoded user-visible strings. Found 5 genuine violations; watermark strings (`iki.ae`, `powered by`) confirmed intentionally hardcoded per CLAUDE.md.
+
+**Fixed:**
+- `app.name` in both locales — already correct (`"IKI Antri"`), no change needed
+- `ConfigPage.vue`: timezone `<option>` labels now use `$t('config.about.timezone_*')` keys
+- `ConfigPage.vue`: about strip version string now `$t('config.about.version', { version, year })` with `currentYear = new Date().getFullYear()` — year no longer stale
+- `UsersPage.vue`: role `<ion-select-option>` display text now `$t('user.role_admin')` / `$t('user.role_operator')`
+- `LoginPage.vue` brand `"IKI Antri"` and `ConfigPage.vue` about brand: left hardcoded by decision — brand names don't get translated
+
+**i18n additions (both locales):**
+- `user.role_admin` / `user.role_operator`
+- `config.about.version` — interpolation pattern `"IKI Antri v{version} · © {year} iki.ae"`
+- `config.about.timezone_jakarta/makassar/jayapura/utc` — EN translations use English timezone names (West/Central/East Indonesia Time)
+
+**Decided:**
+- Brand name (`IKI Antri`) stays hardcoded in templates — routing it through `$t('app.name')` adds complexity for no benefit (brand doesn't get translated)
+- Language option names (`Bahasa Indonesia`, `English`) left as-is — conventional to hardcode locale names in their own language so users can find their language regardless of current locale
+- Copyright year always dynamic via `new Date().getFullYear()` — no stale year in future
+
+**Next:** Pack WSL2 distribution tar, deployment guide.
 
 ---
 

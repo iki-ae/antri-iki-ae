@@ -107,11 +107,13 @@
     "printConfirm":   "Print"
   },
   "user": {
-    "name":     "Full Name",
-    "username": "Username",
-    "password": "Password",
-    "role":     "Role",
-    "counter":  "Counter"
+    "name":          "Full Name",
+    "username":      "Username",
+    "password":      "Password",
+    "role":          "Role",
+    "role_admin":    "Admin",
+    "role_operator": "Operator",
+    "counter":       "Counter"
   },
   "config": {
     "institutionName": "Display Title",
@@ -142,7 +144,12 @@
       "close":      "Close"
     },
     "about": {
-      "support": "For paid support, customization, or hardware bundles"
+      "support": "For paid support, customization, or hardware bundles",
+      "version": "IKI Antri v{version} · © {year} iki.ae",
+      "timezone_jakarta":  "WIB — West Indonesia Time (UTC+7)",
+      "timezone_makassar": "WITA — Central Indonesia Time (UTC+8)",
+      "timezone_jayapura": "WIT — East Indonesia Time (UTC+9)",
+      "timezone_utc":      "UTC"
     }
   },
   "ticket": {
