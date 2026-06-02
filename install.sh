@@ -116,11 +116,11 @@ NODE_MAJOR=0
 if command -v node &>/dev/null; then
   NODE_MAJOR=$(node -e 'process.stdout.write(process.versions.node.split(".")[0])')
 fi
-if [[ $NODE_MAJOR -lt 20 ]]; then
+if [[ $NODE_MAJOR -ne 22 ]]; then
   log "$MSG_INSTALL_NODE"
   apt-get update -qq
   apt-get install -y curl ca-certificates gnupg
-  curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y nodejs
 fi
 ok "Node.js $(node --version)"
