@@ -108,7 +108,7 @@ echo ""
 # --- Checks ---
 [[ $EUID -ne 0 ]] && die "$MSG_ROOT"
 command -v apt-get &>/dev/null || die "$MSG_NO_APT"
-[[ -f "$APP_DIR/backend/ecosystem.config.cjs" ]] || die "$MSG_NO_APP"
+[[ -f "$APP_DIR/backend/package.json" ]] || die "$MSG_NO_APP"
 
 # --- Node.js ---
 log "$MSG_CHECK_NODE"
@@ -145,10 +145,30 @@ npm prune --omit=dev
 log "$MSG_MIGRATE"
 npm run db:migrate
 
+# --- PM2 ecosystem config ---
+JWT_SECRET=$(node -e "process.stdout.write(require('crypto').randomBytes(48).toString('hex'))")
+cat > "$APP_DIR/backend/ecosystem.config.cjs" <<EOF
+module.exports = {
+  apps: [{
+    name:        '$APP_NAME',
+    script:      './dist/src/server.js',
+    cwd:         '$APP_DIR/backend',
+    instances:   1,
+    autorestart: true,
+    watch:       false,
+    env: {
+      NODE_ENV:   'production',
+      PORT:       $PORT,
+      JWT_SECRET: '$JWT_SECRET',
+    }
+  }]
+}
+EOF
+
 # --- PM2 process ---
 log "$MSG_PM2_START"
 pm2 delete "$APP_NAME" 2>/dev/null || true
-pm2 start ecosystem.config.cjs
+pm2 start "$APP_DIR/backend/ecosystem.config.cjs"
 pm2 save
 
 # --- PM2 startup ---
