@@ -1,0 +1,41 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1780020414302,
+      "tag": "0000_foamy_wasp",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1780201835038,
+      "tag": "0001_lonely_night_thrasher",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1748700000000,
+      "tag": "0002_add_session_title",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1748900000000,
+      "tag": "0003_add_kiosk_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1780416540000,
+      "tag": "0004_add_settings_fields",
+      "breakpoints": true
+    }
+  ]
+}

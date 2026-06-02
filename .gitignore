@@ -15,9 +15,8 @@ dist/
 *.env.local
 .env.*
 
-# Drizzle generated (keep migrations, ignore meta)
+# Drizzle generated (keep migrations + meta, ignore only top-level meta)
 backend/drizzle/meta/
-backend/drizzle/migrations/meta/
 
 # Compiled/duplicate JS artifacts (TS source is authoritative)
 **/*.vue.js
