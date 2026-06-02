@@ -1,7 +1,7 @@
 {
   "app": {
-    "name":    "antri-iki-ae",
-    "tagline": "General Purpose Queue System"
+    "name":    "IKI Antri",
+    "tagline": "Multi-Purpose Queue System"
   },
   "admin": {
     "nav": {
@@ -115,7 +115,35 @@
   },
   "config": {
     "institutionName": "Display Title",
-    "locale":          "Language"
+    "locale":          "Language",
+    "timezone":        "Time Zone",
+    "contact": {
+      "sectionTitle":   "Contact (Optional)",
+      "name":           "Name",
+      "org":            "Organization / Institution",
+      "email":          "Email",
+      "whatsapp":       "WhatsApp",
+      "leadText":       "I'd like to support IKI Antri by allowing iki.ae to:",
+      "consentList":    "List my organization as a user of this app on iki.ae",
+      "consentUpdates": "Send me occasional updates about new features, improvements, and offers from iki.ae",
+      "consentStorage": "Save the contact information above. I understand it will be sent to and stored by iki.ae, and will never be shared with third parties."
+    },
+    "terms": {
+      "sectionTitle": "Terms of Use",
+      "body":         "This software is provided by iki.ae as-is, without warranty of any kind. iki.ae is not responsible for the data entered by end-users, how this application is used, or any outcomes arising from its use. By using this software, you agree to use it lawfully and at your own risk.",
+      "acceptedAt":   "Agreed on",
+      "notAccepted":  "Not yet accepted",
+      "modalTitle":   "Terms of Use",
+      "agree":        "I Agree",
+      "viewLicense":  "View License (AGPL-3.0)"
+    },
+    "license": {
+      "modalTitle": "License — GNU AGPL v3.0",
+      "close":      "Close"
+    },
+    "about": {
+      "support": "For paid support, customization, or hardware bundles"
+    }
   },
   "ticket": {
     "call_next": "Call Next",

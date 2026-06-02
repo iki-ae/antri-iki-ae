@@ -51,7 +51,6 @@
       </template>
     </ion-content>
 
-    <WatermarkFooter variant="subtle" />
   </ion-page>
 </template>
 
@@ -64,7 +63,6 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useQueueStore } from '@/stores/queue'
 import { ticketsApi } from '@/api'
-import WatermarkFooter from '@/components/WatermarkFooter.vue'
 import TicketNumber from '@/components/TicketNumber.vue'
 
 addIcons({ playCircleOutline, refreshCircleOutline, playSkipForwardOutline, checkmarkCircleOutline })

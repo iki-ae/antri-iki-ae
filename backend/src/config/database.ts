@@ -29,7 +29,7 @@ function seed() {
 
   const adminRow = (raw.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get() as { id: number } | undefined)
   if (!adminRow) {
-    const hash = crypto.createHash('sha256').update('admin123').digest('hex')
+    const hash = crypto.createHash('sha256').update('antri123').digest('hex')
     raw.prepare(`
       INSERT INTO users (name, username, password_hash, role, is_active)
       VALUES ('Administrator', 'admin', ?, 'admin', 1)

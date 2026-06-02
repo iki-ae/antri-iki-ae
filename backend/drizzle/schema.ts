@@ -6,9 +6,20 @@ export const config = sqliteTable('config', {
   id:               integer('id').primaryKey({ autoIncrement: true }),
   institution_name: text('institution_name').notNull().default('antri.iki.ae'),
   locale:           text('locale').notNull().default('id'),
+  timezone:         text('timezone').notNull().default('Asia/Jakarta'),
   app_version:      text('app_version').notNull().default('1.0.0'),
   watermark_text:   text('watermark_text').notNull().default('by iki.ae'),
   updated_at:       text('updated_at').notNull().default(sql`(datetime('now'))`),
+  // contact / consent
+  contact_name:             text('contact_name'),
+  contact_org:              text('contact_org'),
+  contact_email:            text('contact_email'),
+  contact_whatsapp:         text('contact_whatsapp'),
+  contact_consent_list:     integer('contact_consent_list', { mode: 'boolean' }).notNull().default(false),
+  contact_consent_updates:  integer('contact_consent_updates', { mode: 'boolean' }).notNull().default(false),
+  contact_consent_storage:  integer('contact_consent_storage', { mode: 'boolean' }).notNull().default(false),
+  // terms of use
+  terms_accepted_at:        text('terms_accepted_at'),
 })
 
 // ─── categories ───────────────────────────────────────────────────────────────

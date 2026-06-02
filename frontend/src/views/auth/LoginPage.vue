@@ -5,7 +5,8 @@
         <div class="card">
 
           <div class="header">
-            <div class="brand"><span>antri.</span>iki.ae</div>
+            <div class="brand">IKI Antri</div>
+            <a class="brand-domain" href="https://antri.iki.ae" target="_blank" rel="noopener">https://antri.iki.ae</a>
             <div class="tagline">{{ $t('app.tagline') }}</div>
           </div>
 
@@ -195,9 +196,19 @@ ion-content {
   position: relative;
   z-index: 1;
 }
-.brand span {
-  opacity: 0.75;
-  font-weight: 500;
+.brand-domain {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.65);
+  text-decoration: none;
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+  transition: color 0.15s;
+}
+.brand-domain:hover {
+  color: rgba(255,255,255,0.95);
 }
 .tagline {
   font-size: 12.5px;

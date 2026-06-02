@@ -2,8 +2,17 @@ export interface Config {
   id: number
   institution_name: string
   locale: string
+  timezone: string
   app_version: string
   updated_at: string
+  contact_name?: string | null
+  contact_org?: string | null
+  contact_email?: string | null
+  contact_whatsapp?: string | null
+  contact_consent_list: boolean
+  contact_consent_updates: boolean
+  contact_consent_storage: boolean
+  terms_accepted_at?: string | null
 }
 
 export interface Category {

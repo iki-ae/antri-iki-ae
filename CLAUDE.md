@@ -1,9 +1,9 @@
 # Antri-Iki-Ae — Claude Code Context
 
-**Product:** Generic multi-purpose queue management system
-**Tagline:** Antri Iki Ae · Sistem Antrian Serbaguna
+**Product:** Multi-purpose queue management system
+**Tagline:** IKI Antri · Sistem Antrian Multiguna
 **Studio:** iki.ae — github.com/iki-ae/antri-iki-ae
-**License:** Business Source License 1.1 (BSL)
+**License:** GNU Affero General Public License v3.0 (AGPL-3.0)
 **Watermark:** "by iki.ae" — hardcoded, always visible, non-removable via UI
 
 ---
@@ -81,7 +81,7 @@ The "by iki.ae" mark must be visible on every surface. Placement differs by surf
 |---|---|---|
 | Display (`/display`) | Bottom-center, white, visible from 3 meters | `WatermarkFooter.vue` variant="display" |
 | Kiosk (`/kiosk`) | Header bar right — "powered by iki.ae" + QR pill | Inline in `KioskPage.vue` header (no `WatermarkFooter` component) |
-| Operator (`/operator`) | Bottom footer | `WatermarkFooter.vue` variant="subtle" |
+| Operator (`/operator`) | Sidebar brand header — persistent | `OperatorShell.vue` sidebar — no per-page footer needed |
 | Admin (`/admin/*`) | Sidebar brand header — persistent, always visible | `AdminShell.vue` sidebar — no per-page footer needed |
 | Login | Card footer strip — "powered by iki.ae" + QR | Inline `<a>` strip in `LoginPage.vue` |
 
@@ -89,7 +89,8 @@ The "by iki.ae" mark must be visible on every surface. Placement differs by surf
 - The QR is part of the watermark — not optional, not configurable
 - On every boot, the backend integrity check force-resets `watermark_text = 'by iki.ae'` in the DB regardless of current value
 - The PUT `/api/config` handler strips `watermark_text` from the body — it cannot be changed via API
-- **Admin pages do NOT use `WatermarkFooter.vue`** — the sidebar brand header covers it
+- **Admin and Operator pages do NOT use `WatermarkFooter.vue`** — `WatermarkFooter.vue` is deleted; both surfaces use their sidebar brand header
+- **Display and Kiosk** use inline "powered by iki.ae" + QR pill in the accent header
 
 ---
 

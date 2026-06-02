@@ -47,7 +47,7 @@ backend/
 ```typescript
 // 7 tables — full definitions in drizzle/schema.ts
 
-config         // Single-row: institution_name, locale, app_version, watermark_text (hardcoded, non-writable via API)
+config         // Single-row: institution_name, locale, timezone, app_version, watermark_text (non-writable via API), contact_name/org/email/whatsapp, contact_consent_list/updates/storage, terms_accepted_at (write-once via POST /config/terms-accept)
 categories     // prefix(A/B/C), name, color, sort_order, is_active
 counters       // name, category_id, is_active
 users          // name, username, password_hash, role(admin|operator), counter_id
@@ -72,7 +72,8 @@ audit_logs     // user_id, action, payload(JSON), created_at
 | Route | Auth |
 |---|---|
 | `POST /api/auth/login`, `/logout` | none |
-| `GET/PUT /api/config` | admin |
+| `GET/PUT /api/config` | admin (GET public) |
+| `POST /api/config/terms-accept` | admin — write-once terms acceptance timestamp |
 | `CRUD /api/categories` | admin |
 | `CRUD /api/counters` | admin |
 | `CRUD /api/users` | admin |

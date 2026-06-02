@@ -8,7 +8,7 @@
 ## Current Status
 
 **Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-06-02 (Session 34)
+**Last updated:** 2026-06-02 (Session 35)
 
 ---
 
@@ -17,15 +17,72 @@
 - Full backend scaffold (all 11 routes, services, SSE, auth)
 - Full frontend scaffold (all views, stores, i18n, components)
 - DB schema + migration (Drizzle, SQLite WAL)
-- Seed: config row + default admin user (`admin` / `admin123`)
+- Seed: config row + default admin user (`admin` / `antri123`)
 - Frontend built to `dist/`
 - PM2 running (`antri-iki-ae-api`, port 3001)
+- Settings page: timezone, contact/consent, terms of use sections, about/support strip
+- Terms of Use modal: first-login forced acknowledgement, acceptance timestamp stored in DB
+- LICENSE file (AGPL-3.0 full text), README.md (bilingual EN/ID)
 
 ---
 
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-06-02 — Session 35
+**Did:** Settings page additions + branding + licensing + README:
+
+**DB migration (`0004_add_settings_fields.sql`):**
+- Added 9 columns to `config`: `timezone`, `contact_name`, `contact_org`, `contact_email`, `contact_whatsapp`, `contact_consent_list`, `contact_consent_updates`, `contact_consent_storage`, `terms_accepted_at`
+- Applied to live DB
+
+**Backend:**
+- `backend/src/routes/config.ts`: PUT now uses immutable fields list (`id`, `watermark_text`, `app_version`, `terms_accepted_at`); new `POST /config/terms-accept` endpoint — writes acceptance timestamp once, never overwrites
+- `backend/src/services/contactService.ts`: new fire-and-forget service — POSTs contact data to `https://antri.iki.ae/api/statistics_collection` on startup if `contact_consent_storage = 1`; errors silently swallowed
+- `backend/src/server.ts`: calls `sendContactIfConsented()` after `rebuildQueueState()` — non-blocking
+
+**Frontend — Settings page (`ConfigPage.vue`):**
+- New **Timezone** section: WIB/WITA/WIT/UTC dropdown, auto-saves on change
+- New **Contact** section: 4 optional fields + 3 consent checkboxes + Save button
+- New **Terms of Use** section: disclaimer text + AGPL license link + acceptance timestamp displayed in configured timezone
+- New **About strip** below card: `IKI Antri vX.X.X · © 2024 iki.ae` + support link
+
+**Frontend — Terms modal (`TermsModal.vue`):**
+- New component — renders as fixed overlay over `AdminShell`
+- Shown when `config.terms_accepted_at` is null; cannot be dismissed — only "I Agree" closes it
+- Contains AGPL license link; calls `POST /config/terms-accept` on agree
+- Wired into `AdminShell.vue` via `v-if="!configStore.termsAcceptedAt"`
+
+**Branding:**
+- App name: `antri-iki-ae` → **IKI Antri**
+- `<title>`: `antri-iki-ae` → `IKI Antri`
+- Taglines: EN `Multi-Purpose Queue System` / ID `Sistem Antrian Multiguna`
+- Login page brand block: `IKI Antri` (large) + `https://antri.iki.ae` (clickable domain line)
+- Terms modal eyebrow: `IKI Antri (https://antri.iki.ae)`
+- `WatermarkFooter.vue` **retired and deleted** — was redundant with sidebar brand in OperatorShell and OperatorPage; all surfaces now use "powered by iki.ae + QR" inline block
+
+**License:**
+- Changed BSL 1.1 → AGPL-3.0 (permanent protection, no Change Date, FSF-backed)
+- `LICENSE` file created at project root — copyright notice + full AGPL-3.0 text fetched from GNU
+- CLAUDE.md updated to reflect AGPL-3.0
+
+**Default password:** `admin123` → `antri123` (seed + live DB + README updated)
+
+**README.md:** Bilingual (EN/ID) — features, tech stack, easy install (WSL/VHD), surfaces table, license, support. Support URL: `https://support.iki.ae`
+
+**i18n:** New keys — `config.timezone`, `config.contact.*`, `config.terms.viewLicense`, `config.license.*`, `config.about.*`
+
+**Decided:**
+- AGPL-3.0 chosen over BSL/custom/MIT: permanent commercial protection, no Change Date, legally robust, zero registration
+- `WatermarkFooter.vue` retired — operator sidebar brand is sufficient; no surface loses watermark coverage
+- Contact data sent to `antri.iki.ae/api/statistics_collection` (not `iki.ae/api/contact`) — matches actual endpoint
+- `terms_accepted_at` is write-once via dedicated endpoint — main PUT cannot overwrite it
+- Support URL: `https://support.iki.ae`
+
+**Next:** Pack WSL2 distribution tar, deployment guide.
 
 ---
 

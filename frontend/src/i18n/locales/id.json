@@ -1,7 +1,7 @@
 {
   "app": {
-    "name":    "antri-iki-ae",
-    "tagline": "Sistem Antrian Serbaguna"
+    "name":    "IKI Antri",
+    "tagline": "Sistem Antrian Multiguna"
   },
   "admin": {
     "nav": {
@@ -115,7 +115,35 @@
   },
   "config": {
     "institutionName": "Judul Tampilan",
-    "locale":          "Bahasa"
+    "locale":          "Bahasa",
+    "timezone":        "Zona Waktu",
+    "contact": {
+      "sectionTitle":   "Kontak (Opsional)",
+      "name":           "Nama",
+      "org":            "Organisasi / Institusi / Perusahaan",
+      "email":          "Email",
+      "whatsapp":       "WhatsApp",
+      "leadText":       "Saya bersedia mendukung pengembangan aplikasi IKI Antri dengan mengijinkan pengembang IKI Antri (https://iki.ae) untuk:",
+      "consentList":    "Mencantumkan nama organisasi/institusi/perusahaan/lembaga sebagai pengguna aplikasi IKI Antri",
+      "consentUpdates": "Mengirimkan pembaruan berkala tentang fitur baru, peningkatan, dan penawaran dari pengembang IKI Antri (https://iki.ae)",
+      "consentStorage": "Menyimpan informasi kontak di atas. Saya memahami bahwa informasi tersebut akan dikirim dan disimpan oleh pengembang IKI Antri (https://iki.ae), dan tidak akan dibagikan kepada pihak ketiga."
+    },
+    "terms": {
+      "sectionTitle": "Ketentuan Penggunaan",
+      "body":         "Perangkat lunak ini disediakan oleh iki.ae sebagaimana adanya, tanpa jaminan dalam bentuk apapun. iki.ae tidak bertanggung jawab atas data yang dimasukkan oleh pengguna akhir, cara penggunaan aplikasi ini, maupun konsekuensi yang timbul dari penggunaannya. Dengan menggunakan perangkat lunak ini, Anda setuju untuk menggunakannya secara sah dan atas risiko Anda sendiri.",
+      "acceptedAt":   "Disetujui pada",
+      "notAccepted":  "Belum disetujui",
+      "modalTitle":   "Ketentuan Penggunaan",
+      "agree":        "Saya Setuju",
+      "viewLicense":  "Lihat Lisensi (AGPL-3.0)"
+    },
+    "license": {
+      "modalTitle": "Lisensi — GNU AGPL v3.0",
+      "close":      "Tutup"
+    },
+    "about": {
+      "support": "Untuk dukungan berbayar, kustomisasi, atau paket hardware"
+    }
   },
   "ticket": {
     "call_next": "Panggil Berikutnya",

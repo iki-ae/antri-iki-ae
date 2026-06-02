@@ -6,6 +6,7 @@ import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static'
 
 import { rebuildQueueState } from './services/queueService.js'
+import { sendContactIfConsented } from './services/contactService.js'
 import { authRoutes }       from './routes/auth.js'
 import { configRoutes }     from './routes/config.js'
 import { categoryRoutes }   from './routes/categories.js'
@@ -57,6 +58,7 @@ app.setNotFoundHandler((_req, reply) => {
 })
 
 await rebuildQueueState()
+sendContactIfConsented() // fire-and-forget; errors are swallowed inside the service
 
 try {
   await app.listen({ port: 3001, host: '0.0.0.0' })

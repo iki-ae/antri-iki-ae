@@ -50,6 +50,9 @@
       <ion-router-outlet />
     </div>
 
+    <!-- Terms of Use — shown once until admin agrees -->
+    <TermsModal v-if="!configStore.termsAcceptedAt" />
+
   </ion-page>
 </template>
 
@@ -66,6 +69,7 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { useConfigStore } from '@/stores/config'
 import { useSidebarStore } from '@/stores/sidebar'
+import TermsModal from '@/components/TermsModal.vue'
 
 addIcons({
   gridOutline, playCircleOutline, layersOutline, peopleOutline,

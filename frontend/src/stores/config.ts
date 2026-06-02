@@ -10,9 +10,11 @@ const WATERMARK_URL  = 'https://iki.ae'
 export const useConfigStore = defineStore('config', () => {
   const config = ref<Config | null>(null)
 
-  const institutionName = computed(() => config.value?.institution_name ?? 'antri.iki.ae')
-  const watermarkText   = WATERMARK_TEXT
-  const watermarkUrl    = WATERMARK_URL
+  const institutionName  = computed(() => config.value?.institution_name ?? 'antri.iki.ae')
+  const timezone         = computed(() => config.value?.timezone ?? 'Asia/Jakarta')
+  const termsAcceptedAt  = computed(() => config.value?.terms_accepted_at ?? null)
+  const watermarkText    = WATERMARK_TEXT
+  const watermarkUrl     = WATERMARK_URL
 
   async function load() {
     const { data } = await configApi.get()
@@ -20,5 +22,5 @@ export const useConfigStore = defineStore('config', () => {
     if (data.locale) setLocale(data.locale)
   }
 
-  return { config, institutionName, watermarkText, watermarkUrl, load }
+  return { config, institutionName, timezone, termsAcceptedAt, watermarkText, watermarkUrl, load }
 })

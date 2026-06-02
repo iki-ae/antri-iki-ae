@@ -48,7 +48,6 @@
     <!-- ── Main ───────────────────────────────────────────────────────── -->
     <div class="main">
       <ion-router-outlet />
-      <WatermarkFooter variant="subtle" />
     </div>
 
   </ion-page>
@@ -66,7 +65,6 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { useConfigStore } from '@/stores/config'
 import { useSidebarStore } from '@/stores/sidebar'
-import WatermarkFooter from '@/components/WatermarkFooter.vue'
 
 addIcons({ gridOutline, settingsOutline, personCircleOutline, logOutOutline })
 
