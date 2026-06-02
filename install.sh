@@ -67,7 +67,7 @@ case "${LANG_CHOICE:-1}" in
     MSG_ACCESS_NGINX="  http://[IP-SERVER]  (via Nginx, port 80)"
     MSG_ACCESS_SSL="  Atau konfigurasikan domain + SSL (certbot) sesuai kebutuhan"
     MSG_USER="  Username : admin"
-    MSG_PASS="  Password : admin123"
+    MSG_PASS="  Password : antri123"
     MSG_WARN_PASS="  PENTING: Ganti password admin segera setelah login!"
     MSG_LOGIN="  Login admin default:"
     MSG_ACCESS="  Akses aplikasi:"
@@ -96,7 +96,7 @@ case "${LANG_CHOICE:-1}" in
     MSG_ACCESS_NGINX="  http://[SERVER-IP]  (via Nginx, port 80)"
     MSG_ACCESS_SSL="  Or configure a domain + SSL (certbot) as needed"
     MSG_USER="  Username : admin"
-    MSG_PASS="  Password : admin123"
+    MSG_PASS="  Password : antri123"
     MSG_WARN_PASS="  IMPORTANT: Change the admin password immediately after login!"
     MSG_LOGIN="  Default admin login:"
     MSG_ACCESS="  Access the app:"
@@ -153,8 +153,20 @@ pm2 save
 
 # --- PM2 startup ---
 log "$MSG_PM2_BOOT"
-pm2 startup systemd -u root --hp /root | tail -1 | bash || true
-pm2 save
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  # WSL: systemd is not available — use wsl.conf boot command instead
+  cat > /etc/wsl.conf <<'EOF'
+[boot]
+command = su -c "pm2 resurrect" root
+[network]
+generateHosts = true
+generateResolvConf = true
+EOF
+  pm2 save
+else
+  pm2 startup systemd -u root --hp /root | tail -1 | bash || true
+  pm2 save
+fi
 
 # --- Nginx ---
 if [[ $SKIP_NGINX -eq 1 ]]; then

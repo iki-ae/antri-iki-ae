@@ -117,7 +117,7 @@ REM --- Step 5: Disable sleep + start app ---
 echo !MSG_START!
 powercfg /change standby-timeout-ac 0
 powercfg /change monitor-timeout-ac 0
-wsl -d antri-iki-ae -- bash -c "cd /var/www/antri.iki.ae/backend && pm2 start ecosystem.config.cjs && pm2 save && pm2 startup systemd -u root --hp /root" >nul
+wsl -d antri-iki-ae -- bash -c "pm2 resurrect" >nul 2>&1
 
 echo.
 echo ============================================
@@ -131,7 +131,7 @@ echo   http://[THIS-PC-IP]:3001
 echo.
 echo !MSG_LOGIN!
 echo   Username : admin
-echo   Password : admin123
+echo   Password : antri123
 echo.
 echo !MSG_WARN!
 echo ============================================
