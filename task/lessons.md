@@ -7,6 +7,18 @@
 
 <!-- Entries go below, newest at top -->
 
+[2026-06-03] — Chroot without mounting `/proc`, `/sys`, `/dev` causes the host's binaries to leak into the chroot — `which node` inside the chroot returned the host's Node, not the rootfs's. Node was never actually installed into the rootfs. Rule: always `mount --bind /proc /rootfs/proc && mount --bind /sys /rootfs/sys && mount --bind /dev /rootfs/dev` before `chroot`, and verify with `which node` inside before running any installer.
+
+[2026-06-03] — `better-sqlite3@9.x` is incompatible with Node.js 24 — Node 24 requires C++20 to compile native addons and `better-sqlite3` 9.x does not meet that requirement. NodeSource `setup_lts.x` now resolves to Node 24. Rule: pin to `setup_22.x` explicitly until `better-sqlite3` is upgraded to v11+.
+
+[2026-06-03] — `npm ci` requires a `package-lock.json` with `lockfileVersion >= 1`. The prod repo does not include `package-lock.json` (in `.gitignore`). Rule: use `npm install` in `install.sh` — `npm ci` is only valid when the lockfile is guaranteed present (e.g. CI with the full dev repo).
+
+[2026-06-03] — Migration `0004_add_settings_fields.sql` had 9 `ALTER TABLE` statements with no `statement-breakpoint` separators. `better-sqlite3` rejects multi-statement SQL passed to `prepare()`. Rule: every multi-statement migration file must have `--> statement-breakpoint` between each statement — drizzle-orm's migrator uses these to split before passing to `better-sqlite3`.
+
+[2026-06-03] — `wsl --export` of an imported WSL distro exports the full distro including `/usr/lib/wsl` (Microsoft's GPU/DirectX layer, 4.5GB). The official Debian WSL cannot be slimmed below ~460MB uncompressed because of this layer. Rule: for a minimal image, use debootstrap — it produces ~200MB. The official WSL base is only suitable if image size is not a constraint.
+
+[2026-06-03] — `apt-get autoremove --purge` after removing Python removed `nodejs` as an autoremove candidate because NodeSource had registered it as an automatically-installed dependency. Rule: after installing Node via NodeSource, run `apt-mark manual nodejs` to prevent it from being auto-removed. Alternatively, verify `which node` after every cleanup step before exporting.
+
 [2026-06-02] — `fs.createReadStream(path).pipe(reply.raw)` in a Fastify async route handler returned 0 bytes — Fastify had not yet flushed the response headers when the pipe started, so the stream ended before any data was sent. Rule: for binary file downloads in Fastify, use `fs.readFileSync` + `reply.send(buf)` instead of piping to `reply.raw`.
 
 [2026-06-02] — Made confident claims about Chrome's download blocklist (`.db` files "not flagged") without testing. Both `.zip` and `.db` triggered browser warnings; only `.json` passed silently. Rule: never state that a file extension will or won't trigger a browser security warning without testing it first.

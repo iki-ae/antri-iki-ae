@@ -7,8 +7,8 @@
 
 ## Current Status
 
-**Phase:** Active Development — installer complete, Nginx running, frontend served
-**Last updated:** 2026-06-02 (Session 39)
+**Phase:** Distribution ready — WSL image built, install.bat tested, 271MB compressed tar shipping
+**Last updated:** 2026-06-03 (Session 40)
 
 ---
 
@@ -23,12 +23,55 @@
 - Settings page: timezone, contact/consent, terms of use sections, about/support strip
 - Terms of Use modal: first-login forced acknowledgement, acceptance timestamp stored in DB
 - LICENSE file (BSL 1.1 — attribution clause, Change Date 2029-01-01 → MIT), README.md (bilingual EN/ID)
+- WSL image (`IKI-Antri.tar.gz` 271MB compressed) — tested end-to-end with `install.bat`
+- `install.bat` + `portproxy-refresh.bat` — complete Windows deployment package
 
 ---
 
 ## In Progress
 
 _Nothing yet._
+
+---
+
+### 2026-06-03 — Session 40
+**Did:** WSL image build + installer fixes + README completion:
+
+**Installer fixes (`install.sh`):**
+- WSL detection via `/proc/version` — writes `/etc/wsl.conf` with `[boot] command = /bin/bash -c "PATH=/usr/bin:/usr/local/bin pm2 resurrect"` instead of `pm2 startup systemd`
+- Frontend build added — `npm install && npm run build`, then `frontend/node_modules` removed
+- `mkdir -p backend/data` added before `db:migrate`
+- Node.js pinned to v22 via `setup_22.x` — Node 24 breaks `better-sqlite3` (C++20 required)
+- `npm ci` → `npm install` — lockfile not in prod repo
+- Banner renamed to "IKI Antri"
+- `ecosystem.config.cjs` generated at install time with unique JWT secret via `crypto.randomBytes(48)`
+- Presence check changed from `ecosystem.config.cjs` → `backend/package.json`
+
+**Installer fixes (`install.bat`):**
+- Distro: `antri-iki-ae` → `IKI-Antri`, install path: `C:\antri-iki-ae` → `C:\IKI-Antri`
+- Image filename: `.tar` → `.tar.gz`
+- Firewall rule and portproxy-refresh path corrected to `IKI-Antri`
+- `pm2 startup systemd` replaced with `pm2 resurrect`
+- `pause` + `cmd /k` — window stays open after install
+
+**Repo fixes:**
+- `backend/drizzle/migrations/meta/` removed from `.gitignore` — `_journal.json` required by migrator
+- Migration `0004`: added `statement-breakpoint` separators
+- Password `admin123` → `antri123` in both scripts
+
+**WSL image:**
+- Built from official Debian WSL — debootstrap chroot isolation proved too fragile (Node installed on host not rootfs due to missing `/proc` mounts)
+- Cleaned build tools + caches → 840MB uncompressed, 271MB gzip compressed
+- Tested end-to-end: `install.bat` → `localhost:3001` accessible
+
+**README:** Easy/Manual install completed bilingual; VirtualBox/Linux server noted; backup format `.db`; password `antri123`.
+
+**Decided:**
+- Debootstrap deferred to v2 — official Debian WSL used for this release
+- Node pinned to v22 LTS permanently until `better-sqlite3` supports Node 24
+- JWT secret generated uniquely per install — not shipped in repo
+
+**Next:** Ship `IKI-Antri.tar.gz` + `install.bat` + `portproxy-refresh.bat`.
 
 ---
 
