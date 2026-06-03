@@ -51,11 +51,13 @@
       gap: 1rem;
       height: 56px;
     }
+    .nav-left {
+      display: flex; align-items: center; gap: 8px;
+    }
     .nav-brand {
-      font-size: 1.1rem; font-weight: 800;
+      font-size: 1.35rem; font-weight: 900;
       color: #fff; text-decoration: none;
-      display: flex; align-items: center; gap: .5rem;
-      white-space: nowrap;
+      white-space: nowrap; letter-spacing: -.01em;
     }
     .nav-links {
       display: flex; align-items: center; gap: .1rem;
@@ -401,7 +403,6 @@
     @media (max-width: 640px) {
       .download-box { flex-direction: column; }
       .contact-cards { flex-direction: column; }
-      .nav-brand { font-size: .95rem; }
     }
   </style>
 </head>
@@ -409,10 +410,12 @@
 
 <!-- NAV -->
 <nav style="position:relative;">
-  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-  <a class="nav-brand" href="/">IKI Antri</a>
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="nav-brand" href="/">IKI Antri</a>
+  </div>
   <div class="nav-links">
     <a href="#" data-id>Beranda</a><a href="#" data-en>Home</a>
     <a href="#features" data-id>Fitur</a><a href="#features" data-en>Features</a>
