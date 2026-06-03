@@ -75,12 +75,15 @@
       transition: all .15s;
     }
     .lang-btn:hover, .lang-btn.active { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
-    .nav-cta {
-      background: var(--brand); color: #fff; text-decoration: none;
-      border-radius: 8px; padding: .4rem 1rem; font-size: .85rem; font-weight: 600;
-      transition: background .15s;
+    .nav-watermark {
+      display: flex; align-items: center; gap: .45rem;
+      text-decoration: none; color: var(--muted);
+      font-size: .75rem; font-weight: 500;
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: .3rem .65rem; transition: all .15s;
     }
-    .nav-cta:hover { background: var(--brand-dark); }
+    .nav-watermark:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
+    .nav-watermark svg { display: block; }
 
     /* ── HERO ── */
     .hero {
@@ -358,13 +361,13 @@
     <a href="#install" data-id>Unduh</a><a href="#install" data-en>Download</a>
     <a href="https://github.com/iki-ae/antri-iki-ae" target="_blank" rel="noopener">GitHub</a>
     <a href="#contact" data-id>Kontak</a><a href="#contact" data-en>Contact</a>
-  </div>
-  <div class="nav-actions">
     <button class="lang-btn active" id="btn-id" onclick="setLang('id')">ID</button>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
-    <a class="nav-cta" href="https://cdn.antri.iki.ae/IKI-Antri.zip" download>
-      <span data-id>Unduh</span>
-      <span data-en>Download</span>
+  </div>
+  <div class="nav-actions">
+    <a class="nav-watermark" href="https://iki.ae" target="_blank" rel="noopener">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 23 23" shape-rendering="crispEdges"><path fill="#f1f5f9" d="M0 0h23v23H0z"/><path stroke="#2563eb" d="M1 1.5h7m1 0h1m1 0h3m1 0h7M1 2.5h1m5 0h1m1 0h1m5 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m3 0h2m2 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m2 0h3m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m3 0h1m3 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h3M1 9.5h1m1 0h2m1 0h3m2 0h2m2 0h1m2 0h1m1 0h2M1 10.5h2m1 0h1m9 0h8M1 11.5h1m2 0h2m1 0h2m5 0h1m3 0h1m1 0h2M2 12.5h2m1 0h2m1 0h1m3 0h1m3 0h1m1 0h1m1 0h1M2 13.5h2m2 0h2m3 0h1m1 0h1m1 0h1m1 0h2m2 0h1M9 14.5h1m1 0h3m3 0h1M1 15.5h7m1 0h2m1 0h1m4 0h1M1 16.5h1m5 0h1m1 0h1m1 0h1m2 0h1m1 0h4m1 0h1M1 17.5h1m1 0h3m1 0h1m3 0h1m1 0h1m3 0h1m1 0h2M1 18.5h1m1 0h3m1 0h1m1 0h3m1 0h4m3 0h1M1 19.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h4m2 0h1M1 20.5h1m5 0h1m2 0h1m3 0h4m3 0h1M1 21.5h7m1 0h3m1 0h3m1 0h3"/></svg>
+      powered by iki.ae
     </a>
   </div>
 </nav>
