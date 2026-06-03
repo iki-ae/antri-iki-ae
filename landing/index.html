@@ -282,18 +282,29 @@
     code { font-family: 'SFMono-Regular', Consolas, monospace; }
 
     /* ── SPECS ── */
-    .specs-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    .trust-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.5rem; margin-top: 3rem;
     }
-    .spec-card {
+    .trust-card {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow);
+      border-radius: var(--radius); padding: 1.75rem; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: .75rem;
     }
-    .spec-card h4 { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: .75rem; }
-    .spec-row { display: flex; justify-content: space-between; align-items: center; padding: .45rem 0; border-bottom: 1px solid var(--border); font-size: .88rem; }
-    .spec-row:last-child { border-bottom: none; }
-    .spec-row .val { font-weight: 600; color: var(--accent); }
+    .trust-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--brand-light); display: flex; align-items: center;
+      justify-content: center; font-size: 1.4rem;
+    }
+    .trust-card h3 { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .trust-card p { font-size: .88rem; color: var(--muted); line-height: 1.6; }
+    .trust-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .85rem; font-weight: 600; color: var(--brand);
+      text-decoration: none; margin-top: .25rem;
+      transition: color .15s;
+    }
+    .trust-link:hover { color: var(--brand-dark); }
 
     /* ── CONTACT ── */
     #contact { background: #fff; }
@@ -679,35 +690,38 @@ netsh advfirewall firewall add rule name="IKI-Antri" dir=in action=allow protoco
 </section>
 
 <!-- SPECS -->
-<section id="specs" style="background: var(--surface);">
+<section id="trust" style="background: var(--surface);">
   <div class="container">
-    <div class="section-tag" data-id>SPESIFIKASI</div>
-    <div class="section-tag" data-en>SPECIFICATIONS</div>
-    <h2 class="section-title" data-id>Ringan dan Andal</h2>
-    <h2 class="section-title" data-en>Lightweight and Reliable</h2>
-    <div class="specs-grid">
-      <div class="spec-card">
-        <h4 data-id>KEBUTUHAN SISTEM</h4>
-        <h4 data-en>SYSTEM REQUIREMENTS</h4>
-        <div class="spec-row"><span data-id>OS</span><span class="val">Windows 11 / Linux</span></div>
-        <div class="spec-row"><span>RAM</span><span class="val" data-id>Min. 2 GB</span><span class="val" data-en>Min. 2 GB</span></div>
-        <div class="spec-row"><span data-id>Storage</span><span class="val">~500 MB</span></div>
-        <div class="spec-row"><span data-id>Jaringan</span><span class="val" data-id>Lokal / LAN</span><span class="val" data-en>Local / LAN</span></div>
+    <div class="section-tag" data-id>TRANSPARANSI</div>
+    <div class="section-tag" data-en>TRANSPARENCY</div>
+    <h2 class="section-title" data-id>Transparan dan Dapat Diaudit</h2>
+    <h2 class="section-title" data-en>Transparent and Auditable</h2>
+    <p class="section-sub" data-id>Tidak ada yang tersembunyi. Kode sumber terbuka, berjalan di jaringan lokal Anda sendiri.</p>
+    <p class="section-sub" data-en>Nothing hidden. Open source code, running entirely on your own local network.</p>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon">📂</div>
+        <h3 data-id>Kode Sumber Terbuka</h3>
+        <h3 data-en>Open Source Code</h3>
+        <p data-id>Seluruh kode sumber tersedia di GitHub. Lihat persis apa yang berjalan di server Anda — tidak ada yang disembunyikan.</p>
+        <p data-en>Full source code is publicly available on GitHub. See exactly what runs on your server — nothing hidden.</p>
+        <a class="trust-link" href="https://github.com/iki-ae/antri-iki-ae" target="_blank" rel="noopener">
+          github.com/iki-ae/antri-iki-ae →
+        </a>
       </div>
-      <div class="spec-card">
-        <h4>TECH STACK</h4>
-        <div class="spec-row"><span>Backend</span><span class="val">Fastify + SQLite</span></div>
-        <div class="spec-row"><span>Frontend</span><span class="val">Vue 3 + Ionic 8</span></div>
-        <div class="spec-row"><span>Real-time</span><span class="val">SSE</span></div>
-        <div class="spec-row"><span>Auth</span><span class="val">JWT (httpOnly)</span></div>
+      <div class="trust-card">
+        <div class="trust-icon">🔒</div>
+        <h3 data-id>Privasi Penuh</h3>
+        <h3 data-en>Full Privacy</h3>
+        <p data-id>Tanpa telemetri, tanpa panggilan ke server luar, tanpa koneksi tersembunyi. Jalankan sepenuhnya offline dan verifikasi sendiri.</p>
+        <p data-en>No telemetry, no external server calls, no hidden connections. Run it fully offline and verify it yourself.</p>
       </div>
-      <div class="spec-card">
-        <h4 data-id>LISENSI</h4>
-        <h4 data-en>LICENSE</h4>
-        <div class="spec-row"><span data-id>Tipe</span><span class="val">BSL 1.1</span></div>
-        <div class="spec-row"><span data-id>Konversi ke MIT</span><span class="val">2029-01-01</span></div>
-        <div class="spec-row"><span data-id>Self-host</span><span class="val" data-id>✓ Gratis</span><span class="val" data-en>✓ Free</span></div>
-        <div class="spec-row"><span data-id>White-label</span><span class="val" data-id>Komersial</span><span class="val" data-en>Commercial</span></div>
+      <div class="trust-card">
+        <div class="trust-icon">🔊</div>
+        <h3 data-id>Pengumuman Suara</h3>
+        <h3 data-en>Voice Announcements</h3>
+        <p data-id>Papan antrian membacakan nomor tiket secara otomatis menggunakan Web Speech API bawaan browser — tanpa perangkat tambahan.</p>
+        <p data-en>The display board automatically reads out ticket numbers using the browser's built-in Web Speech API — no extra hardware needed.</p>
       </div>
     </div>
   </div>
