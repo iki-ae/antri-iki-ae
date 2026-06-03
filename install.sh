@@ -141,6 +141,13 @@ log "$MSG_BUILD"
 npm run build
 npm prune --omit=dev
 
+# --- Frontend build ---
+cd "$APP_DIR/frontend"
+npm install
+npm run build
+rm -rf "$APP_DIR/frontend/node_modules"
+cd "$APP_DIR/backend"
+
 # --- DB migrations ---
 log "$MSG_MIGRATE"
 npm run db:migrate
@@ -177,7 +184,7 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
   # WSL: systemd is not available — use wsl.conf boot command instead
   cat > /etc/wsl.conf <<'EOF'
 [boot]
-command = su -c "pm2 resurrect" root
+command = /bin/bash -c "PATH=/usr/bin:/usr/local/bin pm2 resurrect"
 [network]
 generateHosts = true
 generateResolvConf = true
