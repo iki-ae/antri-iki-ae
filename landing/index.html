@@ -44,49 +44,57 @@
     /* ── NAV ── */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(255,255,255,.85);
-      backdrop-filter: saturate(180%) blur(12px);
-      -webkit-backdrop-filter: saturate(180%) blur(12px);
-      border-bottom: 1px solid var(--border);
+      background: var(--accent);
+      box-shadow: 0 2px 4px rgba(0,0,0,.15);
       padding: 0 1.5rem;
       display: flex; align-items: center; justify-content: space-between;
       gap: 1rem;
       height: 56px;
     }
+    .nav-brand {
+      font-size: 1.1rem; font-weight: 800;
+      color: #fff; text-decoration: none;
+      display: flex; align-items: center; gap: .5rem;
+      white-space: nowrap;
+    }
     .nav-links {
-      display: flex; align-items: center; gap: .25rem;
+      display: flex; align-items: center; gap: .1rem;
       flex: 1; justify-content: center;
     }
     .nav-links a {
-      color: var(--muted); text-decoration: none;
+      color: rgba(255,255,255,.8); text-decoration: none;
       font-size: .85rem; font-weight: 500;
       padding: .35rem .65rem; border-radius: 6px;
       transition: all .15s; white-space: nowrap;
     }
-    .nav-links a:hover { color: var(--brand); background: var(--brand-light); }
-    .nav-brand {
-      font-size: 1.1rem; font-weight: 700;
-      color: var(--brand); text-decoration: none;
-      display: flex; align-items: center; gap: .5rem;
-    }
-    .nav-brand span { color: var(--text); font-weight: 400; font-size: .85rem; }
-    .nav-actions { display: flex; align-items: center; gap: .75rem; }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,.15); }
     .lang-btn {
-      background: none; border: 1px solid var(--border);
-      border-radius: 6px; padding: .3rem .75rem;
-      font-size: .8rem; cursor: pointer; color: var(--muted);
+      background: none; border: 1px solid rgba(255,255,255,.4);
+      border-radius: 6px; padding: .28rem .65rem;
+      font-size: .8rem; cursor: pointer; color: rgba(255,255,255,.8);
       transition: all .15s;
     }
-    .lang-btn:hover, .lang-btn.active { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
+    .lang-btn:hover, .lang-btn.active { background: rgba(255,255,255,.2); color: #fff; border-color: rgba(255,255,255,.7); }
+    /* Watermark — mirrors sidebar-brand in AdminShell */
     .nav-watermark {
-      display: flex; align-items: center; gap: .45rem;
-      text-decoration: none; color: #fff;
-      font-size: .75rem; font-weight: 500;
-      background: #e08c2f; border: 1px solid #e08c2f;
-      border-radius: 8px; padding: .3rem .65rem; transition: background .15s;
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; flex-shrink: 0;
+      transition: opacity .15s;
     }
-    .nav-watermark:hover { background: #b06a15; border-color: #b06a15; }
-    .nav-watermark svg { display: block; border-radius: 3px; }
+    .nav-watermark:hover { opacity: .85; }
+    .nav-watermark-text {
+      font-size: 11px; line-height: 1.4;
+      color: rgba(255,255,255,.75); text-align: right;
+    }
+    .nav-watermark-text strong {
+      display: block; font-size: 13px; font-weight: 700; color: #fff;
+    }
+    .nav-watermark-qr {
+      width: 36px; height: 36px; background: #fff;
+      border-radius: 5px; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .nav-watermark-qr svg { display: block; }
 
     /* ── HERO ── */
     .hero {
@@ -346,7 +354,7 @@
     @media (max-width: 640px) {
       .download-box { flex-direction: column; }
       .contact-cards { flex-direction: column; }
-      nav .nav-cta { display: none; }
+      .nav-brand { font-size: .95rem; }
     }
   </style>
 </head>
@@ -368,12 +376,12 @@
     <button class="lang-btn active" id="btn-id" onclick="setLang('id')">ID</button>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
   </div>
-  <div class="nav-actions">
-    <a class="nav-watermark" href="https://iki.ae" target="_blank" rel="noopener">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 23 23" shape-rendering="crispEdges"><path fill="#f1f5f9" d="M0 0h23v23H0z"/><path stroke="#2563eb" d="M1 1.5h7m1 0h1m1 0h3m1 0h7M1 2.5h1m5 0h1m1 0h1m5 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m3 0h2m2 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m2 0h3m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m3 0h1m3 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h3M1 9.5h1m1 0h2m1 0h3m2 0h2m2 0h1m2 0h1m1 0h2M1 10.5h2m1 0h1m9 0h8M1 11.5h1m2 0h2m1 0h2m5 0h1m3 0h1m1 0h2M2 12.5h2m1 0h2m1 0h1m3 0h1m3 0h1m1 0h1m1 0h1M2 13.5h2m2 0h2m3 0h1m1 0h1m1 0h1m1 0h2m2 0h1M9 14.5h1m1 0h3m3 0h1M1 15.5h7m1 0h2m1 0h1m4 0h1M1 16.5h1m5 0h1m1 0h1m1 0h1m2 0h1m1 0h4m1 0h1M1 17.5h1m1 0h3m1 0h1m3 0h1m1 0h1m3 0h1m1 0h2M1 18.5h1m1 0h3m1 0h1m1 0h3m1 0h4m3 0h1M1 19.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h4m2 0h1M1 20.5h1m5 0h1m2 0h1m3 0h4m3 0h1M1 21.5h7m1 0h3m1 0h3m1 0h3"/></svg>
-      powered by iki.ae
-    </a>
-  </div>
+  <a class="nav-watermark" href="https://iki.ae" target="_blank" rel="noopener">
+    <div class="nav-watermark-text">powered by<strong>iki.ae</strong></div>
+    <div class="nav-watermark-qr">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 23 23" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h23v23H0z"/><path stroke="#000000" d="M1 1.5h7m1 0h1m1 0h3m1 0h7M1 2.5h1m5 0h1m1 0h1m5 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m3 0h2m2 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m2 0h3m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m3 0h1m3 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h3M1 9.5h1m1 0h2m1 0h3m2 0h2m2 0h1m2 0h1m1 0h2M1 10.5h2m1 0h1m9 0h8M1 11.5h1m2 0h2m1 0h2m5 0h1m3 0h1m1 0h2M2 12.5h2m1 0h2m1 0h1m3 0h1m3 0h1m1 0h1m1 0h1M2 13.5h2m2 0h2m3 0h1m1 0h1m1 0h1m1 0h2m2 0h1M9 14.5h1m1 0h3m3 0h1M1 15.5h7m1 0h2m1 0h1m4 0h1M1 16.5h1m5 0h1m1 0h1m1 0h1m2 0h1m1 0h4m1 0h1M1 17.5h1m1 0h3m1 0h1m3 0h1m1 0h1m3 0h1m1 0h2M1 18.5h1m1 0h3m1 0h1m1 0h3m1 0h4m3 0h1M1 19.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h4m2 0h1M1 20.5h1m5 0h1m2 0h1m3 0h4m3 0h1M1 21.5h7m1 0h3m1 0h3m1 0h3"/></svg>
+    </div>
+  </a>
 </nav>
 
 <!-- HERO -->
