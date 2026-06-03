@@ -119,13 +119,6 @@
       position: relative; z-index: 1;
       max-width: 860px; width: 100%; text-align: center;
     }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: .5rem;
-      background: rgba(67,105,152,.25); border: 1px solid rgba(67,105,152,.45);
-      border-radius: 999px; padding: .35rem 1rem; margin-bottom: 2rem;
-      font-size: .8rem; color: #a8c4e0; font-weight: 500; letter-spacing: .03em;
-    }
-    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
     .hero h1 {
       font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800;
@@ -153,7 +146,6 @@
       transition: all .2s; backdrop-filter: blur(8px);
     }
     .btn-secondary:hover { background: rgba(255,255,255,.14); transform: translateY(-2px); }
-    .hero-note { margin-top: 1.5rem; font-size: .82rem; color: #64748b; }
     .hero-screens {
       position: relative; margin-top: 4rem;
       display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;
@@ -362,11 +354,7 @@
 
 <!-- NAV -->
 <nav>
-  <a class="nav-brand" href="/">
-    IKI Antri
-    <span data-id>oleh iki.ae</span>
-    <span data-en>by iki.ae</span>
-  </a>
+  <a class="nav-brand" href="/">IKI Antri</a>
   <div class="nav-links">
     <a href="#" data-id>Beranda</a><a href="#" data-en>Home</a>
     <a href="#features" data-id>Fitur</a><a href="#features" data-en>Features</a>
@@ -388,15 +376,10 @@
 <section class="hero">
   <div class="hero-grid"></div>
   <div class="hero-inner">
-    <div class="hero-badge">
-      <span class="dot"></span>
-      <span data-id>Gratis · Self-Hosted · Open Source 2029</span>
-      <span data-en>Free · Self-Hosted · Open Source in 2029</span>
-    </div>
     <h1 data-id>Kelola Antrian<br>dengan <em>Profesional</em></h1>
     <h1 data-en>Queue Management<br>Done <em>Right</em></h1>
-    <p class="hero-sub" data-id>Sistem antrian multiguna gratis untuk klinik, kantor, sekolah, dan bank. Jalankan di server Anda sendiri — tanpa biaya langganan, tanpa ketergantungan cloud.</p>
-    <p class="hero-sub" data-en>Free, self-hosted queue management for clinics, offices, schools, and banks. Runs on your own server — no subscription, no cloud lock-in.</p>
+    <p class="hero-sub" data-id>Sistem antrian multiguna gratis untuk klinik, kantor, sekolah, bank, dan berbagai institusi, lembaga, serta perusahaan lainnya.</p>
+    <p class="hero-sub" data-en>Free, self-hosted queue management for clinics, offices, schools, banks, and other institutions, organizations, and businesses.</p>
     <div class="hero-actions">
       <a class="btn-primary" href="https://cdn.antri.iki.ae/IKI-Antri.zip" download>
         ⬇
@@ -404,12 +387,10 @@
         <span data-en>Download Free · ~270 MB</span>
       </a>
       <a class="btn-secondary" href="#install">
-        <span data-id>Cara Instalasi</span>
-        <span data-en>How to Install</span>
+        <span data-id>Instalasi Mudah</span>
+        <span data-en>Easy Install</span>
       </a>
     </div>
-    <p class="hero-note" data-id>Windows 11 · Tidak perlu cloud · Tidak ada biaya tersembunyi</p>
-    <p class="hero-note" data-en>Windows 11 · No cloud required · No hidden fees</p>
     <div class="hero-screens">
       <div class="screen-card"><div class="screen-icon">🖥️</div><div class="screen-label" data-id>Papan Antrian</div><div class="screen-label" data-en>Display Board</div></div>
       <div class="screen-card"><div class="screen-icon">🎫</div><div class="screen-label" data-id>Kios Tiket</div><div class="screen-label" data-en>Ticket Kiosk</div></div>
@@ -771,7 +752,7 @@ netsh advfirewall firewall add rule name="IKI-Antri" dir=in action=allow protoco
     <a href="https://wa.me/6285780100700" target="_blank" rel="noopener">WhatsApp</a>
   </div>
   <div class="footer-copy">
-    &copy; <span id="year"></span> iki.ae — IKI Antri is licensed under BSL 1.1, converting to MIT on 2029-01-01.
+    &copy; <span id="year"></span> iki.ae — IKI Antri is licensed under BSL 1.1, converting to MIT in 2029.
   </div>
 </footer>
 
