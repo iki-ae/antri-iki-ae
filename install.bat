@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ============================================
-echo   Antri-Iki-Ae ^- Queue Management System
+echo   IKI Antri ^- Queue Management System
 echo   by iki.ae
 echo ============================================
 echo.
@@ -27,7 +27,7 @@ if "!LANG_CHOICE!"=="2" (
   set MSG_NO_WSL=GAGAL: WSL2 tidak ditemukan. Install WSL2 terlebih dahulu.
   set MSG_NO_WSL2=  Jalankan di PowerShell: wsl --install
   set MSG_NO_TAR=GAGAL: IKI-Antri.tar tidak ditemukan di folder yang sama dengan install.bat.
-  set MSG_IMPORT=^[1/5^] Mengimpor Antri-Iki-Ae ke WSL2...
+  set MSG_IMPORT=^[1/5^] Mengimpor IKI Antri ke WSL2...
   set MSG_IMPORT_FAIL=GAGAL: Import WSL gagal.
   set MSG_COPY=^[2/5^] Menyalin portproxy-refresh.bat...
   set MSG_COPY_FAIL=GAGAL: Tidak bisa menyalin portproxy-refresh.bat.
@@ -35,7 +35,7 @@ if "!LANG_CHOICE!"=="2" (
   set MSG_IP_FAIL=GAGAL: Tidak bisa mendapatkan IP WSL.
   set MSG_SCHTASK=^[4/5^] Mendaftarkan portproxy-refresh saat startup Windows...
   set MSG_SCHTASK_WARN=PERINGATAN: Gagal mendaftarkan task scheduler. Port proxy perlu diperbarui manual setelah restart.
-  set MSG_START=^[5/5^] Menonaktifkan sleep mode dan menjalankan Antri-Iki-Ae...
+  set MSG_START=^[5/5^] Menonaktifkan sleep mode dan menjalankan IKI Antri...
   set MSG_DONE=Instalasi selesai^^!
   set MSG_LOCAL=  Buka di browser:
   set MSG_LAN_ACCESS=  Dari perangkat lain di jaringan yang sama:
@@ -45,7 +45,7 @@ if "!LANG_CHOICE!"=="2" (
   set MSG_NO_WSL=ERROR: WSL2 not found. Install WSL2 first.
   set MSG_NO_WSL2=  Run in PowerShell: wsl --install
   set MSG_NO_TAR=ERROR: IKI-Antri.tar not found in the same folder as install.bat.
-  set MSG_IMPORT=^[1/5^] Importing Antri-Iki-Ae into WSL2...
+  set MSG_IMPORT=^[1/5^] Importing IKI Antri into WSL2...
   set MSG_IMPORT_FAIL=ERROR: WSL import failed.
   set MSG_COPY=^[2/5^] Copying portproxy-refresh.bat...
   set MSG_COPY_FAIL=ERROR: Could not copy portproxy-refresh.bat.
@@ -53,7 +53,7 @@ if "!LANG_CHOICE!"=="2" (
   set MSG_IP_FAIL=ERROR: Could not get WSL IP address.
   set MSG_SCHTASK=^[4/5^] Registering portproxy-refresh at Windows startup...
   set MSG_SCHTASK_WARN=WARNING: Could not register startup task. Port proxy must be refreshed manually after restart.
-  set MSG_START=^[5/5^] Disabling sleep mode and starting Antri-Iki-Ae...
+  set MSG_START=^[5/5^] Disabling sleep mode and starting IKI Antri...
   set MSG_DONE=Installation complete^^!
   set MSG_LOCAL=  Open in browser:
   set MSG_LAN_ACCESS=  From other devices on the same network:
@@ -135,4 +135,6 @@ echo   Password : antri123
 echo.
 echo !MSG_WARN!
 echo ============================================
+echo.
 pause
+cmd /k
