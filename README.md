@@ -47,9 +47,9 @@ Download the ready-to-deploy WSL image at [https://antri.iki.ae](https://antri.i
 
 Default credentials: `admin` / `antri123` — **change immediately after first login.**
 
-### Clean Installation (Windows 11)
+### Manual Installation (Windows 11, VirtualBox, Linux Server, and more)
 
-> Requires Windows 11. If unsure, use the Easy Installation method above.
+> Requires Windows 11 for the WSL method below. IKI Antri also runs on any Debian 12+ / Ubuntu 22.04+ system — VirtualBox, Hyper-V, Proxmox LXC, cloud VPS, or bare metal. For non-Windows, skip to Step 2 and run `install.sh` directly on your Linux system.
 
 **Step 1 — Enable WSL2**
 
@@ -150,9 +150,9 @@ Unduh WSL image siap pakai di [https://antri.iki.ae](https://antri.iki.ae) dan i
 
 Kredensial default: `admin` / `antri123` — **segera ganti setelah login pertama.**
 
-### Instalasi Manual (Windows 11)
+### Instalasi Manual (Windows 11, VirtualBox, Linux Server, dan lainnya)
 
-> Membutuhkan Windows 11. Jika tidak yakin, gunakan metode Instalasi Mudah di atas.
+> Membutuhkan Windows 11 untuk metode WSL di bawah. IKI Antri juga berjalan di sistem Debian 12+ / Ubuntu 22.04+ mana pun — VirtualBox, Hyper-V, Proxmox LXC, VPS cloud, atau bare metal. Untuk non-Windows, lewati Langkah 1 dan jalankan `install.sh` langsung di sistem Linux Anda.
 
 **Langkah 1 — Aktifkan WSL2**
 
