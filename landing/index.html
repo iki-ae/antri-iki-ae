@@ -355,9 +355,67 @@
     html[lang="id"] span[data-id] { display: inline; }
     html[lang="en"] span[data-en] { display: inline; }
 
+    /* ── HAMBURGER ── */
+    .hamburger {
+      display: none; flex-direction: column; justify-content: center; gap: 5px;
+      width: 36px; height: 36px; background: none; border: none; cursor: pointer;
+      padding: 4px; flex-shrink: 0;
+    }
+    .hamburger span {
+      display: block; height: 2px; width: 22px;
+      background: #fff; border-radius: 2px;
+      transition: all .25s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── DRAWER ── */
+    .drawer {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: 260px; z-index: 300;
+      background: #fff; box-shadow: var(--shadow-lg);
+      display: flex; flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform .25s ease;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header {
+      height: 56px; background: var(--accent);
+      display: flex; align-items: center; padding: 0 1.25rem;
+      font-size: 1rem; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .drawer-nav {
+      flex: 1; overflow-y: auto; padding: .5rem 0;
+    }
+    .drawer-nav a {
+      display: block; padding: .85rem 1.5rem;
+      font-size: .95rem; font-weight: 500; color: var(--text);
+      text-decoration: none; border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .drawer-nav a:hover { background: var(--surface); color: var(--brand); }
+    .drawer-lang {
+      display: flex; gap: .5rem; padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .drawer-lang button {
+      flex: 1; padding: .5rem; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: .85rem; font-weight: 600; cursor: pointer; color: var(--muted);
+      transition: all .15s;
+    }
+    .drawer-lang button.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.4); z-index: 299;
+    }
+    .backdrop.open { display: block; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .nav-links { display: none; }
+      .hamburger { display: flex; }
     }
     @media (max-width: 640px) {
       .download-box { flex-direction: column; }
@@ -368,8 +426,32 @@
 </head>
 <body>
 
+<!-- DRAWER -->
+<div class="backdrop" id="backdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">IKI Antri</div>
+  <nav class="drawer-nav">
+    <a href="#" onclick="closeDrawer()" data-id>Beranda</a>
+    <a href="#" onclick="closeDrawer()" data-en>Home</a>
+    <a href="#features" onclick="closeDrawer()" data-id>Fitur</a>
+    <a href="#features" onclick="closeDrawer()" data-en>Features</a>
+    <a href="#install" onclick="closeDrawer()" data-id>Unduh</a>
+    <a href="#install" onclick="closeDrawer()" data-en>Download</a>
+    <a href="https://github.com/iki-ae/antri-iki-ae" target="_blank" rel="noopener" onclick="closeDrawer()">GitHub</a>
+    <a href="#contact" onclick="closeDrawer()" data-id>Kontak</a>
+    <a href="#contact" onclick="closeDrawer()" data-en>Contact</a>
+  </nav>
+  <div class="drawer-lang">
+    <button id="drawer-btn-id" class="active" onclick="setLang('id')">ID</button>
+    <button id="drawer-btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav>
+  <button class="hamburger" id="hamburger" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
   <a class="nav-brand" href="/">IKI Antri</a>
   <div class="nav-links">
     <a href="#" data-id>Beranda</a><a href="#" data-en>Home</a>
@@ -765,11 +847,25 @@ netsh advfirewall firewall add rule name="IKI-Antri" dir=in action=allow protoco
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // Language switcher
+  function toggleDrawer() {
+    const open = document.getElementById('drawer').classList.toggle('open');
+    document.getElementById('backdrop').classList.toggle('open', open);
+    document.getElementById('hamburger').classList.toggle('open', open);
+  }
+  function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('backdrop').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+  }
+
   function setLang(lang) {
     document.documentElement.lang = lang;
     document.getElementById('btn-id').classList.toggle('active', lang === 'id');
     document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.getElementById('drawer-btn-id').classList.toggle('active', lang === 'id');
+    document.getElementById('drawer-btn-en').classList.toggle('active', lang === 'en');
     localStorage.setItem('iki-lang', lang);
+    closeDrawer();
   }
   (function() {
     const saved = localStorage.getItem('iki-lang');
