@@ -26,7 +26,7 @@ if "!LANG_CHOICE!"=="" set LANG_CHOICE=1
 if "!LANG_CHOICE!"=="2" (
   set MSG_NO_WSL=GAGAL: WSL2 tidak ditemukan. Install WSL2 terlebih dahulu.
   set MSG_NO_WSL2=  Jalankan di PowerShell: wsl --install
-  set MSG_NO_TAR=GAGAL: IKI-Antri.tar tidak ditemukan di folder yang sama dengan install.bat.
+  set MSG_NO_TAR=GAGAL: IKI-Antri.tar.gz tidak ditemukan di folder yang sama dengan install.bat.
   set MSG_IMPORT=^[1/5^] Mengimpor IKI Antri ke WSL2...
   set MSG_IMPORT_FAIL=GAGAL: Import WSL gagal.
   set MSG_COPY=^[2/5^] Menyalin portproxy-refresh.bat...
@@ -44,7 +44,7 @@ if "!LANG_CHOICE!"=="2" (
 ) else (
   set MSG_NO_WSL=ERROR: WSL2 not found. Install WSL2 first.
   set MSG_NO_WSL2=  Run in PowerShell: wsl --install
-  set MSG_NO_TAR=ERROR: IKI-Antri.tar not found in the same folder as install.bat.
+  set MSG_NO_TAR=ERROR: IKI-Antri.tar.gz not found in the same folder as install.bat.
   set MSG_IMPORT=^[1/5^] Importing IKI Antri into WSL2...
   set MSG_IMPORT_FAIL=ERROR: WSL import failed.
   set MSG_COPY=^[2/5^] Copying portproxy-refresh.bat...
@@ -72,14 +72,14 @@ if errorlevel 1 (
 )
 
 REM Check tar file exists next to this bat
-if not exist "%~dp0IKI-Antri.tar" (
+if not exist "%~dp0IKI-Antri.tar.gz" (
   echo !MSG_NO_TAR!
   pause & exit /b 1
 )
 
 REM --- Step 1: Import WSL distro ---
 echo !MSG_IMPORT!
-wsl --import IKI-Antri C:\IKI-Antri "%~dp0IKI-Antri.tar" --version 2
+wsl --import IKI-Antri C:\IKI-Antri "%~dp0IKI-Antri.tar.gz" --version 2
 if errorlevel 1 (
   echo !MSG_IMPORT_FAIL!
   pause & exit /b 1
