@@ -79,7 +79,7 @@ if not exist "%~dp0IKI-Antri.tar" (
 
 REM --- Step 1: Import WSL distro ---
 echo !MSG_IMPORT!
-wsl --import antri-iki-ae C:\antri-iki-ae "%~dp0IKI-Antri.tar" --version 2
+wsl --import IKI-Antri C:\IKI-Antri "%~dp0IKI-Antri.tar" --version 2
 if errorlevel 1 (
   echo !MSG_IMPORT_FAIL!
   pause & exit /b 1
@@ -87,7 +87,7 @@ if errorlevel 1 (
 
 REM --- Step 2: Copy portproxy-refresh.bat ---
 echo !MSG_COPY!
-copy /Y "%~dp0portproxy-refresh.bat" "C:\antri-iki-ae\portproxy-refresh.bat" >nul
+copy /Y "%~dp0portproxy-refresh.bat" "C:\IKI-Antri\portproxy-refresh.bat" >nul
 if errorlevel 1 (
   echo !MSG_COPY_FAIL!
   pause & exit /b 1
@@ -95,20 +95,20 @@ if errorlevel 1 (
 
 REM --- Step 3: Port proxy + firewall ---
 echo !MSG_LAN!
-for /f "tokens=*" %%i in ('wsl -d antri-iki-ae hostname -I') do set WSL_IP=%%i
+for /f "tokens=*" %%i in ('wsl -d IKI-Antri hostname -I') do set WSL_IP=%%i
 if "!WSL_IP!"=="" (
   echo !MSG_IP_FAIL!
   pause & exit /b 1
 )
 netsh interface portproxy delete v4tov4 listenport=3001 listenaddress=0.0.0.0 >nul 2>&1
 netsh interface portproxy add v4tov4 listenport=3001 listenaddress=0.0.0.0 connectport=3001 connectaddress=!WSL_IP!
-netsh advfirewall firewall delete rule name="Antri-Iki-Ae" >nul 2>&1
-netsh advfirewall firewall add rule name="Antri-Iki-Ae" dir=in action=allow protocol=TCP localport=3001
+netsh advfirewall firewall delete rule name="IKI-Antri" >nul 2>&1
+netsh advfirewall firewall add rule name="IKI-Antri" dir=in action=allow protocol=TCP localport=3001
 
 REM --- Step 4: Register portproxy-refresh at startup ---
 echo !MSG_SCHTASK!
 schtasks /delete /tn "AntriIkiAe-PortProxy" /f >nul 2>&1
-schtasks /create /tn "AntriIkiAe-PortProxy" /tr "C:\antri-iki-ae\portproxy-refresh.bat" /sc onlogon /rl highest /f
+schtasks /create /tn "AntriIkiAe-PortProxy" /tr "C:\IKI-Antri\portproxy-refresh.bat" /sc onlogon /rl highest /f
 if errorlevel 1 (
   echo !MSG_SCHTASK_WARN!
 )
@@ -117,7 +117,7 @@ REM --- Step 5: Disable sleep + start app ---
 echo !MSG_START!
 powercfg /change standby-timeout-ac 0
 powercfg /change monitor-timeout-ac 0
-wsl -d antri-iki-ae -- bash -c "pm2 resurrect" >nul 2>&1
+wsl -d IKI-Antri -- bash -c "pm2 resurrect" >nul 2>&1
 
 echo.
 echo ============================================
