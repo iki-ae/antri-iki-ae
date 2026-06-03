@@ -150,6 +150,7 @@ cd "$APP_DIR/backend"
 
 # --- DB migrations ---
 log "$MSG_MIGRATE"
+mkdir -p "$APP_DIR/backend/data"
 npm run db:migrate
 
 # --- PM2 ecosystem config ---
