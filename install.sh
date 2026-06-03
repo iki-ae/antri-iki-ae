@@ -30,7 +30,7 @@ die()  { echo -e "${RED}[error]${RESET} $*" >&2; exit 1; }
 # --- Banner ---
 echo ""
 echo -e "${BOLD}============================================${RESET}"
-echo -e "${BOLD}  Antri-Iki-Ae — Queue Management System  ${RESET}"
+echo -e "${BOLD}  IKI Antri — Queue Management System      ${RESET}"
 echo -e "${BOLD}  by iki.ae                                ${RESET}"
 echo -e "${BOLD}============================================${RESET}"
 echo ""
