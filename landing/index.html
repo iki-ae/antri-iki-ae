@@ -273,6 +273,11 @@
       font-size: .75rem; color: #94a3b8;
     }
     .pill-green { border-color: rgba(52,211,153,.3); color: #34d399; background: rgba(52,211,153,.08); }
+    .prereq-note {
+      background: var(--brand-light); border: 1px solid #b8d0e8;
+      border-radius: 8px; padding: .85rem 1.1rem;
+      font-size: .85rem; color: var(--brand-dark); margin-bottom: 1.5rem; line-height: 1.6;
+    }
     .creds-box {
       background: #fff7ed; border: 1px solid #fed7aa;
       border-radius: 8px; padding: 1rem 1.25rem;
@@ -559,24 +564,17 @@
           <span data-en>Download Now</span>
         </a>
       </div>
+      <div class="prereq-note" data-id>
+        <strong>Prasyarat:</strong> Windows 11 dengan WSL2. Belum aktif?
+        Buka PowerShell sebagai Administrator, jalankan <code>wsl --install --no-distribution</code>, lalu restart PC.
+      </div>
+      <div class="prereq-note" data-en>
+        <strong>Prerequisite:</strong> Windows 11 with WSL2. Not yet enabled?
+        Open PowerShell as Administrator, run <code>wsl --install --no-distribution</code>, then restart your PC.
+      </div>
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
-          <div class="step-body">
-            <h4 data-id>Aktifkan WSL2</h4>
-            <h4 data-en>Enable WSL2</h4>
-            <p data-id>Buka PowerShell sebagai Administrator dan jalankan:</p>
-            <p data-en>Open PowerShell as Administrator and run:</p>
-            <div class="copy-wrap">
-              <pre>wsl --install --no-distribution</pre>
-              <button class="copy-btn" onclick="copyCode(this)">copy</button>
-            </div>
-            <p style="margin-top:.5rem;" data-id>Restart PC jika diminta.</p>
-            <p style="margin-top:.5rem;" data-en>Restart your PC if prompted.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
           <div class="step-body">
             <h4 data-id>Unduh dan Ekstrak</h4>
             <h4 data-en>Download and Extract</h4>
@@ -585,21 +583,21 @@
           </div>
         </div>
         <div class="step">
-          <div class="step-num">3</div>
+          <div class="step-num">2</div>
           <div class="step-body">
             <h4 data-id>Jalankan Installer</h4>
             <h4 data-en>Run the Installer</h4>
-            <p data-id>Klik kanan <code>install.bat</code> → <strong>Run as Administrator</strong>. Tunggu hingga selesai.</p>
-            <p data-en>Right-click <code>install.bat</code> → <strong>Run as Administrator</strong>. Wait for it to finish.</p>
+            <p data-id>Klik kanan <code>install.bat</code> → <strong>Run as Administrator</strong>. Tunggu hingga selesai. Port forwarding dan firewall dikonfigurasi otomatis.</p>
+            <p data-en>Right-click <code>install.bat</code> → <strong>Run as Administrator</strong>. Wait for it to finish. Port forwarding and firewall are configured automatically.</p>
           </div>
         </div>
         <div class="step">
-          <div class="step-num">4</div>
+          <div class="step-num">3</div>
           <div class="step-body">
             <h4 data-id>Buka Aplikasi</h4>
             <h4 data-en>Open the App</h4>
-            <p data-id>Buka browser dan akses:</p>
-            <p data-en>Open your browser and go to:</p>
+            <p data-id>Buka browser dari perangkat mana pun di jaringan dan akses:</p>
+            <p data-en>Open a browser from any device on the network and go to:</p>
             <div class="copy-wrap">
               <pre>http://localhost:3001</pre>
               <button class="copy-btn" onclick="copyCode(this)">copy</button>
@@ -611,15 +609,6 @@
               <span data-id>segera ganti setelah login pertama.</span>
               <span data-en>change immediately after first login.</span>
             </div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-body">
-            <h4 data-id>Akses dari Semua Perangkat di Jaringan</h4>
-            <h4 data-en>Access from All Devices on the Network</h4>
-            <p data-id>Selesai. Installer sudah mengatur port forwarding dan firewall secara otomatis. Operator, kios, dan layar display dapat dibuka dari perangkat lain menggunakan IP Windows Anda di port 3001.</p>
-            <p data-en>Done. The installer automatically configured port forwarding and the firewall. Operator, kiosk, and display screens can be opened from any other device using your Windows PC's IP on port 3001.</p>
           </div>
         </div>
       </div>
@@ -696,13 +685,13 @@ netsh advfirewall firewall add rule name="IKI-Antri" dir=in action=allow protoco
     <div class="section-tag" data-en>TRANSPARENCY</div>
     <h2 class="section-title" data-id>Transparan dan Dapat Diaudit</h2>
     <h2 class="section-title" data-en>Transparent and Auditable</h2>
-    <p class="section-sub" data-id>Tidak ada yang tersembunyi. Kode sumber terbuka, berjalan di jaringan lokal Anda sendiri.</p>
-    <p class="section-sub" data-en>Nothing hidden. Open source code, running entirely on your own local network.</p>
+    <p class="section-sub" data-id>Tidak ada yang tersembunyi. Kode dapat diaudit siapa pun, berjalan sepenuhnya di jaringan lokal Anda.</p>
+    <p class="section-sub" data-en>Nothing hidden. Code anyone can audit, running entirely on your own local network.</p>
     <div class="trust-grid">
       <div class="trust-card">
         <div class="trust-icon">📂</div>
-        <h3 data-id>Kode Sumber Terbuka</h3>
-        <h3 data-en>Open Source Code</h3>
+        <h3 data-id>Kode Dapat Diaudit Publik</h3>
+        <h3 data-en>Publicly Auditable Code</h3>
         <p data-id>Seluruh kode sumber tersedia di GitHub. Lihat persis apa yang berjalan di server Anda — tidak ada yang disembunyikan.</p>
         <p data-en>Full source code is publicly available on GitHub. See exactly what runs on your server — nothing hidden.</p>
         <a class="trust-link" href="https://github.com/iki-ae/antri-iki-ae" target="_blank" rel="noopener">
