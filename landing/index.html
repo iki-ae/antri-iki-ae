@@ -359,58 +359,39 @@
     .hamburger {
       display: none; flex-direction: column; justify-content: center; gap: 5px;
       width: 36px; height: 36px; background: none; border: none; cursor: pointer;
-      padding: 4px; flex-shrink: 0;
+      padding: 4px; flex-shrink: 0; position: relative;
     }
     .hamburger span {
       display: block; height: 2px; width: 22px;
-      background: #fff; border-radius: 2px;
-      transition: all .25s;
+      background: #fff; border-radius: 2px; transition: all .2s;
     }
-    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    .hamburger.open span:nth-child(2) { opacity: 0; }
-    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-    /* ── DRAWER ── */
-    .drawer {
-      position: fixed; top: 0; left: 0; bottom: 0;
-      width: 260px; z-index: 300;
-      background: #fff; box-shadow: var(--shadow-lg);
-      display: flex; flex-direction: column;
-      transform: translateX(-100%);
-      transition: transform .25s ease;
+    /* ── MOBILE POPUP MENU ── */
+    .mobile-menu {
+      display: none;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; z-index: 200;
+      box-shadow: 0 8px 24px rgba(0,0,0,.15);
+      flex-direction: column;
     }
-    .drawer.open { transform: translateX(0); }
-    .drawer-header {
-      height: 56px; background: var(--accent);
-      display: flex; align-items: center; padding: 0 1.25rem;
-      font-size: 1rem; font-weight: 800; color: #fff; flex-shrink: 0;
-    }
-    .drawer-nav {
-      flex: 1; overflow-y: auto; padding: .5rem 0;
-    }
-    .drawer-nav a {
-      display: block; padding: .85rem 1.5rem;
-      font-size: .95rem; font-weight: 500; color: var(--text);
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      display: block; padding: 1rem 1.5rem;
+      font-size: 1rem; font-weight: 500; color: var(--text);
       text-decoration: none; border-bottom: 1px solid var(--border);
       transition: background .15s;
     }
-    .drawer-nav a:hover { background: var(--surface); color: var(--brand); }
-    .drawer-lang {
-      display: flex; gap: .5rem; padding: 1rem 1.5rem;
-      border-top: 1px solid var(--border); flex-shrink: 0;
+    .mobile-menu a:hover { background: var(--surface); color: var(--brand); }
+    .mobile-menu-lang {
+      display: flex; gap: .75rem; padding: 1rem 1.5rem;
     }
-    .drawer-lang button {
-      flex: 1; padding: .5rem; border-radius: 6px;
+    .mobile-menu-lang button {
+      flex: 1; padding: .6rem; border-radius: 6px;
       border: 1px solid var(--border); background: var(--surface);
-      font-size: .85rem; font-weight: 600; cursor: pointer; color: var(--muted);
+      font-size: .9rem; font-weight: 600; cursor: pointer; color: var(--muted);
       transition: all .15s;
     }
-    .drawer-lang button.active { background: var(--brand); border-color: var(--brand); color: #fff; }
-    .backdrop {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.4); z-index: 299;
-    }
-    .backdrop.open { display: block; }
+    .mobile-menu-lang button.active { background: var(--brand); border-color: var(--brand); color: #fff; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
@@ -426,26 +407,9 @@
 </head>
 <body>
 
-<!-- DRAWER -->
-<div class="backdrop" id="backdrop" onclick="closeDrawer()"></div>
-<div class="drawer" id="drawer">
-  <div class="drawer-header">IKI Antri</div>
-  <nav class="drawer-nav">
-    <a href="#"        onclick="closeDrawer()"><span data-id>Beranda</span><span data-en>Home</span></a>
-    <a href="#features" onclick="closeDrawer()"><span data-id>Fitur</span><span data-en>Features</span></a>
-    <a href="#install"  onclick="closeDrawer()"><span data-id>Unduh</span><span data-en>Download</span></a>
-    <a href="https://github.com/iki-ae/antri-iki-ae" target="_blank" rel="noopener" onclick="closeDrawer()">GitHub</a>
-    <a href="#contact"  onclick="closeDrawer()"><span data-id>Kontak</span><span data-en>Contact</span></a>
-  </nav>
-  <div class="drawer-lang">
-    <button id="drawer-btn-id" class="active" onclick="setLang('id')">ID</button>
-    <button id="drawer-btn-en" onclick="setLang('en')">EN</button>
-  </div>
-</div>
-
 <!-- NAV -->
-<nav>
-  <button class="hamburger" id="hamburger" onclick="toggleDrawer()" aria-label="Menu">
+<nav style="position:relative;">
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
   <a class="nav-brand" href="/">IKI Antri</a>
@@ -464,6 +428,18 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 23 23" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h23v23H0z"/><path stroke="#000000" d="M1 1.5h7m1 0h1m1 0h3m1 0h7M1 2.5h1m5 0h1m1 0h1m5 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m3 0h2m2 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m2 0h3m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m3 0h1m3 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h3M1 9.5h1m1 0h2m1 0h3m2 0h2m2 0h1m2 0h1m1 0h2M1 10.5h2m1 0h1m9 0h8M1 11.5h1m2 0h2m1 0h2m5 0h1m3 0h1m1 0h2M2 12.5h2m1 0h2m1 0h1m3 0h1m3 0h1m1 0h1m1 0h1M2 13.5h2m2 0h2m3 0h1m1 0h1m1 0h1m1 0h2m2 0h1M9 14.5h1m1 0h3m3 0h1M1 15.5h7m1 0h2m1 0h1m4 0h1M1 16.5h1m5 0h1m1 0h1m1 0h1m2 0h1m1 0h4m1 0h1M1 17.5h1m1 0h3m1 0h1m3 0h1m1 0h1m3 0h1m1 0h2M1 18.5h1m1 0h3m1 0h1m1 0h3m1 0h4m3 0h1M1 19.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h4m2 0h1M1 20.5h1m5 0h1m2 0h1m3 0h4m3 0h1M1 21.5h7m1 0h3m1 0h3m1 0h3"/></svg>
     </div>
   </a>
+  <!-- Mobile popup menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#"          onclick="closeMenu()"><span data-id>Beranda</span><span data-en>Home</span></a>
+    <a href="#features"  onclick="closeMenu()"><span data-id>Fitur</span><span data-en>Features</span></a>
+    <a href="#install"   onclick="closeMenu()"><span data-id>Unduh</span><span data-en>Download</span></a>
+    <a href="https://github.com/iki-ae/antri-iki-ae" target="_blank" rel="noopener" onclick="closeMenu()">GitHub</a>
+    <a href="#contact"   onclick="closeMenu()"><span data-id>Kontak</span><span data-en>Contact</span></a>
+    <div class="mobile-menu-lang">
+      <button id="mob-btn-id" class="active" onclick="setLang('id')">ID</button>
+      <button id="mob-btn-en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -843,25 +819,28 @@ netsh advfirewall firewall add rule name="IKI-Antri" dir=in action=allow protoco
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // Language switcher
-  function toggleDrawer() {
-    const open = document.getElementById('drawer').classList.toggle('open');
-    document.getElementById('backdrop').classList.toggle('open', open);
-    document.getElementById('hamburger').classList.toggle('open', open);
+  function toggleMenu() {
+    document.getElementById('mobile-menu').classList.toggle('open');
   }
-  function closeDrawer() {
-    document.getElementById('drawer').classList.remove('open');
-    document.getElementById('backdrop').classList.remove('open');
-    document.getElementById('hamburger').classList.remove('open');
+  function closeMenu() {
+    document.getElementById('mobile-menu').classList.remove('open');
   }
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('mobile-menu');
+    const hamburger = document.getElementById('hamburger');
+    if (menu.classList.contains('open') && !menu.contains(e.target) && !hamburger.contains(e.target)) {
+      closeMenu();
+    }
+  });
 
   function setLang(lang) {
     document.documentElement.lang = lang;
     document.getElementById('btn-id').classList.toggle('active', lang === 'id');
     document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-    document.getElementById('drawer-btn-id').classList.toggle('active', lang === 'id');
-    document.getElementById('drawer-btn-en').classList.toggle('active', lang === 'en');
+    document.getElementById('mob-btn-id').classList.toggle('active', lang === 'id');
+    document.getElementById('mob-btn-en').classList.toggle('active', lang === 'en');
     localStorage.setItem('iki-lang', lang);
-    closeDrawer();
+    closeMenu();
   }
   (function() {
     const saved = localStorage.getItem('iki-lang');
