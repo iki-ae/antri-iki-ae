@@ -8,7 +8,7 @@ echo ============================================
 echo.
 
 REM Must run as Administrator
-net session >/dev/null 2>&1
+net session >nul 2>&1
 if errorlevel 1 (
   echo ERROR: Run this file as Administrator.
   echo ERROR: Jalankan file ini sebagai Administrator.
@@ -31,7 +31,7 @@ if errorlevel 1 (
 )
 
 echo [2/3] Re-registering startup task...
-schtasks /delete /tn "AntriIkiAe-PortProxy" /f >/dev/null 2>&1
+schtasks /delete /tn "AntriIkiAe-PortProxy" /f >nul 2>&1
 schtasks /create /tn "AntriIkiAe-PortProxy" /tr "C:\IKI-Antri\portproxy-refresh.bat" /sc onlogon /rl highest /f
 if errorlevel 1 (
   echo WARNING: Could not register startup task.

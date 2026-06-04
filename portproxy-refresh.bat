@@ -6,7 +6,7 @@
 setlocal enabledelayedexpansion
 
 :: Start WSL and resurrect PM2
-wsl -d IKI-Antri -- bash -c "PATH=/usr/bin:/usr/local/bin pm2 resurrect" >/dev/null 2>&1
+wsl -d IKI-Antri -- bash -c "PATH=/usr/bin:/usr/local/bin pm2 resurrect" >nul 2>&1
 
 :: Give WSL a moment to assign its IP
 timeout /t 3 /nobreak >nul
@@ -18,5 +18,5 @@ if "!WSL_IP!"=="" (
   exit /b 1
 )
 
-netsh interface portproxy delete v4tov4 listenport=3001 listenaddress=0.0.0.0 >/dev/null 2>&1
+netsh interface portproxy delete v4tov4 listenport=3001 listenaddress=0.0.0.0 >nul 2>&1
 netsh interface portproxy add v4tov4 listenport=3001 listenaddress=0.0.0.0 connectport=3001 connectaddress=!WSL_IP! >nul
