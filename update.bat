@@ -2,8 +2,21 @@
 setlocal enabledelayedexpansion
 
 echo ============================================
-echo   IKI Antri - Queue Management System
+echo   IKI Antri - Update 1.1
+echo   Auto-Restart Fix
 echo   by iki.ae
+echo ============================================
+echo.
+echo   Fixes:
+echo   - App did not start after PC was restarted
+echo   - App could not be reached from other devices after restart
+echo.
+echo   Perbaikan:
+echo   - Aplikasi tidak berjalan setelah PC di-restart
+echo   - Aplikasi tidak bisa diakses dari perangkat lain setelah restart
+echo.
+echo   Your data will NOT be affected.
+echo   Data Anda TIDAK akan terpengaruh.
 echo ============================================
 echo.
 
@@ -32,7 +45,7 @@ if errorlevel 1 (
 
 echo [2/3] Re-registering startup task...
 schtasks /delete /tn "AntriIkiAe-PortProxy" /f >nul 2>&1
-schtasks /create /tn "AntriIkiAe-PortProxy" /tr "C:\IKI-Antri\portproxy-refresh.bat" /sc onlogon /rl highest /f
+schtasks /create /tn "AntriIkiAe-PortProxy" /tr "C:\IKI-Antri\portproxy-refresh.bat" /sc onlogon /rl highest /f >nul 2>&1
 if errorlevel 1 (
   echo WARNING: Could not register startup task.
   echo PERINGATAN: Gagal mendaftarkan task startup.
@@ -44,6 +57,8 @@ call "C:\IKI-Antri\portproxy-refresh.bat"
 echo.
 echo ============================================
 echo   Update complete! / Pembaruan selesai!
+echo   App is now running. / Aplikasi sudah berjalan.
+echo   Open: http://localhost:3001
 echo ============================================
 echo.
 pause
